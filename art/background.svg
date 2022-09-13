@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="800mm"
+   height="500mm"
+   viewBox="0 0 800 500"
+   version="1.1"
+   id="svg1879"
+   sodipodi:docname="background.svg"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09, custom)"
+   xml:space="preserve"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><sodipodi:namedview
+     id="namedview1881"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.53543895"
+     inkscape:cx="1008.5183"
+     inkscape:cy="286.68068"
+     inkscape:window-width="1850"
+     inkscape:window-height="1016"
+     inkscape:window-x="70"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" /><defs
+     id="defs1876" /><g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"><path
+       style="fill:#a8bbc9;fill-opacity:1;stroke-width:0.103203"
+       d="M 245.85501,500 292.45583,433.00342 347.47231,500 Z"
+       id="path29223-6"
+       inkscape:transform-center-x="-10.586277"
+       inkscape:transform-center-y="2.7136045"
+       sodipodi:nodetypes="cccc"><desc
+         id="desc29583-2">{
+    &quot;connectTo&quot;: &quot;castle&quot;
+}</desc></path><path
+       style="opacity:1;fill:#a8bbc9;fill-opacity:1;stroke-width:0.141674"
+       d="M 156.85463,500 220.82698,408.02855 296.3521,500 Z"
+       id="path29223"
+       inkscape:transform-center-x="-14.532547"
+       inkscape:transform-center-y="3.7251846"
+       sodipodi:nodetypes="cccc"><desc
+         id="desc29583">{
+    &quot;connectTo&quot;: &quot;castle&quot;
+}</desc></path><path
+       style="opacity:1;fill:#bababa;fill-opacity:1;stroke-width:0.0695117"
+       d="m 334.77106,500 -4e-5,-25.73283 h -0.77077 v -5.69034 h 0.96984 v 0.79525 h 0.97949 v -0.89394 h 0.9979 v -6.2846 h -1.10432 l 3.97416,-6.88345 v -4.90988 l 2.23327,1.28938 -1.91254,0.51247 v 3.07847 l 3.85485,6.67679 h -0.88088 v 6.13376 h 0.84784 V 469.18 h 0.82936 v -1.27795 h 1.0555 l 0.0489,6.28601 h -0.94495 v 6.48139 h 7.38161 v -19.17894 h -0.86808 l 7.78283,-13.48027 7.6728,13.28968 h -1.20005 v 11.44005 l 5.83148,0.005 v -5.67408 h -0.98921 v -3.21402 h 0.96268 v 0.81223 h 1.1773 v -0.8461 h 1.00696 l 0.0202,0.80525 h 0.61922 v -8.34859 h -0.93163 l 2.39236,-4.1437 v -3.4051 l 1.44755,0.83575 -1.20285,0.69447 v 1.84556 l 2.25468,3.90522 h -0.94827 v 8.59013 h 0.96121 v -0.99341 h 0.87664 v 0.91908 h 0.8014 v -0.98932 h 0.79419 v 3.72141 h -0.76352 V 500 Z"
+       id="castle"
+       sodipodi:nodetypes="cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+       inkscape:transform-center-x="-0.00075300891"
+       inkscape:transform-center-y="-25.997469" /></g></svg>
