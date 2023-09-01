@@ -24,9 +24,9 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="0.67239264"
-     inkscape:cx="-2.9744526"
-     inkscape:cy="100.38777"
+     inkscape:zoom="6.8743577"
+     inkscape:cx="116.73818"
+     inkscape:cy="69.461034"
      inkscape:window-width="1850"
      inkscape:window-height="1016"
      inkscape:window-x="70"
@@ -78,7 +78,7 @@
     <path
        style="fill:#999999;stroke-width:0.264583"
        d="m 32.861185,90.818812 -0.4538,6.8636 15.71225,0.0614 -0.362,-2.92138 -5.07773,-0.97193 -3.20948,-3.07572"
-       id="rightLeg3"
+       id="rightFoot"
        sodipodi:nodetypes="cccccc"
        inkscape:transform-center-x="-3.4307351"
        inkscape:transform-center-y="3.358924">
@@ -127,7 +127,7 @@
     <path
        style="fill:#999999;stroke-width:0.264583"
        d="m 23.184535,93.089808 -0.33932,6.80365 15.4135,0.0109 -0.362,-2.9216 -4.86493,-0.81427 -3.14702,-3.01692"
-       id="leftLeg3"
+       id="leftFoot"
        sodipodi:nodetypes="cccccc"
        inkscape:transform-center-x="-3.7710057"
        inkscape:transform-center-y="3.4891278">
@@ -171,7 +171,9 @@
        style="fill:#ffccaa;fill-opacity:1;stroke:none;stroke-width:1.03588;stroke-opacity:1"
        d="m 40.074264,12.148233 -7.6977,-1.780396 -8.5052,0.9861 0.0784,11.948996 2.3896,5.7794 2.1843,3.7528 6.0444,0.0306 2.5883,-3.5445 4.0053,0.0545 1.0955,-5.4268 -0.1221,-6.7202"
        id="face"
-       sodipodi:nodetypes="ccccccccccc">
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:transform-center-x="-1.5032388"
+       inkscape:transform-center-y="-10.322162">
       <desc
          id="desc230-2">{
     &quot;connectTo&quot;: &quot;body&quot;
@@ -189,9 +191,9 @@
     </path>
     <path
        style="fill:#808080;stroke-width:0.29905"
-       d="m 35.403874,6.9329906 -13.27109,3.3642424 -2.95852,10.0968 5.60635,7.61908 10.884349,0.911816 0.18019,-4.390744 -3.730173,-5.080482 1.645544,-2.902141 2.53163,-0.06848 1.573419,2.763747 1.936378,-0.547114 0.891223,-3.542438 1.86692,1.719774 0.30164,-5.346179"
-       id="hair"
-       sodipodi:nodetypes="cccccccccccccc">
+       d="m 35.403874,6.9329906 -13.27109,3.3642424 -2.95852,10.0968 5.60635,7.61908 10.884349,0.911816 0.18019,-4.390744 -3.710842,-1.374147 1.626213,-6.608476 6.93265,-1.394285 1.818922,3.477854 0.349638,-7.104259"
+       id="helmet"
+       sodipodi:nodetypes="ccccccccccc">
       <desc
          id="desc793-7">{
     &quot;connectTo&quot;: &quot;face&quot;
@@ -276,5 +278,65 @@
     &quot;connectTo&quot;: &quot;rightArm1&quot;
 }</desc>
     </path>
+    <rect
+       style="fill:#ff0000;stroke-width:0.167296"
+       id="leftSupport"
+       width="5.9140477"
+       height="4.4796071"
+       x="34.79512"
+       y="100"
+       inkscape:transform-center-x="-0.038747061"
+       inkscape:transform-center-y="2.1358781">
+      <desc
+         id="desc670">{
+    &quot;connectTo&quot;: &quot;leftFoot&quot;,
+    &quot;placeholder&quot;: true
+}</desc>
+    </rect>
+    <rect
+       style="fill:#ff0000;stroke-width:0.167296"
+       id="rightSupport"
+       width="5.9140477"
+       height="4.4796071"
+       x="44.624527"
+       y="100"
+       inkscape:transform-center-x="-0.038747061"
+       inkscape:transform-center-y="2.1358781">
+      <desc
+         id="desc670-5">{
+    &quot;connectTo&quot;: &quot;rightFoot&quot;,
+    &quot;placeholder&quot;: true
+}</desc>
+    </rect>
+    <rect
+       style="fill:#ff0000;stroke-width:0.167296"
+       id="boundingLeft"
+       width="5.9140477"
+       height="4.4796071"
+       x="8.4327526"
+       y="46.553692"
+       inkscape:transform-center-x="0.16517089"
+       inkscape:transform-center-y="-0.0090690369">
+      <desc
+         id="desc670-2">{
+    &quot;connectTo&quot;: &quot;body&quot;,
+    &quot;placeholder&quot;: true
+}</desc>
+    </rect>
+    <rect
+       style="fill:#ff0000;stroke-width:0.167296"
+       id="boundingRight"
+       width="5.9140477"
+       height="4.4796071"
+       x="47.755466"
+       y="45.644855"
+       inkscape:transform-center-x="0.16517089"
+       inkscape:transform-center-y="-0.0090690369">
+      <desc
+         id="desc670-2-1">{
+    &quot;connectTo&quot;: &quot;body&quot;,
+    &quot;placeholder&quot;: true
+}</desc>
+    </rect>
   </g>
 </svg>

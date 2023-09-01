@@ -6,12 +6,12 @@ export const matrixCreate = (): Matrix3 => {
     return new Float32Array(identity) as Matrix3;
 };
 
-export const vectorCreate = (x: number = 0, y: number = 0): Vec2 => {
-    return new Float32Array([x, y]) as Vec2;
+export const vectorCreate = (x: number = 0, y: number = 0, z: number = 1): Vec2 => {
+    return new Float32Array([x, y, z]) as Vec2;
 };
 
 export const vectorCopy = (v: Vec2): Vec2 => {
-    return vectorCreate(v[0], v[1]);
+    return vectorCreate(v[0], v[1], v[2]);
 };
 
 export const vectorLength = (v: Vec2): number => {
@@ -50,10 +50,12 @@ export const matrixMultiply = (result: Matrix3, a: Matrix3, b: Matrix3): Matrix3
 };
 
 export const matrixMultiplyVector = (result: Vec2, m: Matrix3): void => {
-    const v0 = m[0 * 3 + 0] * result[0] + m[0 * 3 + 1] * result[1] + m[0 * 3 + 2] * result[2];
-    const v1 = m[1 * 3 + 0] * result[0] + m[1 * 3 + 1] * result[1] + m[1 * 3 + 2] * result[2];
-    result[0] = v0;
-    result[1] = v1;
+    const x = result[0];
+    const y = result[1];
+    const z = result[2];
+    result[0] = x * m[0] + y * m[3] + z * m[6];
+    result[1] = x * m[1] + y * m[4] + z * m[7];
+    result[2] = x * m[2] + y * m[5] + z * m[8];
 };
 
 export const matrixSetIdentity = (result: Matrix3): Matrix3 => {

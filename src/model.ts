@@ -1,5 +1,15 @@
 import { ColorRGB, glMeshDraw, glMeshCreate, Mesh, Program, glSetModelTransform } from './gl';
-import { Matrix3, matrixCopy, matrixCreate, matrixTranslateVector, Vec2, vectorCreate } from './glm';
+import {
+    Matrix3,
+    matrixCopy,
+    matrixCreate,
+    matrixMultiply,
+    matrixMultiplyVector,
+    matrixTranslateVector,
+    Vec2,
+    vectorCreate,
+    vectorMultiply,
+} from './glm';
 import * as manModelData from '../art/man.svg';
 import * as swordModelData from '../art/sword.svg';
 import * as backgroundModelData from '../art/background.svg';
@@ -163,6 +173,19 @@ export const objectTransformComponent = (object: Object, componentId: number) =>
     }
 };
 
+export const objectTransformApplyComponent = (object: Object, componentId: number, transform: Matrix3) => {
+    const component = object[ObjectProperty.Components][componentId];
+    const subobject = object[ObjectProperty.Subobjects][componentId];
+    const matrix = subobject ? objectGetRootTransform(subobject) : component[ObjectComponentProperty.Matrix];
+
+    matrixMultiply(matrix, matrix, transform);
+    if (subobject) {
+        for (const subComponentId of subobject[ObjectProperty.Model][ModelProperty.TransformOrder]) {
+            objectTransformApplyComponent(subobject, subComponentId, transform);
+        }
+    }
+};
+
 export const objectApplyTransforms = (object: Object) => {
     for (const componentId of object[ObjectProperty.Model][ModelProperty.TransformOrder]) {
         objectTransformComponent(object, componentId);
@@ -205,8 +228,16 @@ const modelMeshFromPolygon = (program: Program, polygon: Polygon, loaded: boolea
     };
 };
 
-export const objectGetComponentTransform = (object: Object, componentPath: number) =>
-    object[ObjectProperty.Components][componentPath][ObjectComponentProperty.Matrix];
+export const objectGetComponentTransform = (object: Object, componentId: number) =>
+    object[ObjectProperty.Components][componentId][ObjectComponentProperty.Matrix];
+
+export const objectCalculateomponentTransformedOrigin = (object: Object, componentId: number, result: Vec2) => {
+    const componentTransform = objectGetComponentTransform(object, componentId);
+    result[0] = 0;
+    result[1] = 0;
+    matrixMultiplyVector(result, componentTransform);
+    return result;
+};
 
 export const objectGetRootTransform = (object: Object) => object[ObjectProperty.Transform];
 

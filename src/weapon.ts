@@ -1,3 +1,8 @@
+import * as swordModelData from '../art/sword.svg';
+import { ColorRGB } from './gl';
+import { Vec2 } from './glm';
+import { Object, modelGetWeapons, objectCalculateomponentTransformedOrigin, objectCreate } from './model';
+
 const enum WeaponTypeStatsProperty {
     Range,
     Gap,
@@ -12,7 +17,7 @@ const enum WeaponType {
 const types = {
     [WeaponType.Basic]: {
         [WeaponTypeStatsProperty.Gap]: 20,
-        [WeaponTypeStatsProperty.Range]: 78,
+        [WeaponTypeStatsProperty.Range]: 30,
     },
     [WeaponType.Curved]: {
         [WeaponTypeStatsProperty.Gap]: 0,
@@ -23,6 +28,44 @@ const types = {
         [WeaponTypeStatsProperty.Range]: 90,
     },
 };
+
+const enum WeaponProperties {
+    Object,
+    Id,
+}
+
+export type Weapon = {
+    [WeaponProperties.Object]: Object;
+    [WeaponProperties.Id]: number;
+};
+
+const weaponColors: Array<ColorRGB> = [
+    [0.4, 0.22, 0], // wood
+    [0.75, 0.54, 0.44], // bronze
+    [0.81, 0.82, 0.84], // steel
+    [0.83, 0.69, 0.22], // gold
+];
+
+export const weaponCreate = (weaponId: number): Weapon => {
+    const modelType = weaponGetModelType(weaponId);
+    const model = modelGetWeapons()[modelType];
+    const metalColor = weaponColors[1 + weaponGetAttack(weaponId)];
+    const gripColor = weaponColors[weaponGetDefense(weaponId)];
+    const colorOverrides = [
+        {
+            [swordModelData.metalComponentId]: metalColor,
+            [swordModelData.gripComponentId]: gripColor,
+        },
+    ][modelType];
+
+    return {
+        [WeaponProperties.Object]: objectCreate(model, {}, colorOverrides),
+        [WeaponProperties.Id]: weaponId,
+    };
+};
+
+export const weaponGetObject = (weapon: Weapon) => weapon[WeaponProperties.Object];
+export const weaponGetId = (weapon: Weapon) => weapon[WeaponProperties.Id];
 
 const statsMap = (() => {
     const stats: Array<[number, number]> = [];
@@ -68,3 +111,6 @@ export const weaponGetRange = (weaponId: number) => types[weaponGetType(weaponId
 export const weaponGetGap = (weaponId: number) => types[weaponGetType(weaponId)][WeaponTypeStatsProperty.Gap];
 export const weaponGetRandomId = (random: number): number => (random ** 1.5 * weaponTotalTypes()) | 0;
 export const weaponGetModelType = (weaponId: number) => weaponId % Object.values(types).length;
+
+export const weaponGetTipPosition = (weapon: Weapon, position: Vec2) =>
+    objectCalculateomponentTransformedOrigin(weaponGetObject(weapon), swordModelData.tipComponentId, position);

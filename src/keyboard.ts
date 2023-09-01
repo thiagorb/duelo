@@ -20,9 +20,14 @@ export const keyboardInitialize = <Key extends string>(keys: Key[]): { [K in Key
     });
 
     const enableTouch = () => {
+        const touchKeyStart = event => (state[(event.currentTarget as HTMLElement).dataset.key] = true);
+        const touchKeyEnd = event => (state[(event.target as HTMLElement).dataset.key] = false);
         const space = document.querySelector('[data-key="Space"]') as HTMLElement;
-        space.addEventListener('touchstart', () => (state['Space'] = true));
-        space.addEventListener('touchend', () => (state['Space'] = false));
+        space.addEventListener('touchstart', touchKeyStart);
+        space.addEventListener('touchend', touchKeyEnd);
+        const arrowUp = document.querySelector('[data-key="ArrowUp"]') as HTMLElement;
+        arrowUp.addEventListener('touchstart', touchKeyStart);
+        arrowUp.addEventListener('touchend', touchKeyEnd);
 
         const handleArrowsMove = (e: TouchEvent) => {
             const left = e.touches[0].clientX - arrows.clientLeft < arrows.clientWidth / 2;

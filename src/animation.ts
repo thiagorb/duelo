@@ -1,11 +1,25 @@
 import { Program } from './gl';
-import { matrixRotate, matrixSetIdentity, matrixTranslate } from './glm';
+import {
+    Matrix3,
+    Vec2,
+    matrixMultiplyVector,
+    matrixRotate,
+    matrixSetIdentity,
+    matrixTranslate,
+    matrixTranslateVector,
+    vectorAdd,
+    vectorCreate,
+    vectorMultiply,
+    vectorSubtract,
+} from './glm';
 import {
     Object,
+    objectCalculateomponentTransformedOrigin,
     objectDraw,
     objectGetComponentTransform,
     objectGetComponentTransformOrder,
     objectGetRootTransform,
+    objectTransformApplyComponent,
     objectTransformComponent,
 } from './model';
 
@@ -166,6 +180,7 @@ export const animationFrameCreate = (
 
 export const enum AnimatedProperty {
     Rotation,
+    TranslationX,
     TranslationY,
 }
 
@@ -243,6 +258,12 @@ export const animatableTransform = (animatable: Animatable) => {
                     transform,
                     animationElementGetValue(boundElement[BoundElementProperties.AnimationElement])
                 );
+            } else if (boundElement[BoundElementProperties.AnimatedProperty] === AnimatedProperty.TranslationX) {
+                matrixTranslate(
+                    transform,
+                    animationElementGetValue(boundElement[BoundElementProperties.AnimationElement]),
+                    0
+                );
             } else if (boundElement[BoundElementProperties.AnimatedProperty] === AnimatedProperty.TranslationY) {
                 matrixTranslate(
                     transform,
@@ -251,6 +272,36 @@ export const animatableTransform = (animatable: Animatable) => {
                 );
             }
         }
+    }
+};
+
+const animatableSetOriginComponentVector = vectorCreate(0, 0);
+export const animatableSetOriginComponent = (animatable: Animatable, componentId: number) => {
+    objectCalculateomponentTransformedOrigin(
+        animatable[AnimatableProperties.Object],
+        componentId,
+        animatableSetOriginComponentVector
+    );
+    vectorMultiply(animatableSetOriginComponentVector, -1);
+    const matrix = animatableGetRootTransform(animatable);
+    matrixSetIdentity(matrix);
+    matrixTranslateVector(matrix, animatableSetOriginComponentVector);
+
+    animatableTransformApply(animatable, matrix);
+};
+
+export const animatableSetOrigin = (animatable: Animatable, origin: Vec2) => {
+    const matrix = animatableGetRootTransform(animatable);
+    matrixSetIdentity(matrix);
+    matrixTranslateVector(matrix, origin);
+
+    animatableTransformApply(animatable, matrix);
+};
+
+export const animatableTransformApply = (animatable: Animatable, m: Matrix3) => {
+    const object = animatable[AnimatableProperties.Object];
+    for (const componentId of objectGetComponentTransformOrder(object)) {
+        objectTransformApplyComponent(object, componentId, m);
     }
 };
 

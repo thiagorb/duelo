@@ -10,6 +10,7 @@ module.exports = {
     devServer: {
         hot: true,
         liveReload: true,
+        allowedHosts: 'all',
     },
     plugins: [
         new HtmlWebpackPlugin({
