@@ -24,9 +24,9 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="6.8743577"
-     inkscape:cx="116.73818"
-     inkscape:cy="69.461034"
+     inkscape:zoom="1.5869953"
+     inkscape:cx="141.77736"
+     inkscape:cy="201.95397"
      inkscape:window-width="1850"
      inkscape:window-height="1016"
      inkscape:window-x="70"
@@ -76,6 +76,19 @@
 }</desc>
     </path>
     <path
+       style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1.03588;stroke-opacity:1"
+       d="m 38.255676,61.844008 -0.586532,3.131573 31.970534,2.738859"
+       id="weaponLeft"
+       sodipodi:nodetypes="ccc"
+       inkscape:transform-center-x="-13.294052"
+       inkscape:transform-center-y="0.044895">
+      <desc
+         id="desc905">{
+    &quot;connectTo&quot;: &quot;leftArm2&quot;,
+    &quot;placeholder&quot;: true
+}</desc>
+    </path>
+    <path
        style="fill:#999999;stroke-width:0.264583"
        d="m 32.861185,90.818812 -0.4538,6.8636 15.71225,0.0614 -0.362,-2.92138 -5.07773,-0.97193 -3.20948,-3.07572"
        id="rightFoot"
@@ -97,19 +110,6 @@
       <desc
          id="desc908-0-0-1">{
     &quot;connectTo&quot;: &quot;rightLeg1&quot;
-}</desc>
-    </path>
-    <path
-       style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1.03588;stroke-opacity:1"
-       d="m 38.255676,61.844008 -0.586532,3.131573 31.970534,2.738859"
-       id="weaponLeft"
-       sodipodi:nodetypes="ccc"
-       inkscape:transform-center-x="-13.294052"
-       inkscape:transform-center-y="0.044895">
-      <desc
-         id="desc905">{
-    &quot;connectTo&quot;: &quot;leftArm2&quot;,
-    &quot;placeholder&quot;: true
 }</desc>
     </path>
     <path

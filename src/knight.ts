@@ -16,6 +16,7 @@ import {
     animationFrameCreate,
     animationFrameItemCreate,
     animationIsRunning,
+    animationResume,
     animationStart,
     animationStep,
     boundElementCreate,
@@ -358,6 +359,47 @@ export const knightCreate = (position: Vec2, weapon: Weapon, initialHealth: numb
         animationFrameCreate([], () => (knight[KnightProperties.SupportFootSwap] = true)),
     ]);
 
+    //*
+    knight[KnightProperties.DeadAnimation] = animationCreate([
+        /*/
+    knight[KnightProperties.DeadAnimation] = knight[KnightProperties.RestAnimation];
+    knight[KnightProperties.RestAnimation] = animationCreate([
+        //*/
+        animationFrameCreate([
+            animationFrameItemCreate(leftArm1, 0.2, 0.1 * walkSpeed),
+            animationFrameItemCreate(leftArm2, -0.0, 0.01 * walkSpeed),
+            animationFrameItemCreate(body, -0.3, 0.003 * walkSpeed),
+            animationFrameItemCreate(face, 0.8, 0.01 * walkSpeed),
+            animationFrameItemCreate(rightArm1, 0.3, 0.02 * walkSpeed),
+            animationFrameItemCreate(rightArm2, -0.3, 0.02 * walkSpeed),
+            animationFrameItemCreate(leftLeg1, -0.2, 0.01 * walkSpeed),
+            animationFrameItemCreate(leftLeg2, 1.6, 0.01 * walkSpeed),
+            animationFrameItemCreate(leftFoot, -0.5, 0.01 * walkSpeed),
+            animationFrameItemCreate(rightLeg1, -0.4, 0.01 * walkSpeed),
+            animationFrameItemCreate(rightLeg2, 1.5, 0.01 * walkSpeed),
+            animationFrameItemCreate(rightFoot, -0.5, 0.01 * walkSpeed),
+        ]),
+        animationFrameCreate([
+            animationFrameItemCreate(leftArm1, 0.0, 0.1 * walkSpeed),
+            animationFrameItemCreate(leftArm2, -2.5, 0.005 * walkSpeed),
+            animationFrameItemCreate(body, 1.4, 0.003 * walkSpeed),
+            animationFrameItemCreate(face, -0.5, 0.005 * walkSpeed),
+            animationFrameItemCreate(rightArm1, -0.0, 0.002 * walkSpeed),
+            animationFrameItemCreate(rightArm2, -0.4, 0.002 * walkSpeed),
+            animationFrameItemCreate(leftLeg1, -0.2, 0.01 * walkSpeed),
+            animationFrameItemCreate(leftLeg2, 0.3, 0.003 * walkSpeed),
+            animationFrameItemCreate(leftFoot, 0.8, 0.01 * walkSpeed),
+            animationFrameItemCreate(rightLeg1, 0.2, 0.002 * walkSpeed),
+            animationFrameItemCreate(rightLeg2, 0.5, 0.003 * walkSpeed),
+            animationFrameItemCreate(rightFoot, -0.5, 0.01 * walkSpeed),
+            animationFrameItemCreate(weaponAnimationElement, 5, 0.01 * walkSpeed),
+        ]),
+        animationFrameCreate([
+            animationFrameItemCreate(face, 0.0, 0.005 * walkSpeed),
+            animationFrameItemCreate(rightArm2, -0.2, 0.005 * walkSpeed),
+        ]),
+    ]);
+
     return knight;
 };
 
@@ -369,7 +411,6 @@ const knightChangeSupportFoot = (knight: Knight) => {
     const distance = knightChangeSupportFootV2[0] - knightChangeSupportFootV1[0];
     knight[KnightProperties.Position][0] += knight[KnightProperties.SupportFoot] ? -distance : distance;
     knight[KnightProperties.SupportFoot] = !knight[KnightProperties.SupportFoot];
-    console.log('support foot', knight[KnightProperties.SupportFoot]);
 };
 
 const knightGetComponentTransformedOrigin = (knight: Knight, componentId: number, out: Vec2) => {
@@ -406,7 +447,7 @@ export const knightDraw = (knight: Knight, program: Program) => {
 
     glSetGlobalOpacity(program, 1);
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (false && process.env.NODE_ENV !== 'production') {
         if (knight[KnightProperties.Weapon]) {
             glDrawRect(program, vectorCreate(knightGetWeaponTip(knight), 0), vectorCreate(1, 100));
         }
@@ -431,7 +472,7 @@ const knightAnimate = (knight: Knight, animation: Animation) => {
 };
 
 export const knightAttack = (knight: Knight) => {
-    if (knightIsAnimating(knight)) {
+    if (knightIsAnimating(knight) || knightIsDead(knight)) {
         if (knightIsDefending(knight)) {
             knight[KnightProperties.WillAttack] = true;
         }
@@ -442,7 +483,7 @@ export const knightAttack = (knight: Knight) => {
 };
 
 export const knightDefend = (knight: Knight) => {
-    if (knightIsAnimating(knight)) {
+    if (knightIsAnimating(knight) || knightIsDead(knight)) {
         return;
     }
 
@@ -456,7 +497,7 @@ const knightIsAnimating = (knight: Knight) => {
 };
 
 export const knightWalk = (knight: Knight, deltaTime: number, left: boolean) => {
-    if (knightIsAnimating(knight)) {
+    if (knightIsAnimating(knight) || knightIsDead(knight)) {
         return;
     }
 
@@ -511,18 +552,28 @@ export const knightDie = (knight: Knight) => {
 export const knightIsDead = (knight: Knight) => knight[KnightProperties.Health] <= 0;
 
 export const knightStep = (knight: Knight, deltaTime: number) => {
-    if (knight[KnightProperties.SupportFootSwap]) {
-        knightChangeSupportFoot(knight);
-        knight[KnightProperties.SupportFootSwap] = false;
-    }
-
-    const opacityDirection = knightIsDead(knight) ? -0.5 : 1;
+    // const opacityDirection = knightIsDead(knight) ? -0.5 : 1;
+    const opacityDirection = 1;
     knight[KnightProperties.Opacity] = Math.max(
         0,
         Math.min(1, knight[KnightProperties.Opacity] + 0.002 * deltaTime * opacityDirection)
     );
     animatableBeginStep(knight[KnightProperties.AnimatableRight]);
     animatableBeginStep(knight[KnightProperties.AnimatableLeft]);
+
+    if (knightIsDead(knight)) {
+        animationStep(knight[KnightProperties.DeadAnimation], deltaTime);
+        return;
+    }
+
+    if (knight[KnightProperties.SupportFootSwap]) {
+        knightChangeSupportFoot(knight);
+        knight[KnightProperties.SupportFootSwap] = false;
+    }
+
+    if (knightIsDead(knight) && !knightIsAnimating(knight)) {
+        debugger;
+    }
 
     if (knight[KnightProperties.CurrentAnimation] === knight[KnightProperties.DefendAnimation]) {
         if (animationStep(knight[KnightProperties.CurrentAnimation], deltaTime)) {
@@ -536,14 +587,15 @@ export const knightStep = (knight: Knight, deltaTime: number) => {
         animationStep(knight[KnightProperties.CurrentAnimation], deltaTime);
     }
 
-    if (!animationIsRunning(knight[KnightProperties.RestAnimation])) {
-        animationStart(knight[KnightProperties.RestAnimation]);
-    }
+    animationResume(knight[KnightProperties.RestAnimation]);
     animationStep(knight[KnightProperties.RestAnimation], deltaTime);
+    if (!knightIsAnimating(knight)) {
+        knight[KnightProperties.CurrentAnimation] = null;
 
-    if (!knightIsAnimating(knight) && knight[KnightProperties.WillAttack]) {
-        knight[KnightProperties.WillAttack] = false;
-        knightAttack(knight);
+        if (knight[KnightProperties.WillAttack]) {
+            knight[KnightProperties.WillAttack] = false;
+            knightAttack(knight);
+        }
     }
 };
 
@@ -562,7 +614,6 @@ export const knightGetWeaponTip = (knight: Knight) => {
     knightGetComponentTransformedOrigin(knight, armComponentId, knightGetWeaponTipVector);
     const arm = knightGetWeaponTipVector[0];
 
-    console.log({ bounding, weaponTip, arm });
     return bounding + weaponTip - arm;
 };
 
@@ -613,12 +664,12 @@ export const knightGetDefense = (knight: Knight) =>
     15 + 2 * weaponGetDefense(weaponGetId(knight[KnightProperties.Weapon]));
 
 export const knightHit = (knight: Knight, power: number) => {
-    if (knightIsDefending(knight)) {
-        knight[KnightProperties.DidDefend] = true;
+    if (knight[KnightProperties.CurrentAnimation] === knight[KnightProperties.HitAnimation] || knightIsDead(knight)) {
         return;
     }
 
-    if (knight[KnightProperties.CurrentAnimation] === knight[KnightProperties.HitAnimation]) {
+    if (knightIsDefending(knight)) {
+        knight[KnightProperties.DidDefend] = true;
         return;
     }
 
@@ -626,6 +677,7 @@ export const knightHit = (knight: Knight, power: number) => {
         knightChangeSupportFoot(knight);
     }
     knight[KnightProperties.SupportFootSwap] = false;
+    knight[KnightProperties.Attacking] = false;
     knightAnimate(knight, knight[KnightProperties.HitAnimation]);
     knightIncreaseHealth(knight, -power / knightGetDefense(knight));
 };
@@ -637,7 +689,7 @@ export const knightIncreaseHealth = (knight: Knight, amount: number) => {
         return;
     }
 
-    // knight[KnightProperties.Health] += amount;
+    knight[KnightProperties.Health] += amount;
     if (knightIsDead(knight)) {
         knightDie(knight);
     }

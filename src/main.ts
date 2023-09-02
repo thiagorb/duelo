@@ -9,6 +9,7 @@ const main = async () => {
     modelsInit(program);
     backgroundInit();
 
+    document.querySelectorAll('.game-ui').forEach(e => e.classList.remove('hidden'));
     gameStart(gameCreate(0), program);
 };
 

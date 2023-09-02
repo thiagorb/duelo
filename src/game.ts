@@ -23,11 +23,13 @@ import {
     knightTurnLeft,
     knightTurnRight,
     knightWalk,
+    knightGetHealth,
 } from './knight';
 import { glClear, glDrawRect, glSetTime, Program } from './gl';
 import { Vec2, vectorCreate, vectorMultiply } from './glm';
 import { keyboardInitialize } from './keyboard';
 import { weaponCreate, weaponGetGap, weaponGetRange } from './weapon';
+import { uiOpponentUpdater, uiPlayerHealthUpdater, uiUpdaterSet } from './ui';
 
 export const FLOOR_LEVEL = -90;
 export const VIRTUAL_WIDTH = 1600 / 3;
@@ -69,12 +71,8 @@ export type Opponent = {
 };
 
 export const gameCreate = (weaponType: number, initialHealth: number = 1) => ({
-    [GameProperties.Knight]: knightCreate(vectorCreate(0, FLOOR_LEVEL), weaponCreate(weaponType), initialHealth),
-    //*
-    [GameProperties.Enemy]: knightCreate(vectorCreate(0, FLOOR_LEVEL), weaponCreate(weaponType), initialHealth),
-    /*/
-    [GameProperties.Enemy]: null,
-    //*/
+    [GameProperties.Knight]: knightCreate(vectorCreate(-200, FLOOR_LEVEL), weaponCreate(weaponType), initialHealth),
+    [GameProperties.Enemy]: knightCreate(vectorCreate(200, FLOOR_LEVEL), weaponCreate(weaponType), initialHealth),
     [GameProperties.Score]: 0,
     [GameProperties.NextEnemy]: (15 + 30 * Math.random()) * 1000,
     [GameProperties.TimePassed]: 0,
@@ -99,17 +97,7 @@ const createIndicator = (text: string, x: number, y: number, type: string) => {
 
 let previousIntention = null;
 let responseDelay = 0;
-export const gameEnemyStep = (game: Game, deltaTime: number) => {
-    const player = game[GameProperties.Knight];
-    const enemy = game[GameProperties.Enemy];
-    if (!enemy) {
-        return;
-    }
-
-    if (knightIsDead(enemy)) {
-        return;
-    }
-
+export const gameEnemyStep = (player: Knight, enemy: Knight, deltaTime: number) => {
     const playerCenter = knightGetCenter(player);
     const enemyCenter = knightGetCenter(enemy);
     const playerDeltaX = playerCenter - enemyCenter;
@@ -126,7 +114,7 @@ export const gameEnemyStep = (game: Game, deltaTime: number) => {
 
     const closeEnoughToAttack = Math.abs(deltaX) < 50;
     let intention = null;
-    if (Math.abs(deltaX) > 70 || (!closeEnoughToAttack && Math.random() < 0.1)) {
+    if (Math.abs(deltaX) > 150 || (!closeEnoughToAttack && Math.random() < 0.3)) {
         intention = 1;
     }
 
@@ -144,7 +132,7 @@ export const gameEnemyStep = (game: Game, deltaTime: number) => {
     }
 
     if (closeEnoughToAttack) {
-        if (Math.random() < (knightIsDefending(enemy) ? 0.5 : 0.01)) {
+        if (Math.random() < (knightIsDefending(enemy) ? 0.3 : 0.01)) {
             knightAttack(enemy);
         }
 
@@ -152,14 +140,9 @@ export const gameEnemyStep = (game: Game, deltaTime: number) => {
             knightDefend(enemy);
         }
     }
-
-    gameKnightAttack(game, player, enemy);
-    gameKnightAttack(game, enemy, player);
-
-    knightStep(enemy, deltaTime);
 };
 
-const gameKnightAttack = (game: Game, knight: Knight, other: Knight) => {
+const gameKnightCheckHit = (knight: Knight, other: Knight) => {
     if (!knightIsHitting(knight, knightGetBoundingLeft(other), knightGetBoundingRight(other))) {
         return;
     }
@@ -168,55 +151,58 @@ const gameKnightAttack = (game: Game, knight: Knight, other: Knight) => {
 
     knightHit(other, knightGetAttackPower(knight));
     createHitIndicator(knightGetPosition(other));
-    // uiUpdaterSet(uiOpponentUpdater, knightGetHealth(enemy));
-    if (knightIsDead(other)) {
-        // uiToggleOpponentHealth(false);
-    }
 };
 
 export const gameStep = (game: Game, deltaTime: number) => {
-    const knight = game[GameProperties.Knight];
+    const player = game[GameProperties.Knight];
     const enemy = game[GameProperties.Enemy];
 
     if (keyboard.Space || keyboard.Shift) {
-        knightAttack(knight);
+        knightAttack(player);
     }
 
     if (keyboard.ArrowUp) {
-        console.log('defend');
-        knightDefend(knight);
+        knightDefend(player);
     }
 
     if (keyboard.ArrowLeft || keyboard.ArrowRight) {
-        if (!enemy || !gameKnightMustTurn(knight, enemy)) {
-            knightWalk(knight, deltaTime, keyboard.ArrowLeft);
+        if (!gameKnightMustTurn(player, enemy)) {
+            knightWalk(player, deltaTime, keyboard.ArrowLeft);
         }
     }
 
-    console.log(
-        'after setp',
-        knightGetBoundingLeft(knight),
-        knightGetBoundingRight(knight),
-        knightGetWeaponTip(knight)
-    );
-    if (enemy) {
-        if (gameKnightMustTurnLeft(knight, enemy)) {
-            knightTurnLeft(knight);
-        } else if (gameKnightMustTurnRight(knight, enemy)) {
-            knightTurnRight(knight);
-        }
-
-        if (gameKnightMustTurnLeft(enemy, knight)) {
-            knightTurnLeft(enemy);
-        } else if (gameKnightMustTurnRight(enemy, knight)) {
-            knightTurnRight(enemy);
-        }
+    gameKnightTurnIfNecessary(player, enemy);
+    gameKnightTurnIfNecessary(enemy, player);
+    if (!knightIsDead(enemy) && !knightIsDead(player)) {
+        gameEnemyStep(player, enemy, deltaTime);
+        gameKnightCheckHit(player, enemy);
+        gameKnightCheckHit(enemy, player);
     }
-    gameEnemyStep(game, deltaTime);
-    knightStep(knight, deltaTime);
 
-    if (knightGetBoundingLeft(knight) < -GAME_WIDTH / 2) {
-        knightWalk(knight, deltaTime, false);
+    knightStep(player, deltaTime);
+    knightStep(enemy, deltaTime);
+
+    uiUpdaterSet(uiPlayerHealthUpdater, knightGetHealth(player));
+    uiUpdaterSet(uiOpponentUpdater, knightGetHealth(enemy));
+
+    if (knightGetBoundingLeft(player) < -GAME_WIDTH / 2) {
+        knightWalk(player, deltaTime, false);
+    }
+
+    if (knightGetBoundingRight(player) > GAME_WIDTH / 2) {
+        knightWalk(player, deltaTime, true);
+    }
+};
+
+const gameKnightTurnIfNecessary = (knight: Knight, other: Knight) => {
+    if (knightIsDead(knight)) {
+        return;
+    }
+
+    if (gameKnightMustTurnLeft(knight, other)) {
+        knightTurnLeft(knight);
+    } else if (gameKnightMustTurnRight(knight, other)) {
+        knightTurnRight(knight);
     }
 };
 
