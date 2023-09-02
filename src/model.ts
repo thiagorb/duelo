@@ -8,7 +8,6 @@ import {
     matrixTranslateVector,
     Vec2,
     vectorCreate,
-    vectorMultiply,
 } from './glm';
 import * as manModelData from '../art/man.svg';
 import * as swordModelData from '../art/sword.svg';
@@ -49,11 +48,13 @@ export type Polygon = {
 export const enum ModelDataProperty {
     Polygons,
     ParentMap,
+    MaterialMap,
 }
 
 export type ModelData = {
     [ModelDataProperty.Polygons]: Array<Polygon>;
     [ModelDataProperty.ParentMap]: Array<number>;
+    [ModelDataProperty.MaterialMap]: { [componentId: number]: number };
 };
 
 const enum ModelMeshProperty {
@@ -79,12 +80,14 @@ export type ObjectComponent = {
 const enum ModelProperty {
     Meshes,
     ParentMap,
+    MaterialMap,
     TransformOrder,
 }
 
 export type Model = {
     [ModelProperty.Meshes]: Array<ModelMesh>;
     [ModelProperty.ParentMap]: Array<number>;
+    [ModelProperty.MaterialMap]: { [componentId: number]: number };
     [ModelProperty.TransformOrder]: Array<number>;
 };
 
@@ -125,9 +128,12 @@ export const modelCreate = (program: Program, data: ModelData, loaded: boolean =
     const transformOrder = data[ModelDataProperty.ParentMap].map((parentId, index) => index);
     transformOrder.sort((a, b) => calculateLevel(a) - calculateLevel(b));
 
+    console.log(data[ModelDataProperty.MaterialMap]);
+
     return {
         [ModelProperty.Meshes]: meshes,
         [ModelProperty.ParentMap]: data[ModelDataProperty.ParentMap],
+        [ModelProperty.MaterialMap]: data[ModelDataProperty.MaterialMap],
         [ModelProperty.TransformOrder]: transformOrder,
     };
 };
@@ -207,7 +213,8 @@ export const objectDraw = (object: Object, program: Program) => {
         const component = object[ObjectProperty.Components][componentId];
         glSetModelTransform(program, component[ObjectComponentProperty.Matrix]);
         const colorOverride = object[ObjectProperty.ColorOverrides][componentId];
-        glMeshDraw(program, component[ObjectComponentProperty.Mesh][ModelMeshProperty.Mesh], colorOverride);
+        const material = object[ObjectProperty.Model][ModelProperty.MaterialMap][componentId] || 0;
+        glMeshDraw(program, component[ObjectComponentProperty.Mesh][ModelMeshProperty.Mesh], colorOverride, material);
     }
 };
 

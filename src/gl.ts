@@ -27,6 +27,7 @@ const enum UniformsProperty {
     GlobalOpacity,
     Time,
     Color,
+    Material,
 }
 
 const enum AttributesProperty {
@@ -93,6 +94,7 @@ export const glProgramCreate = (canvas: HTMLCanvasElement, virtualWidth: number,
             [UniformsProperty.GlobalOpacity]: gl.getUniformLocation(glProgram, fragmentShader.globalOpacityRenamed),
             [UniformsProperty.Time]: gl.getUniformLocation(glProgram, fragmentShader.timeRenamed),
             [UniformsProperty.Color]: gl.getUniformLocation(glProgram, fragmentShader.colorRenamed),
+            [UniformsProperty.Material]: gl.getUniformLocation(glProgram, fragmentShader.materialRenamed),
         },
         [ProgramProperty.Attributes]: {
             [AttributesProperty.VertexPosition]: gl.getAttribLocation(glProgram, vertexShader.vertexPositionRenamed),
@@ -235,10 +237,11 @@ export const glSetModelTransform = (program: Program, matrix: Matrix3) => {
     );
 };
 
-export const glMeshDraw = (program: Program, mesh: Mesh, colorOverride: ColorRGB) => {
+export const glMeshDraw = (program: Program, mesh: Mesh, colorOverride: ColorRGB, material: number) => {
     const gl = program[ProgramProperty.WebGL2Context];
     gl.bindVertexArray(mesh[MeshProperty.VertexArrayObject]);
     gl.uniform3fv(program[ProgramProperty.Uniforms][UniformsProperty.Color], colorOverride || mesh[MeshProperty.Color]);
+    gl.uniform1i(program[ProgramProperty.Uniforms][UniformsProperty.Material], material);
     gl.drawElements(mesh[MeshProperty.DrawMode], mesh[MeshProperty.VerticesLength], gl.UNSIGNED_SHORT, 0);
     gl.bindVertexArray(null);
 };

@@ -24,9 +24,9 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="1.5869953"
-     inkscape:cx="141.77736"
-     inkscape:cy="201.95397"
+     inkscape:zoom="22.327746"
+     inkscape:cx="148.7387"
+     inkscape:cy="103.97377"
      inkscape:window-width="1850"
      inkscape:window-height="1016"
      inkscape:window-x="70"
@@ -48,7 +48,8 @@
        inkscape:transform-center-y="12.844752">
       <desc
          id="desc18761-5-2-6">{
-    &quot;connectTo&quot;: &quot;body&quot;
+    &quot;connectTo&quot;: &quot;body&quot;,
+   &quot;material&quot;: 2
 }</desc>
     </path>
     <path
@@ -60,7 +61,8 @@
        inkscape:transform-center-y="7.0148374">
       <desc
          id="desc18761-5-6-0-5">{
-    &quot;connectTo&quot;: &quot;leftArm1&quot;
+    &quot;connectTo&quot;: &quot;leftArm1&quot;,
+   &quot;material&quot;: 2
 }</desc>
     </path>
     <path
@@ -72,7 +74,8 @@
        inkscape:transform-center-y="1.303412">
       <desc
          id="desc18761-3-5">{
-    &quot;connectTo&quot;: &quot;leftArm1&quot;
+    &quot;connectTo&quot;: &quot;leftArm1&quot;,
+   &quot;material&quot;: 2
 }</desc>
     </path>
     <path
@@ -97,7 +100,8 @@
        inkscape:transform-center-y="3.358924">
       <desc
          id="desc1220-3-2">{
-    &quot;connectTo&quot;: &quot;rightLeg2&quot;
+    &quot;connectTo&quot;: &quot;rightLeg2&quot;,
+   &quot;material&quot;: 2
 }</desc>
     </path>
     <path
@@ -109,7 +113,8 @@
        inkscape:transform-center-y="4.6442077">
       <desc
          id="desc908-0-0-1">{
-    &quot;connectTo&quot;: &quot;rightLeg1&quot;
+    &quot;connectTo&quot;: &quot;rightLeg1&quot;,
+   &quot;material&quot;: 2
 }</desc>
     </path>
     <path
@@ -121,7 +126,8 @@
        inkscape:transform-center-y="7.7052848">
       <desc
          id="desc908-9-7">{
-    &quot;connectTo&quot;: &quot;body&quot;
+    &quot;connectTo&quot;: &quot;body&quot;,
+   &quot;material&quot;: 2
 }</desc>
     </path>
     <path
@@ -133,7 +139,8 @@
        inkscape:transform-center-y="3.4891278">
       <desc
          id="desc1220-9">{
-    &quot;connectTo&quot;: &quot;leftLeg2&quot;
+    &quot;connectTo&quot;: &quot;leftLeg2&quot;,
+   &quot;material&quot;: 2
 }</desc>
     </path>
     <path
@@ -145,7 +152,8 @@
        inkscape:transform-center-y="4.6341045">
       <desc
          id="desc908-0-6">{
-    &quot;connectTo&quot;: &quot;leftLeg1&quot;
+    &quot;connectTo&quot;: &quot;leftLeg1&quot;,
+   &quot;material&quot;: 2
 }</desc>
     </path>
     <path
@@ -157,7 +165,8 @@
        inkscape:transform-center-y="5.5769306">
       <desc
          id="desc908-6">{
-    &quot;connectTo&quot;: &quot;body&quot;
+    &quot;connectTo&quot;: &quot;body&quot;,
+   &quot;material&quot;: 2
 }</desc>
     </path>
     <path
@@ -166,7 +175,12 @@
        id="body"
        sodipodi:nodetypes="ccccccccc"
        inkscape:transform-center-x="0.79391521"
-       inkscape:transform-center-y="-49.981786" />
+       inkscape:transform-center-y="-49.981786">
+      <desc
+         id="desc1832">{
+   &quot;material&quot;: 2
+}</desc>
+    </path>
     <path
        style="fill:#ffccaa;fill-opacity:1;stroke:none;stroke-width:1.03588;stroke-opacity:1"
        d="m 40.074264,12.148233 -7.6977,-1.780396 -8.5052,0.9861 0.0784,11.948996 2.3896,5.7794 2.1843,3.7528 6.0444,0.0306 2.5883,-3.5445 4.0053,0.0545 1.0955,-5.4268 -0.1221,-6.7202"
@@ -176,7 +190,8 @@
        inkscape:transform-center-y="-10.322162">
       <desc
          id="desc230-2">{
-    &quot;connectTo&quot;: &quot;body&quot;
+    &quot;connectTo&quot;: &quot;body&quot;,
+   &quot;material&quot;: 1
 }</desc>
     </path>
     <path
@@ -186,7 +201,8 @@
        sodipodi:nodetypes="cccc">
       <desc
          id="desc280-7-2">{
-    &quot;connectTo&quot;: &quot;face&quot;
+    &quot;connectTo&quot;: &quot;face&quot;,
+   &quot;material&quot;: 2
 }	</desc>
     </path>
     <path
@@ -196,7 +212,8 @@
        sodipodi:nodetypes="ccccccccccc">
       <desc
          id="desc793-7">{
-    &quot;connectTo&quot;: &quot;face&quot;
+    &quot;connectTo&quot;: &quot;face&quot;,
+   &quot;material&quot;: 2
 }</desc>
     </path>
     <path
@@ -206,12 +223,13 @@
        sodipodi:nodetypes="cccc">
       <desc
          id="desc280-9">{
-    &quot;connectTo&quot;: &quot;face&quot;
+    &quot;connectTo&quot;: &quot;face&quot;,
+   &quot;material&quot;: 2
 }</desc>
     </path>
     <path
-       style="fill:#d35f5f;stroke-width:0.264583"
-       d="m 40.313016,25.827031 -3.815462,-0.155938 0.05168,1.993719 3.590163,-0.01774 z"
+       style="fill:#a02c2c;stroke-width:0.264583"
+       d="m 40.313016,25.827031 -3.815462,-0.155938 0.05168,0.862041 3.590163,-0.01774 z"
        id="mouth"
        sodipodi:nodetypes="ccccc">
       <desc
@@ -220,7 +238,7 @@
 }</desc>
     </path>
     <path
-       style="fill:#ffebde;fill-opacity:1;stroke-width:0.152088"
+       style="fill:#a05a2c;fill-opacity:1;stroke-width:0.152088"
        d="m 39.107684,21.105953 -0.58046,2.1132 1.59914,-0.25301 z"
        id="nose"
        sodipodi:nodetypes="cccc">
@@ -238,7 +256,8 @@
        inkscape:transform-center-y="12.632128">
       <desc
          id="desc18761-5-1">{
-    &quot;connectTo&quot;: &quot;body&quot;
+    &quot;connectTo&quot;: &quot;body&quot;,
+   &quot;material&quot;: 2
 }</desc>
     </path>
     <path
@@ -263,7 +282,8 @@
        inkscape:transform-center-y="6.7471431">
       <desc
          id="desc18761-5-6-7">{
-    &quot;connectTo&quot;: &quot;rightArm1&quot;
+    &quot;connectTo&quot;: &quot;rightArm1&quot;,
+   &quot;material&quot;: 2
 }</desc>
     </path>
     <path
@@ -275,7 +295,8 @@
        inkscape:transform-center-y="1.1257606">
       <desc
          id="desc18761-2">{
-    &quot;connectTo&quot;: &quot;rightArm1&quot;
+    &quot;connectTo&quot;: &quot;rightArm1&quot;,
+   &quot;material&quot;: 2
 }</desc>
     </path>
     <rect

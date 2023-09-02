@@ -24,9 +24,9 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="0.53543895"
-     inkscape:cx="1008.5183"
-     inkscape:cy="286.68068"
+     inkscape:zoom="0.44806272"
+     inkscape:cx="1314.5481"
+     inkscape:cy="1128.1903"
      inkscape:window-width="1850"
      inkscape:window-height="1016"
      inkscape:window-x="70"
@@ -37,22 +37,22 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"><path
-       style="fill:#a8bbc9;fill-opacity:1;stroke-width:0.103203"
-       d="M 245.85501,500 292.45583,433.00342 347.47231,500 Z"
-       id="path29223-6"
-       inkscape:transform-center-x="-10.586277"
-       inkscape:transform-center-y="2.7136045"
-       sodipodi:nodetypes="cccc"><desc
-         id="desc29583-2">{
-    &quot;connectTo&quot;: &quot;castle&quot;
-}</desc></path><path
-       style="opacity:1;fill:#a8bbc9;fill-opacity:1;stroke-width:0.141674"
-       d="M 156.85463,500 220.82698,408.02855 296.3521,500 Z"
+       style="opacity:1;fill:#e5ebef;fill-opacity:1;stroke-width:0.141674"
+       d="m 63.235992,500 34.74356,-30.82913 28.875918,-11.21904 49.31445,-49.92328 38.73102,19.04039 34.17935,2.28672 50.79479,-31.11349 73.9949,6.69243 33.99806,47.76548 16.07954,-9.49504 13.33143,-28.07716 42.79505,-14.9412 38.19297,52.93791 L 573.83058,500 Z"
        id="path29223"
        inkscape:transform-center-x="-14.532547"
        inkscape:transform-center-y="3.7251846"
-       sodipodi:nodetypes="cccc"><desc
+       sodipodi:nodetypes="ccccccccccccccc"><desc
          id="desc29583">{
+    &quot;connectTo&quot;: &quot;castle&quot;
+}</desc></path><path
+       style="fill:#c8d6dc;fill-opacity:1;stroke-width:0.140445"
+       d="m 235.49419,500 26.47876,-16.38142 60.22928,-38.05241 33.87181,10.20073 18.26774,16.32571 19.51163,1.70567 60.89477,-29.9039 28.709,2.0612 58.30593,23.74637 27.89887,5.56769 29.13068,-16.66527 25.59183,4.75094 L 693.58201,500 Z"
+       id="path29223-2"
+       inkscape:transform-center-x="-14.532547"
+       inkscape:transform-center-y="3.6608334"
+       sodipodi:nodetypes="cccccccccccccc"><desc
+         id="desc29583-7">{
     &quot;connectTo&quot;: &quot;castle&quot;
 }</desc></path><path
        style="opacity:1;fill:#bababa;fill-opacity:1;stroke-width:0.0695117"

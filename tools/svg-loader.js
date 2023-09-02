@@ -224,6 +224,14 @@ module.exports.default = function (source) {
         }
     }
 
+    const materialMap = {};
+    for (let i = 0; i < paths.length; i++) {
+        const path = paths[i];
+        if (path.meta.material) {
+            materialMap[i] = path.meta.material;
+        }
+    }
+
     const statements = [];
     const polygons = [];
 
@@ -246,7 +254,7 @@ module.exports.default = function (source) {
         statements.push(`export const ${path.id}ComponentId = ${pathIdMap.get(path.id)};`);
     }
 
-    const model = [polygons, parentIdMap];
+    const model = [polygons, parentIdMap, materialMap];
 
     statements.push(`export const model = ${JSON.stringify(model, 4)};`);
 

@@ -1,6 +1,5 @@
 ## Next Steps
 
-- add different materials
 - add start/end
 - add item drops
 - add inventory

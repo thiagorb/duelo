@@ -225,7 +225,7 @@ export const gameRender = (game: Game, program: Program) => {
         knightDraw(game[GameProperties.Enemy], program);
     }
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (false && process.env.NODE_ENV !== 'production') {
         renderDebuggingRects(program);
     }
 };
