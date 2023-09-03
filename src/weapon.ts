@@ -39,11 +39,11 @@ export type Weapon = {
     [WeaponProperties.Id]: number;
 };
 
-const weaponColors: Array<ColorRGB> = [
-    [0.4, 0.22, 0], // wood
-    [0.75, 0.54, 0.44], // bronze
-    [0.81, 0.82, 0.84], // steel
-    [0.83, 0.69, 0.22], // gold
+const weaponColors: Array<Float32Array> = [
+    new Float32Array([0.4, 0.22, 0]), // wood
+    new Float32Array([0.75, 0.54, 0.44]), // bronze
+    new Float32Array([0.81, 0.82, 0.84]), // steel
+    new Float32Array([0.83, 0.69, 0.22]), // gold
 ];
 
 export const weaponCreate = (weaponId: number): Weapon => {

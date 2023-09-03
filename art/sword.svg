@@ -25,8 +25,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="4.5551505"
-     inkscape:cx="261.90134"
-     inkscape:cy="241.15559"
+     inkscape:cx="224.14188"
+     inkscape:cy="208.0063"
      inkscape:window-width="1850"
      inkscape:window-height="1016"
      inkscape:window-x="70"
@@ -45,7 +45,12 @@
        id="metal"
        sodipodi:nodetypes="cccccccccccccccc"
        inkscape:transform-center-x="-10.006745"
-       inkscape:transform-center-y="12.978354" />
+       inkscape:transform-center-y="12.978354">
+      <desc
+         id="desc15061">{
+    &quot;material&quot;: 2
+}</desc>
+    </path>
     <path
        style="fill:#4d4d4d;stroke-width:0.264583"
        d="m 49.768919,44.634751 -4.457615,-4.699858 -1.333493,1.048087 3.536768,5.412695 z"

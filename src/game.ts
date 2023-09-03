@@ -9,9 +9,7 @@ import {
     knightGetBoundingLeft,
     knightGetBoundingRight,
     knightGetCenter,
-    knightGetPosition,
     knightGetWeaponId,
-    knightGetWeaponTip,
     knightHit,
     knightIsAttacking,
     knightIsDead,
@@ -25,16 +23,25 @@ import {
     knightWalk,
     knightGetHealth,
 } from './knight';
-import { glClear, glDrawRect, glSetTime, Program } from './gl';
-import { Vec2, vectorCreate, vectorMultiply } from './glm';
+import { glClear, glDrawRect, glIncreaseTime, glSetViewMatrix, Program } from './gl';
+import {
+    Vec2,
+    matrixCreate,
+    matrixScale,
+    matrixSetIdentity,
+    matrixTranslate,
+    vectorCreate,
+    vectorMultiply,
+} from './glm';
 import { keyboardInitialize } from './keyboard';
 import { weaponCreate, weaponGetGap, weaponGetRange } from './weapon';
 import { uiOpponentUpdater, uiPlayerHealthUpdater, uiUpdaterSet } from './ui';
+import { menuStart } from './menu';
 
 export const FLOOR_LEVEL = -90;
 export const VIRTUAL_WIDTH = 1600 / 3;
 export const VIRTUAL_HEIGHT = 900 / 3;
-export const GAME_WIDTH = 500;
+export const GAME_WIDTH = 2000;
 export const INITIAL_TIME = 30;
 
 const keyboard = keyboardInitialize(['Space', 'ArrowLeft', 'Shift', 'ArrowUp', 'ArrowRight']);
@@ -51,10 +58,7 @@ export const gameIsOutOfArea = (position: Vec2) => {
 export const enum GameProperties {
     Knight,
     Enemy,
-    Score,
-    NextEnemy,
     TimePassed,
-    Combo,
     Opponent,
 }
 
@@ -73,27 +77,9 @@ export type Opponent = {
 export const gameCreate = (weaponType: number, initialHealth: number = 1) => ({
     [GameProperties.Knight]: knightCreate(vectorCreate(-200, FLOOR_LEVEL), weaponCreate(weaponType), initialHealth),
     [GameProperties.Enemy]: knightCreate(vectorCreate(200, FLOOR_LEVEL), weaponCreate(weaponType), initialHealth),
-    [GameProperties.Score]: 0,
-    [GameProperties.NextEnemy]: (15 + 30 * Math.random()) * 1000,
     [GameProperties.TimePassed]: 0,
-    [GameProperties.Combo]: 0,
     [GameProperties.Opponent]: null as Opponent,
 });
-
-const createHitIndicator = (position: Vec2) => createIndicator('HIT', position[0], position[1] + 50, 'hit');
-
-const createIndicator = (text: string, x: number, y: number, type: string) => {
-    const indicator = document.createElement('div');
-    indicator.classList.add('indicator');
-    indicator.classList.add(type);
-    indicator.onanimationend = () => indicator.remove();
-    indicator.innerText = text;
-    Object.assign(indicator.style, {
-        left: `calc(50% + ${x}px`,
-        top: `calc(50% - ${y}px`,
-    });
-    document.querySelector('#screen').appendChild(indicator);
-};
 
 let previousIntention = null;
 let responseDelay = 0;
@@ -150,7 +136,6 @@ const gameKnightCheckHit = (knight: Knight, other: Knight) => {
     knightEndAttack(knight);
 
     knightHit(other, knightGetAttackPower(knight));
-    createHitIndicator(knightGetPosition(other));
 };
 
 export const gameStep = (game: Game, deltaTime: number) => {
@@ -215,11 +200,35 @@ const gameKnightMustTurnLeft = (knight: Knight, other: Knight) =>
 const gameKnightMustTurn = (knight: Knight, other: Knight) =>
     gameKnightMustTurnLeft(knight, other) || gameKnightMustTurnRight(knight, other);
 
+const viewMatrix = matrixCreate();
+let currentViewPosition = 0;
+let currentViewScale = 1;
 export const gameRender = (game: Game, program: Program) => {
     glClear(program, [0.1, 0.1, 0.1, 0]);
 
-    backgroundDraw(program);
-    glSetTime(program, game[GameProperties.TimePassed]);
+    matrixSetIdentity(viewMatrix);
+    matrixScale(viewMatrix, 2 / VIRTUAL_WIDTH, 2 / VIRTUAL_HEIGHT);
+    const playerCenter = knightGetCenter(game[GameProperties.Knight]);
+    const enemyCenter = knightGetCenter(game[GameProperties.Enemy]);
+
+    currentViewPosition -= ((playerCenter + enemyCenter) / 2 + currentViewPosition) * 0.02;
+    currentViewScale +=
+        (Math.min(VIRTUAL_WIDTH / (Math.abs(playerCenter - enemyCenter) + 400), 1.2) - currentViewScale) * 0.02;
+
+    matrixTranslate(viewMatrix, 0, -VIRTUAL_HEIGHT * 0.1);
+    matrixScale(viewMatrix, currentViewScale, currentViewScale);
+    matrixTranslate(viewMatrix, 0, VIRTUAL_HEIGHT * 0.1);
+
+    matrixTranslate(viewMatrix, currentViewPosition, 0);
+
+    glSetViewMatrix(program, viewMatrix);
+
+    backgroundDraw(
+        program,
+        currentViewPosition,
+        currentViewScale,
+        !game[GameProperties.TimePassed] || gameIsOver(game)
+    );
     knightDraw(game[GameProperties.Knight], program);
     if (game[GameProperties.Enemy]) {
         knightDraw(game[GameProperties.Enemy], program);
@@ -240,20 +249,30 @@ const renderDebuggingRects = (program: Program) => {
 };
 
 export const gameStart = (game: Game, program: Program) => {
+    document.querySelectorAll('.game-ui').forEach(e => e.classList.remove('hidden'));
+
     let previousTime = 0;
     const loop = (time: number) => {
         const deltaTime = time - previousTime;
         previousTime = time;
 
-        // const relativeSpeed = 0.6 + Math.min(0.3, ((game[GameProperties.TimePassed] * 0.00004) | 0) / 10);
-        const relativeSpeed = 0.8;
-        gameStep(game, deltaTime * relativeSpeed);
+        gameStep(game, deltaTime * 0.8);
+        glIncreaseTime(program, deltaTime);
         gameRender(game, program);
 
         game[GameProperties.TimePassed] += deltaTime;
+
+        if (gameIsOver(game)) {
+            document.querySelectorAll('.game-ui').forEach(e => e.classList.add('hidden'));
+            menuStart(program, game);
+            return;
+        }
 
         requestAnimationFrame(loop);
     };
 
     requestAnimationFrame((time: number) => loop((previousTime = time)));
 };
+
+export const gameIsOver = (game: Game) =>
+    knightIsDead(game[GameProperties.Knight]) || knightIsDead(game[GameProperties.Enemy]);

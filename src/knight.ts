@@ -571,10 +571,6 @@ export const knightStep = (knight: Knight, deltaTime: number) => {
         knight[KnightProperties.SupportFootSwap] = false;
     }
 
-    if (knightIsDead(knight) && !knightIsAnimating(knight)) {
-        debugger;
-    }
-
     if (knight[KnightProperties.CurrentAnimation] === knight[KnightProperties.DefendAnimation]) {
         if (animationStep(knight[KnightProperties.CurrentAnimation], deltaTime)) {
             if (knight[KnightProperties.DidDefend] && !knight[KnightProperties.WillAttack]) {
@@ -679,7 +675,7 @@ export const knightHit = (knight: Knight, power: number) => {
     knight[KnightProperties.SupportFootSwap] = false;
     knight[KnightProperties.Attacking] = false;
     knightAnimate(knight, knight[KnightProperties.HitAnimation]);
-    knightIncreaseHealth(knight, -power / knightGetDefense(knight));
+    knightIncreaseHealth(knight, (2000 * -power) / knightGetDefense(knight));
 };
 
 export const knightGetHealth = (knight: Knight) => knight[KnightProperties.Health];

@@ -1,7 +1,6 @@
 import {
     Matrix3,
     matrixCreate,
-    matrixScale,
     Vec2,
     vectorAdd,
     vectorCopy,
@@ -62,10 +61,6 @@ export const glProgramCreate = (canvas: HTMLCanvasElement, virtualWidth: number,
 
     gl.useProgram(glProgram);
 
-    const modelTransform = gl.getUniformLocation(glProgram, vertexShader.modelTransformRenamed);
-    gl.uniformMatrix3fv(modelTransform, false, matrixCreate());
-
-    const viewTransform = gl.getUniformLocation(glProgram, vertexShader.viewTransformRenamed);
     const updateViewport = () => {
         const pixelSize = 1 / devicePixelRatio;
 
@@ -74,9 +69,6 @@ export const glProgramCreate = (canvas: HTMLCanvasElement, virtualWidth: number,
         canvas.height = (virtualHeight * vMinPx) / pixelSize;
 
         gl.viewport(0, 0, canvas.width, canvas.height);
-        const matrix = matrixCreate();
-        matrixScale(matrix, 2 / virtualWidth, 2 / virtualHeight);
-        gl.uniformMatrix3fv(viewTransform, false, matrix);
 
         document.body.style.setProperty('--scale', `${vMinPx}`);
         document.body.style.setProperty('--virtual-width', `${virtualWidth}px`);
@@ -89,8 +81,8 @@ export const glProgramCreate = (canvas: HTMLCanvasElement, virtualWidth: number,
         [ProgramProperty.WebGL2Context]: gl,
         [ProgramProperty.Program]: glProgram,
         [ProgramProperty.Uniforms]: {
-            [UniformsProperty.ViewTransform]: viewTransform,
-            [UniformsProperty.ModelTransform]: modelTransform,
+            [UniformsProperty.ViewTransform]: gl.getUniformLocation(glProgram, vertexShader.viewTransformRenamed),
+            [UniformsProperty.ModelTransform]: gl.getUniformLocation(glProgram, vertexShader.modelTransformRenamed),
             [UniformsProperty.GlobalOpacity]: gl.getUniformLocation(glProgram, fragmentShader.globalOpacityRenamed),
             [UniformsProperty.Time]: gl.getUniformLocation(glProgram, fragmentShader.timeRenamed),
             [UniformsProperty.Color]: gl.getUniformLocation(glProgram, fragmentShader.colorRenamed),
@@ -103,9 +95,16 @@ export const glProgramCreate = (canvas: HTMLCanvasElement, virtualWidth: number,
     };
 
     glSetGlobalOpacity(program, 1);
-    glSetTime(program, 0);
 
     return program;
+};
+
+export const glSetViewMatrix = (program: Program, matrix: Matrix3) => {
+    program[ProgramProperty.WebGL2Context].uniformMatrix3fv(
+        program[ProgramProperty.Uniforms][UniformsProperty.ViewTransform],
+        false,
+        matrix
+    );
 };
 
 export const glSetGlobalOpacity = (program: Program, opacity: number) => {
@@ -115,8 +114,10 @@ export const glSetGlobalOpacity = (program: Program, opacity: number) => {
     );
 };
 
-export const glSetTime = (program: Program, value: number) => {
-    program[ProgramProperty.WebGL2Context].uniform1f(program[ProgramProperty.Uniforms][UniformsProperty.Time], value);
+let time = 0;
+export const glIncreaseTime = (program: Program, value: number) => {
+    time += value;
+    program[ProgramProperty.WebGL2Context].uniform1f(program[ProgramProperty.Uniforms][UniformsProperty.Time], time);
 };
 
 const compileShader = (
@@ -237,7 +238,7 @@ export const glSetModelTransform = (program: Program, matrix: Matrix3) => {
     );
 };
 
-export const glMeshDraw = (program: Program, mesh: Mesh, colorOverride: ColorRGB, material: number) => {
+export const glMeshDraw = (program: Program, mesh: Mesh, colorOverride: Float32Array, material: number) => {
     const gl = program[ProgramProperty.WebGL2Context];
     gl.bindVertexArray(mesh[MeshProperty.VertexArrayObject]);
     gl.uniform3fv(program[ProgramProperty.Uniforms][UniformsProperty.Color], colorOverride || mesh[MeshProperty.Color]);

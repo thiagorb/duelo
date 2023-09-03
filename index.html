@@ -65,7 +65,7 @@
             backface-visibility: hidden;
         }
 
-        #game-ui, #menu-ui {
+        #game-ui, #menuUi {
             position: absolute;
             left: 0;
             top: 0;
@@ -77,7 +77,7 @@
             gap: 20px;
         }
 
-        .game-ui, #menu-ui, .player-name, .bar {
+        .game-ui, #menuUi, .player-name, .bar {
             transition: 0.5s opacity, 0.5s filter, 0.5s transform;
         }
 
@@ -94,7 +94,7 @@
         .btn {
             border-radius: 20px;
             cursor: pointer;
-            box-shadow: 0px 0px 0px 5px rgba(128, 0, 255, 0.3);
+            box-shadow: 0px 0px 0px 5px rgba(92, 128, 255, 0.3);
         }
 
         .btn[data-text]:before {
@@ -104,53 +104,18 @@
 
         .btn:before, .btn-label {
             padding: 0.5em 1em;
-            background-color: slateblue;
+            background-color: #98ccfe;
         }
 
-        @keyframes indicator {
-            0%   {opacity:0; transform: translate(-50%, 0rem);}
-            50%   {opacity:1; transform: translate(-50%, -1em);}
-            100%   {opacity:0; transform: translate(-50%, -1em);}
-        }
-        .indicator {
-            font-size: 14px;
-            position: absolute;
-            animation-name: indicator;
-            animation-duration: 4s;
-        }
-
-        .hit {
-            font-size: 10px;
-            animation-duration: 1s;
-            color: #88f;
-        }
-
-        .combo {
-            color: #ff8;
-        }
-
-        .penalty {
-            color: #f88;
-        }
-
-        .bonus {
-            color: #8f8;
-        }
-
-        .indicator, #game-ui, #menu-ui {
-            --px: calc(1px / var(--scale));
-            text-shadow: 
-                calc(-1 * var(--px)) calc(-1 * var(--px)) 0 #000,
-                calc(1 * var(--px)) calc(-1 * var(--px)) 0 #000,
-                calc(-1 * var(--px)) calc(1 * var(--px)) 0 #000,
-                calc(1 * var(--px)) calc(1 * var(--px)) 0 #000;
+        .game-ui {
+            text-shadow: 0 0 0.3em #000, -1px -1px 0 #aaa, 1px -1px 0 #aaa, -1px 1px 0 #aaa, 1px 1px 0 #aaa;
         }
 
         [data-key] {
-            width: 80px;
+            width: 60px;
             height: 60px;
-            background-color: #fff;
-            border: 3px solid #777;
+            background-color: #ddd;
+            border: 3px solid #999;
             border-radius: 40px;
         }
     </style>
@@ -161,9 +126,11 @@
     <div style="position: absolute; left: 50%; top: 50%; width: calc(var(--virtual-width)); height: calc(var(--virtual-height)); transform-origin: 0 0; transform: scale(calc(var(--scale))) translate(-50%, -50%);">
         <div style="position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(to bottom, #98ccfe 5%,#f2d8c1 60%, #a8d202 60%, #1e6802 100%);"></div>
         <canvas style="position: absolute; width: 100%; height: 100%; image-rendering: crisp-edges; image-rendering: pixelated"></canvas>
-        <div id="screen" style="position: absolute; top: 0; left: 0; bottom: 0; right: 0; transform-origin: 0 0;"></div>
-        <div id="game-ui" style="position: absolute;" class="hidden game-ui">
-            <div style="position: absolute; display: flex; top: 20px; left: 10%; right: 10%; overflow: visible; justify-content: space-between;">
+        <div id="menuUi" class="hidden menu-ui">
+            <div class="btn" data-text="START" id="start"></div>
+        </div>
+        <div id="gameUi">
+            <div style="position: absolute; display: flex; top: 20px; left: 10%; right: 10%; overflow: visible; justify-content: space-between;" class="hidden game-ui">
                 <div id="player-health" class="bar">
                     PLAYER
                 </div>

@@ -107,7 +107,7 @@ export type Object = {
         [componentId: number]: Object;
     };
     [ObjectProperty.ColorOverrides]: {
-        [componentId: number]: ColorRGB;
+        [componentId: number]: Float32Array;
     };
 };
 
@@ -127,8 +127,6 @@ export const modelCreate = (program: Program, data: ModelData, loaded: boolean =
 
     const transformOrder = data[ModelDataProperty.ParentMap].map((parentId, index) => index);
     transformOrder.sort((a, b) => calculateLevel(a) - calculateLevel(b));
-
-    console.log(data[ModelDataProperty.MaterialMap]);
 
     return {
         [ModelProperty.Meshes]: meshes,

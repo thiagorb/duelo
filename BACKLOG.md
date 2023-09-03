@@ -1,9 +1,8 @@
 ## Next Steps
 
-- add start/end
+- add enemies with different difficulties
 - add item drops
 - add inventory
-
 
 ## Size reduction ideas
 

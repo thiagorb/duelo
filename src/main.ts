@@ -1,6 +1,7 @@
 import { backgroundInit } from './background';
-import { VIRTUAL_HEIGHT, VIRTUAL_WIDTH, gameCreate, gameStart } from './game';
+import { VIRTUAL_HEIGHT, VIRTUAL_WIDTH, gameCreate, gameRender, gameStart } from './game';
 import { glProgramCreate } from './gl';
+import { menuStart } from './menu';
 import { modelsInit } from './model';
 
 const main = async () => {
@@ -9,8 +10,7 @@ const main = async () => {
     modelsInit(program);
     backgroundInit();
 
-    document.querySelectorAll('.game-ui').forEach(e => e.classList.remove('hidden'));
-    gameStart(gameCreate(0), program);
+    menuStart(program);
 };
 
 window.onload = main;

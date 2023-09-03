@@ -154,38 +154,50 @@ module.exports.default = function (source) {
                 }
 
                 case 'after_H': {
-                    const coord = parseFloat(v[i]);
-                    const coords = toAbsolute([coord, penPosition[1]]);
-                    pushLineCoord(coords);
-                    state = 'start';
-                    i++;
+                    if (isNumber(v[i])) {
+                        const coord = parseFloat(v[i]);
+                        const coords = toAbsolute([coord, penPosition[1]]);
+                        pushLineCoord(coords);
+                        i++;
+                    } else {
+                        state = 'start';
+                    }
                     break;
                 }
 
                 case 'after_h': {
-                    const coord = parseFloat(v[i]);
-                    const coords = toRelative([coord, 0]);
-                    pushLineCoord(coords);
-                    state = 'start';
-                    i++;
+                    if (isNumber(v[i])) {
+                        const coord = parseFloat(v[i]);
+                        const coords = toRelative([coord, 0]);
+                        pushLineCoord(coords);
+                        i++;
+                    } else {
+                        state = 'start';
+                    }
                     break;
                 }
 
                 case 'after_V': {
-                    const coord = parseFloat(v[i]);
-                    const coords = toAbsolute([penPosition[0], coord]);
-                    pushLineCoord(coords);
-                    state = 'start';
-                    i++;
+                    if (isNumber(v[i])) {
+                        const coord = parseFloat(v[i]);
+                        const coords = toAbsolute([penPosition[0], coord]);
+                        pushLineCoord(coords);
+                        i++;
+                    } else {
+                        state = 'start';
+                    }
                     break;
                 }
 
                 case 'after_v': {
-                    const coord = parseFloat(v[i]);
-                    const coords = toRelative([0, coord]);
-                    pushLineCoord(coords);
-                    state = 'start';
-                    i++;
+                    if (isNumber(v[i])) {
+                        const coord = parseFloat(v[i]);
+                        const coords = toRelative([0, coord]);
+                        pushLineCoord(coords);
+                        i++;
+                    } else {
+                        state = 'start';
+                    }
                     break;
                 }
             }
@@ -242,7 +254,7 @@ module.exports.default = function (source) {
         const relativeOrigin = translateVertexToOrigin(path.transformOrigin, parentOrigin);
 
         if (path.meta.placeholder) {
-            polygons.push([[], [], [], path.meta.connectTo ? relativeOrigin.map(transformCoordinate) : [0, 0]]);
+            polygons.push([[], [], [0, 0, 0], path.meta.connectTo ? relativeOrigin.map(transformCoordinate) : [0, 0]]);
         } else {
             polygons.push([
                 translateVerticesToOrigin(path.vertices, path.transformOrigin).flat().map(transformCoordinate),

@@ -24,9 +24,9 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="22.327746"
-     inkscape:cx="148.7387"
-     inkscape:cy="103.97377"
+     inkscape:zoom="2.0863581"
+     inkscape:cx="156.49279"
+     inkscape:cy="175.66496"
      inkscape:window-width="1850"
      inkscape:window-height="1016"
      inkscape:window-x="70"
@@ -207,9 +207,9 @@
     </path>
     <path
        style="fill:#808080;stroke-width:0.29905"
-       d="m 35.403874,6.9329906 -13.27109,3.3642424 -2.95852,10.0968 5.60635,7.61908 10.884349,0.911816 0.18019,-4.390744 -3.710842,-1.374147 1.626213,-6.608476 6.93265,-1.394285 1.818922,3.477854 0.349638,-7.104259"
+       d="m 35.403874,6.9329906 -7.161946,0.5494994 -6.109144,2.814743 -2.95852,10.0968 5.60635,7.61908 10.884349,0.911816 0.18019,-4.390744 -3.710842,-1.374147 1.626213,-6.608476 6.93265,-1.394285 1.818922,3.477854 0.349638,-7.104259"
        id="helmet"
-       sodipodi:nodetypes="ccccccccccc">
+       sodipodi:nodetypes="cccccccccccc">
       <desc
          id="desc793-7">{
     &quot;connectTo&quot;: &quot;face&quot;,
@@ -244,7 +244,7 @@
        sodipodi:nodetypes="cccc">
       <desc
          id="desc6278-3">{
-    &quot;connectTo&quot;: &quot;body&quot;
+    &quot;connectTo&quot;: &quot;face&quot;
 }</desc>
     </path>
     <path
