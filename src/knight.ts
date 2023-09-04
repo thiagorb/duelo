@@ -675,7 +675,7 @@ export const knightHit = (knight: Knight, power: number) => {
     knight[KnightProperties.SupportFootSwap] = false;
     knight[KnightProperties.Attacking] = false;
     knightAnimate(knight, knight[KnightProperties.HitAnimation]);
-    knightIncreaseHealth(knight, (2000 * -power) / knightGetDefense(knight));
+    knightIncreaseHealth(knight, -power / knightGetDefense(knight));
 };
 
 export const knightGetHealth = (knight: Knight) => knight[KnightProperties.Health];

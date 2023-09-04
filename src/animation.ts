@@ -4,6 +4,7 @@ import {
     Vec2,
     matrixMultiplyVector,
     matrixRotate,
+    matrixScale,
     matrixSetIdentity,
     matrixTranslate,
     matrixTranslateVector,
@@ -38,6 +39,14 @@ export const animationElementCreate = (initialValue: number = 0): AnimationEleme
     [ElementProperties.AnimatedInStep]: false,
 });
 
+export const animationFrameItemGetValue = (frameItem: AnimationFrameItem) => {
+    return frameItem[FrameItemProperties.Element][ElementProperties.CurrentValue];
+};
+
+export const animationFrameItemSetValue = (frameItem: AnimationFrameItem, value: number) => {
+    frameItem[FrameItemProperties.Element][ElementProperties.CurrentValue] = value;
+};
+
 const animationFrameItemStep = (frameItem: AnimationFrameItem, deltaTime: number) => {
     const element = frameItem[FrameItemProperties.Element];
     element[ElementProperties.AnimatedInStep] = true;
@@ -59,6 +68,10 @@ const animationFrameItemComplete = (frameItem: AnimationFrameItem) => {
 
 export const animationElementBeginStep = (element: AnimationElement) => {
     element[ElementProperties.AnimatedInStep] = false;
+};
+
+export const animationElementSetValue = (element: AnimationElement, value: number) => {
+    element[ElementProperties.CurrentValue] = value;
 };
 
 export const animationStep = (animation: Animation, deltaTime: number): boolean => {
@@ -182,6 +195,8 @@ export const enum AnimatedProperty {
     Rotation,
     TranslationX,
     TranslationY,
+    ScaleX,
+    ScaleY,
 }
 
 const enum BoundElementProperties {
@@ -253,23 +268,27 @@ export const animatableTransform = (animatable: Animatable) => {
         objectTransformComponent(object, componentId);
         const transform = objectGetComponentTransform(animatable[AnimatableProperties.Object], componentId);
         for (const boundElement of animatable[AnimatableProperties.BoundElementsByObjectComponent][componentId]) {
-            if (boundElement[BoundElementProperties.AnimatedProperty] === AnimatedProperty.Rotation) {
-                matrixRotate(
-                    transform,
-                    animationElementGetValue(boundElement[BoundElementProperties.AnimationElement])
-                );
-            } else if (boundElement[BoundElementProperties.AnimatedProperty] === AnimatedProperty.TranslationX) {
-                matrixTranslate(
-                    transform,
-                    animationElementGetValue(boundElement[BoundElementProperties.AnimationElement]),
-                    0
-                );
-            } else if (boundElement[BoundElementProperties.AnimatedProperty] === AnimatedProperty.TranslationY) {
-                matrixTranslate(
-                    transform,
-                    0,
-                    animationElementGetValue(boundElement[BoundElementProperties.AnimationElement])
-                );
+            const value = animationElementGetValue(boundElement[BoundElementProperties.AnimationElement]);
+            switch (boundElement[BoundElementProperties.AnimatedProperty]) {
+                case AnimatedProperty.Rotation:
+                    matrixRotate(transform, value);
+                    break;
+
+                case AnimatedProperty.TranslationX:
+                    matrixTranslate(transform, value, 0);
+                    break;
+
+                case AnimatedProperty.TranslationY:
+                    matrixTranslate(transform, 0, value);
+                    break;
+
+                case AnimatedProperty.ScaleX:
+                    matrixScale(transform, value, 1);
+                    break;
+
+                case AnimatedProperty.ScaleY:
+                    matrixScale(transform, 1, value);
+                    break;
             }
         }
     }

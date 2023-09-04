@@ -24,13 +24,13 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="0.38053709"
-     inkscape:cx="790.98728"
-     inkscape:cy="1036.6926"
-     inkscape:window-width="1850"
-     inkscape:window-height="1016"
-     inkscape:window-x="70"
-     inkscape:window-y="27"
+     inkscape:zoom="1.0763215"
+     inkscape:cx="1237.5485"
+     inkscape:cy="879.84867"
+     inkscape:window-width="1920"
+     inkscape:window-height="1043"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1" /><defs
      id="defs1876" /><g
@@ -104,52 +104,62 @@
          id="desc15721">{
     &quot;connectTo&quot;: &quot;origin&quot;
 }</desc></path><path
-       style="fill:#d4aa00;fill-opacity:1;stroke-width:1.52485"
-       d="m 420.29486,254.60368 -12.38072,-8.69191 -7.62427,-13.58823 v -33.54678 l 6.56505,-12.19877 7.20023,-6.71629 10.63238,-4.35186 16.77333,-1.93777 18.29822,3.05606 12.19883,8.56039 7.48135,13.53464 1.26111,26.37716 -3.7243,11.79777 -7.52771,11.70683 -15.78866,7.16724 -18.29823,1.50479 z"
+       style="fill:#d4aa00;fill-opacity:1;stroke-width:0.901431"
+       d="m 367.25882,254.3135 -7.31899,-5.13832 -4.50717,-8.03283 v -19.83153 l 3.881,-7.21143 4.25649,-3.97041 6.28545,-2.57265 9.91573,-1.14553 10.81719,1.80662 7.21146,5.06057 4.42268,8.00114 0.74552,15.59314 -2.20166,6.97438 -4.45008,6.92062 -9.33364,4.23699 -10.81719,0.88957 z"
        id="o"
        sodipodi:nodetypes="ccccccccccccccccc"
-       inkscape:transform-center-x="-145.13658"
-       inkscape:transform-center-y="-41.951521"><desc
+       inkscape:transform-center-x="-85.799034"
+       inkscape:transform-center-y="-24.800086"><desc
          id="desc641">{
     &quot;connectTo&quot;: &quot;logo&quot;,
     &quot;material&quot;: 3
 }</desc></path><path
-       style="fill:#d4aa00;fill-opacity:1;stroke-width:1.52485"
-       d="m 111.25693,251.50066 -0.97053,-65.86294 2.68515,-10.37966 39.11452,-0.85641 15.65328,4.5505 9.73043,7.9735 5.45559,11.2054 v 32.02191 l -6.58256,12.19882 -8.70919,8.2682 -13.30147,4.69305 -40.60758,-1e-5 z"
+       style="fill:#d4aa00;fill-opacity:1;stroke-width:0.901431"
+       d="m 184.56776,252.47911 -0.57374,-38.93558 1.58736,-6.13604 23.12296,-0.50628 9.2536,2.69008 5.75225,4.71362 3.22513,6.62419 v 18.93009 l -3.89135,7.21147 -5.14853,4.88783 -7.86331,2.77435 -24.0056,-1e-5 z"
        id="d"
        sodipodi:nodetypes="ccccccccccccc"
-       inkscape:transform-center-x="148.57309"
-       inkscape:transform-center-y="-43.241451"><desc
+       inkscape:transform-center-x="87.830564"
+       inkscape:transform-center-y="-25.562643"><desc
          id="desc589">{
     &quot;connectTo&quot;: &quot;logo&quot;,
     &quot;material&quot;: 3
 }</desc></path><path
-       style="fill:#d4aa00;fill-opacity:1;stroke-width:1.52485"
-       d="m 337.70841,254.05818 -0.7547,-1.96663 0.81723,-76.18756 17.98025,-0.92788 3.36763,3.36169 1.52489,58.56029 36.59643,1.52484 v 16.77338 l -58.77716,0.82874 -0.75465,-1.96663 z"
+       style="fill:#d4aa00;fill-opacity:1;stroke-width:0.901431"
+       d="m 318.43696,253.99102 -0.44615,-1.1626 0.48312,-45.03908 10.62921,-0.54853 1.99081,1.9873 0.90146,34.61854 21.63437,0.90142 v 9.91577 l -34.74675,0.48991 -0.44612,-1.16259 z"
        id="l"
        sodipodi:nodetypes="ccccccccccc"
-       inkscape:transform-center-x="-71.732571"
-       inkscape:transform-center-y="-41.977923"><desc
+       inkscape:transform-center-x="-42.405472"
+       inkscape:transform-center-y="-24.815698"><desc
          id="desc639">{
     &quot;connectTo&quot;: &quot;logo&quot;,
     &quot;material&quot;: 3
 }</desc></path><path
-       style="fill:#d4aa00;fill-opacity:1;stroke-width:1.52485"
-       d="m 265.28571,252.09155 0.81724,-76.18756 63.13162,-0.82415 2.05776,10.9688 -3.32561,7.29894 -38.991,0.85411 v 10.67399 l 18.20538,0.76241 18.20531,0.76243 2.49426,9.65707 -2.95826,7.78094 -35.94669,0.85987 v 12.19883 l 42.69583,1.52482 v 16.77339 l -64.87853,0.82299 z"
+       style="fill:#d4aa00;fill-opacity:1;stroke-width:0.901431"
+       d="m 275.62351,252.82842 0.48312,-45.03908 37.32093,-0.48721 1.21647,6.48432 -1.96597,4.31485 -23.04995,0.50492 v 25.23992 l 25.2401,0.90141 v 9.91577 l -38.35364,0.48652 z"
        id="e"
-       sodipodi:nodetypes="ccccccccccccccccc"
-       inkscape:transform-center-x="-3.2613337"
-       inkscape:transform-center-y="-42.074462"><desc
+       sodipodi:nodetypes="ccccccccccc"
+       inkscape:transform-center-x="-1.9279719"
+       inkscape:transform-center-y="-24.872767"><desc
          id="desc637">{
     &quot;connectTo&quot;: &quot;logo&quot;,
     &quot;material&quot;: 3
 }</desc></path><path
-       style="fill:#d4aa00;fill-opacity:1;stroke-width:1.52485"
-       d="m 204.05199,254.53976 -9.61709,-5.51551 -6.92168,-13.65393 0.82183,-59.46921 19.08059,-0.90829 3.02977,7.96884 v 47.21047 l 7.4856,7.48565 13.79243,-3.11962 3.88199,-6.7919 1.52489,-51.84498 20.42184,-0.89791 2.07737,11.07316 -1.35741,49.60172 -8.13749,13.88555 -13.00431,6.25897 -19.82311,1.49539 z"
+       style="fill:#d4aa00;fill-opacity:1;stroke-width:0.901431"
+       d="m 289.36771,225.09698 10.7623,0.4507 10.76226,0.45072 1.47451,5.70888 -1.7488,4.59979 -21.25027,0.50832 -4.83976,-3.27861 -0.80372,-5.90415 z"
+       id="e2"
+       sodipodi:nodetypes="ccccccccc"
+       inkscape:transform-center-x="-1.9279688"
+       inkscape:transform-center-y="-24.872765"><desc
+         id="desc637-6">{
+    &quot;connectTo&quot;: &quot;e&quot;,
+    &quot;material&quot;: 3
+}</desc></path><path
+       style="fill:#d4aa00;fill-opacity:1;stroke-width:0.901431"
+       d="m 239.42455,254.27571 -5.68525,-3.26055 -4.09182,-8.07167 0.48583,-35.15586 11.27969,-0.53694 1.79109,4.71086 v 27.90898 l 4.42519,4.42522 8.15354,-1.8442 2.29488,-4.0151 0.90145,-30.64872 12.07259,-0.5308 1.22806,6.54601 -0.80245,29.32259 -4.81056,8.20859 -7.68764,3.70005 -11.71864,0.88402 z"
        id="u"
        sodipodi:nodetypes="cccccccccccccccccc"
-       inkscape:transform-center-x="71.260732"
-       inkscape:transform-center-y="-41.640873"><desc
+       inkscape:transform-center-x="42.126539"
+       inkscape:transform-center-y="-24.616445"><desc
          id="desc635">{
     &quot;connectTo&quot;: &quot;logo&quot;,
     &quot;material&quot;: 3
