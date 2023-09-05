@@ -212,8 +212,10 @@ export const gameRender = (game: Game, program: Program) => {
     const enemyCenter = knightGetCenter(game[GameProperties.Enemy]);
 
     currentViewPosition -= ((playerCenter + enemyCenter) / 2 + currentViewPosition) * 0.02;
-    currentViewScale +=
-        (Math.min(VIRTUAL_WIDTH / (Math.abs(playerCenter - enemyCenter) + 400), 1.2) - currentViewScale) * 0.02;
+    const targetScale = gameIsOver(game)
+        ? 0.4
+        : Math.min(VIRTUAL_WIDTH / (Math.abs(playerCenter - enemyCenter) + 400), 1.2);
+    currentViewScale += (targetScale - currentViewScale) * 0.02;
 
     matrixTranslate(viewMatrix, 0, -VIRTUAL_HEIGHT * 0.1);
     matrixScale(viewMatrix, currentViewScale, currentViewScale);

@@ -1,11 +1,13 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlInlineScriptPlugin = require('html-inline-script-webpack-plugin');
 
 module.exports = {
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     entry: './src/main.ts',
     output: {
-        filename: 'main.js',
+        filename: "[name].[contenthash].js",
+        path: path.resolve(__dirname, "dist"),
     },
     devServer: {
         hot: true,
@@ -14,14 +16,15 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            hash: true,
             template: './index.html',
-            filename: 'index.html',
-            minify: {
-                collapseWhitespace: true,
-                minifyCSS: true,
-            },
+            filename: './index.html',
+            inject: 'body'
         }),
+        new HtmlInlineScriptPlugin(),
+        new HtmlInlineScriptPlugin(),
+        new HtmlInlineScriptPlugin(),
+        new HtmlInlineScriptPlugin(),
+        new HtmlInlineScriptPlugin(),
     ],
     module: {
         rules: [

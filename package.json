@@ -4,9 +4,9 @@
     "description": "",
     "scripts": {
         "serve": "webpack-dev-server",
-        "clean": "rm -rf ./dist",
+        "clean": "rm -rf ./dist ./build.zip",
         "build": "NODE_ENV=production webpack --mode production",
-        "zip": "npm run clean && npm run build && (cd dist; zip -9 -X ../build.zip *) && npm run build-size",
+        "zip": "npm run clean && npm run build && (cd dist; zip -9 -X ../build.zip index.html) && npm run build-size",
         "build-size": "node -e \"console.log('Current build size:', parseFloat(($(wc -c < build.zip) / 1024).toFixed(2)), 'KiB')\"",
         "gh-pages": "node -e 'require(`gh-pages`).publish(`dist`);'",
         "deploy": "npx surge /app/dist duelo.surge.sh"
@@ -20,6 +20,7 @@
         "fast-xml-parser": "^4.0.9",
         "file-loader": "^6.2.0",
         "gh-pages": "^4.0.0",
+        "html-inline-script-webpack-plugin": "^3.2.1",
         "html-webpack-plugin": "^5.5.0",
         "spglsl": "^0.2.6",
         "surge": "^0.23.1",

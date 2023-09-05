@@ -1,10 +1,10 @@
 ## Next Steps
 
+- check how much space the simplest UI for buying/selling items would take
 - add enemies with different difficulties
+- add more trees
+- add more mountains
 - add item drops
 - add inventory
 
 ## Size reduction ideas
-
--   add option to make animations loop, and remove trigger to restart animation
--   replace object instantiation with array

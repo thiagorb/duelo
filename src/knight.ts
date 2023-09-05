@@ -675,7 +675,12 @@ export const knightHit = (knight: Knight, power: number) => {
     knight[KnightProperties.SupportFootSwap] = false;
     knight[KnightProperties.Attacking] = false;
     knightAnimate(knight, knight[KnightProperties.HitAnimation]);
-    knightIncreaseHealth(knight, -power / knightGetDefense(knight));
+
+    if (process.env.NODE_ENV === 'production') {
+        knightIncreaseHealth(knight, -power / knightGetDefense(knight));
+    } else {
+        knightIncreaseHealth(knight, (200 * -power) / knightGetDefense(knight));
+    }
 };
 
 export const knightGetHealth = (knight: Knight) => knight[KnightProperties.Health];
