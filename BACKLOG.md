@@ -1,10 +1,11 @@
 ## Next Steps
 
-- check how much space the simplest UI for buying/selling items would take
+- make it possible to equip/unequip items
+- make it possible to sell/cancel sales
+- make it possible to buy items
 - add enemies with different difficulties
 - add more trees
 - add more mountains
-- add item drops
-- add inventory
+- add color details (red / blue)
 
 ## Size reduction ideas

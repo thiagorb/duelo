@@ -1,3 +1,5 @@
+declare const touch: HTMLElement;
+
 export const keyboardInitialize = <Key extends string>(keys: Key[]): { [K in Key]: boolean } => {
     const state = Object.fromEntries(keys.map(key => [key, false])) as { [K in Key]: boolean };
 
@@ -33,7 +35,7 @@ export const keyboardInitialize = <Key extends string>(keys: Key[]): { [K in Key
     if (typeof ontouchstart !== 'undefined') {
         enableTouch();
     } else {
-        document.querySelector('#touch').remove();
+        touch.remove();
     }
 
     return state;

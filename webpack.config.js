@@ -6,8 +6,8 @@ module.exports = {
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     entry: './src/main.ts',
     output: {
-        filename: "[name].[contenthash].js",
-        path: path.resolve(__dirname, "dist"),
+        filename: '[name].[contenthash].js',
+        path: path.resolve(__dirname, 'dist'),
     },
     devServer: {
         hot: true,
@@ -18,12 +18,12 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: './index.html',
             filename: './index.html',
-            inject: 'body'
+            inject: 'body',
+            minify: {
+                collapseWhitespace: true,
+                minifyCSS: true,
+            },
         }),
-        new HtmlInlineScriptPlugin(),
-        new HtmlInlineScriptPlugin(),
-        new HtmlInlineScriptPlugin(),
-        new HtmlInlineScriptPlugin(),
         new HtmlInlineScriptPlugin(),
     ],
     module: {

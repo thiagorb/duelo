@@ -679,11 +679,12 @@ export const knightHit = (knight: Knight, power: number) => {
     if (process.env.NODE_ENV === 'production') {
         knightIncreaseHealth(knight, -power / knightGetDefense(knight));
     } else {
-        knightIncreaseHealth(knight, (200 * -power) / knightGetDefense(knight));
+        knightIncreaseHealth(knight, -power / knightGetDefense(knight));
     }
 };
 
 export const knightGetHealth = (knight: Knight) => knight[KnightProperties.Health];
+export const knightSetHealth = (knight: Knight, value: number) => (knight[KnightProperties.Health] = value);
 
 export const knightIncreaseHealth = (knight: Knight, amount: number) => {
     if (knightIsDead(knight)) {

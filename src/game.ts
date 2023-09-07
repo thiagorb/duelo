@@ -22,6 +22,8 @@ import {
     knightTurnRight,
     knightWalk,
     knightGetHealth,
+    knightSetHealth,
+    knightIncreaseHealth,
 } from './knight';
 import { glClear, glDrawRect, glIncreaseTime, glSetViewMatrix, Program } from './gl';
 import {
@@ -37,6 +39,11 @@ import { keyboardInitialize } from './keyboard';
 import { weaponCreate, weaponGetGap, weaponGetRange } from './weapon';
 import { uiOpponentUpdater, uiPlayerHealthUpdater, uiUpdaterSet } from './ui';
 import { menuStart } from './menu';
+import { Drop, dropCreate, dropDraw, dropGetItemId, dropIsPickable, dropStep } from './drop';
+import { inventoryAddItem, inventoryIsFull } from './inventory';
+
+declare const gameUi: HTMLElement;
+declare const btnnext: HTMLElement;
 
 export const FLOOR_LEVEL = -90;
 export const VIRTUAL_WIDTH = 1600 / 3;
@@ -56,10 +63,11 @@ export const gameIsOutOfArea = (position: Vec2) => {
 };
 
 export const enum GameProperties {
-    Knight,
+    Player,
     Enemy,
     TimePassed,
     Opponent,
+    Drop,
 }
 
 export type Game = ReturnType<typeof gameCreate>;
@@ -75,10 +83,11 @@ export type Opponent = {
 };
 
 export const gameCreate = (weaponType: number, initialHealth: number = 1) => ({
-    [GameProperties.Knight]: knightCreate(vectorCreate(-200, FLOOR_LEVEL), weaponCreate(weaponType), initialHealth),
+    [GameProperties.Player]: knightCreate(vectorCreate(-200, FLOOR_LEVEL), weaponCreate(weaponType), initialHealth),
     [GameProperties.Enemy]: knightCreate(vectorCreate(200, FLOOR_LEVEL), weaponCreate(weaponType), initialHealth),
     [GameProperties.TimePassed]: 0,
     [GameProperties.Opponent]: null as Opponent,
+    [GameProperties.Drop]: null as Drop,
 });
 
 let previousIntention = null;
@@ -139,8 +148,18 @@ const gameKnightCheckHit = (knight: Knight, other: Knight) => {
 };
 
 export const gameStep = (game: Game, deltaTime: number) => {
-    const player = game[GameProperties.Knight];
+    const player = game[GameProperties.Player];
     const enemy = game[GameProperties.Enemy];
+
+    if (game[GameProperties.Drop]) {
+        dropStep(game[GameProperties.Drop], deltaTime);
+        if (dropIsPickable(game[GameProperties.Drop], knightGetCenter(player))) {
+            if (!inventoryIsFull()) {
+                inventoryAddItem(dropGetItemId(game[GameProperties.Drop]));
+                game[GameProperties.Drop] = null;
+            }
+        }
+    }
 
     if (keyboard.Space || keyboard.Shift) {
         knightAttack(player);
@@ -160,8 +179,8 @@ export const gameStep = (game: Game, deltaTime: number) => {
     gameKnightTurnIfNecessary(enemy, player);
     if (!knightIsDead(enemy) && !knightIsDead(player)) {
         gameEnemyStep(player, enemy, deltaTime);
-        gameKnightCheckHit(player, enemy);
         gameKnightCheckHit(enemy, player);
+        gameKnightEnemyCheckHit(game, player, enemy);
     }
 
     knightStep(player, deltaTime);
@@ -176,6 +195,16 @@ export const gameStep = (game: Game, deltaTime: number) => {
 
     if (knightGetBoundingRight(player) > GAME_WIDTH / 2) {
         knightWalk(player, deltaTime, true);
+    }
+};
+
+const gameKnightEnemyCheckHit = (game: Game, player: Knight, enemy: Knight) => {
+    gameKnightCheckHit(player, enemy);
+
+    if (knightIsDead(enemy)) {
+        const itemId = 60;
+        const directionLeft = knightGetCenter(enemy) < knightGetCenter(player);
+        game[GameProperties.Drop] = dropCreate(itemId, knightGetCenter(enemy), directionLeft);
     }
 };
 
@@ -208,13 +237,12 @@ export const gameRender = (game: Game, program: Program) => {
 
     matrixSetIdentity(viewMatrix);
     matrixScale(viewMatrix, 2 / VIRTUAL_WIDTH, 2 / VIRTUAL_HEIGHT);
-    const playerCenter = knightGetCenter(game[GameProperties.Knight]);
+    const playerCenter = knightGetCenter(game[GameProperties.Player]);
     const enemyCenter = knightGetCenter(game[GameProperties.Enemy]);
 
     currentViewPosition -= ((playerCenter + enemyCenter) / 2 + currentViewPosition) * 0.02;
-    const targetScale = gameIsOver(game)
-        ? 0.4
-        : Math.min(VIRTUAL_WIDTH / (Math.abs(playerCenter - enemyCenter) + 400), 1.2);
+    const targetScale =
+        false && gameIsOver(game) ? 0.4 : Math.min(VIRTUAL_WIDTH / (Math.abs(playerCenter - enemyCenter) + 400), 1.2);
     currentViewScale += (targetScale - currentViewScale) * 0.02;
 
     matrixTranslate(viewMatrix, 0, -VIRTUAL_HEIGHT * 0.1);
@@ -231,9 +259,13 @@ export const gameRender = (game: Game, program: Program) => {
         currentViewScale,
         !game[GameProperties.TimePassed] || gameIsOver(game)
     );
-    knightDraw(game[GameProperties.Knight], program);
+    knightDraw(game[GameProperties.Player], program);
     if (game[GameProperties.Enemy]) {
         knightDraw(game[GameProperties.Enemy], program);
+    }
+
+    if (game[GameProperties.Drop]) {
+        dropDraw(game[GameProperties.Drop], program);
     }
 
     if (false && process.env.NODE_ENV !== 'production') {
@@ -251,7 +283,8 @@ const renderDebuggingRects = (program: Program) => {
 };
 
 export const gameStart = (game: Game, program: Program) => {
-    document.querySelectorAll('.game-ui').forEach(e => e.classList.remove('hidden'));
+    gameUi.style.display = null;
+    setTimeout(() => gameUi.classList.remove('hidden'));
 
     let previousTime = 0;
     const loop = (time: number) => {
@@ -265,7 +298,8 @@ export const gameStart = (game: Game, program: Program) => {
         game[GameProperties.TimePassed] += deltaTime;
 
         if (gameIsOver(game)) {
-            document.querySelectorAll('.game-ui').forEach(e => e.classList.add('hidden'));
+            gameUi.style.display = 'none';
+            gameUi.classList.add('hidden');
             menuStart(program, game);
             return;
         }
@@ -273,8 +307,27 @@ export const gameStart = (game: Game, program: Program) => {
         requestAnimationFrame(loop);
     };
 
+    btnnext.onclick = () => {
+        knightSetHealth(game[GameProperties.Player], 1);
+        game[GameProperties.Enemy] = knightCreate(vectorCreate(200, FLOOR_LEVEL), weaponCreate(60));
+    };
+
     requestAnimationFrame((time: number) => loop((previousTime = time)));
+
+    if (process.env.NODE_ENV !== 'production') {
+        window['game'] = game;
+        console.log(game);
+    }
 };
 
-export const gameIsOver = (game: Game) =>
-    knightIsDead(game[GameProperties.Knight]) || knightIsDead(game[GameProperties.Enemy]);
+if (process.env.NODE_ENV !== 'production') {
+    document.body.addEventListener('keydown', e => {
+        const game = window['game'];
+        if (e.key === 'k') {
+            knightIncreaseHealth(game[GameProperties.Enemy], -1);
+            gameKnightEnemyCheckHit(game, game[GameProperties.Player], game[GameProperties.Enemy]);
+        }
+    });
+}
+
+export const gameIsOver = (game: Game) => knightIsDead(game[GameProperties.Player]);
