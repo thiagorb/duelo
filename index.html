@@ -13,7 +13,6 @@
             user-select: none;
             outline: none;
             -webkit-tap-highlight-color: #fff0;
-            overflow: hidden;
             touch-action: none;
             margin: 0;
         }
@@ -27,6 +26,7 @@
         }
 
         body {
+            overflow: hidden;
             margin: 0;
             padding: 0;
             position: fixed;
@@ -86,6 +86,7 @@
         }
 
         .btn {
+            overflow: hidden;
             border-radius: 20px;
             cursor: pointer;
             box-shadow: 0px 0px 0px 0.3em rgba(92, 128, 255, 0.3);
@@ -126,6 +127,38 @@
             background-color: #ddd;
             border: 1px solid #999;
             border-radius: 5px;
+            position: relative;
+            background-size: cover;
+        }
+
+        .inv-item:before {
+            display: none;
+            content: attr(data-name);
+            position: absolute;
+            top: -1px;
+            left: 50%;
+            transform: translate(-50%, -100%);
+            background: #07d;
+            padding: 3px;
+            font-size: 5px;
+            white-space: nowrap;
+        }
+
+        .inv-item.selected:before {
+            display: block;
+        }
+
+        .inv-actions {
+            display: none;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            gap: 5px;
+            transform: translate(-50%, 100%);
+        }
+
+        .inv-item.selected .inv-actions {
+            display: flex;
         }
     </style>
     <script src="https://js13kgames.com/src/near-api-js.js"></script>

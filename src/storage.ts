@@ -1,8 +1,17 @@
 const enum StorageDataProperties {
     NetworkId,
     ItemIds,
+    EquippedIds,
     Gold,
 }
+
+const enum EquippedIdsProperties {
+    WeaponId,
+}
+
+type EquippedIds = {
+    [EquippedIdsProperties.WeaponId]?: number;
+};
 
 export type StorageData = ReturnType<typeof storageLoad>;
 
@@ -12,6 +21,7 @@ const storageLoad = () => {
     let storageData = {
         [StorageDataProperties.NetworkId]: null as string,
         [StorageDataProperties.ItemIds]: [] as Array<number>,
+        [StorageDataProperties.EquippedIds]: {} as EquippedIds,
         [StorageDataProperties.Gold]: 0,
     };
 
@@ -38,6 +48,10 @@ const validateData = (parsed: any) => {
         !Array.isArray(parsed[StorageDataProperties.ItemIds]) ||
         parsed[StorageDataProperties.ItemIds].some(weaponId => typeof weaponId !== 'number')
     ) {
+        return false;
+    }
+
+    if (typeof parsed[StorageDataProperties.EquippedIds] !== 'object') {
         return false;
     }
 
@@ -72,4 +86,12 @@ export const storageGetItemIds = () => {
 
 export const storageSetItemIds = (itemIds: Array<number>) => {
     storageUpdate(s => (s[StorageDataProperties.ItemIds] = itemIds));
+};
+
+export const storageGetEquippedIds = () => {
+    return storageLoad()[StorageDataProperties.EquippedIds];
+};
+
+export const storageSetEquippedIds = (equippedIds: EquippedIds) => {
+    storageUpdate(s => (s[StorageDataProperties.EquippedIds] = equippedIds));
 };

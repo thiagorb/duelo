@@ -26,7 +26,7 @@
      showgrid="false"
      inkscape:zoom="2.0863581"
      inkscape:cx="79.085177"
-     inkscape:cy="223.35571"
+     inkscape:cy="223.83502"
      inkscape:window-width="1920"
      inkscape:window-height="1043"
      inkscape:window-x="0"
@@ -248,7 +248,7 @@
 }</desc>
     </path>
     <path
-       style="fill:#999999;fill-opacity:1;stroke:none;stroke-width:1.03588;stroke-opacity:1"
+       style="fill:#333333;fill-opacity:1;stroke:none;stroke-width:1.03588;stroke-opacity:1"
        d="m 20.204024,55.558713 1.00738,2.67912 3.549,0.58782 0.652,-3.43751 0.87006,-13.05491 -6.07,-0.2495"
        id="rightArm1"
        sodipodi:nodetypes="cccccc"
@@ -257,7 +257,7 @@
       <desc
          id="desc18761-5-1">{
     &quot;connectTo&quot;: &quot;body&quot;,
-   &quot;material&quot;: 2
+   &quot;material&quot;: 1
 }</desc>
     </path>
     <path

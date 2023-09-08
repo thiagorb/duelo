@@ -8,13 +8,13 @@ import {
 import { glClear, glDrawRect, glProgramCreate, glSetViewMatrix, glSetViewport } from './gl';
 import { matrixCreate, matrixScale, matrixSetIdentity, matrixTranslateVector, vectorCreate } from './glm';
 import { objectDraw } from './model';
-import { storageGetItemIds, storageSetItemIds } from './storage';
+import { storageGetEquippedIds, storageGetItemIds, storageSetEquippedIds, storageSetItemIds } from './storage';
 import { weaponCreate, weaponGetObject } from './weapon';
 import * as swordModelData from '../art/sword.svg';
 
 declare const inv: HTMLElement;
 declare const invItems: HTMLElement;
-declare const invItem: HTMLElement;
+declare const eqItems: HTMLElement;
 declare const btninv: HTMLElement;
 declare const invClose: HTMLElement;
 
@@ -26,15 +26,84 @@ export const inventoryAddItem = (itemId: number) => {
     storageSetItemIds([...storageGetItemIds(), itemId]);
 };
 
+const createItemAction = (action: string) => {
+    const itemAction = document.createElement('div');
+    itemAction.classList.add('inv-action');
+    itemAction.innerText = action;
+    return itemAction;
+};
+
+const selectItem = (itemDiv: HTMLDivElement) => {
+    invItems.querySelector('.selected')?.classList.remove('selected');
+    itemDiv.classList.add('selected');
+};
+
+const createItemDiv = (itemId: number, actionsBuilder: (itemActions: HTMLDivElement) => void) => {
+    const itemDiv = document.createElement('div');
+    itemDiv.classList.add('inv-item');
+
+    if (itemId !== undefined) {
+        const itemImg = renderItem(itemId);
+        itemDiv.style.backgroundImage = `url(${itemImg})`;
+        itemDiv.dataset.name = 'STEEL SWORD (ATT +3)';
+
+        const itemActions = document.createElement('div');
+        itemActions.classList.add('inv-actions');
+        itemDiv.appendChild(itemActions);
+
+        actionsBuilder(itemActions);
+
+        itemDiv.onclick = () => selectItem(itemDiv);
+    }
+    return itemDiv;
+};
+
 export const inventoryStart = () => {
     invItems.innerHTML = '';
-    for (const itemId of storageGetItemIds()) {
-        const itemDiv = document.createElement('div');
-        const itemImg = document.createElement('img');
-        itemImg.src = renderItem(itemId);
-        itemDiv.classList.add('inv-item');
-        itemDiv.appendChild(itemImg);
+    eqItems.innerHTML = '';
+
+    const itemIds = storageGetItemIds();
+    for (let i = 0; i < 10; i++) {
+        const itemId = itemIds[i];
+        const itemDiv = createItemDiv(itemId, (itemActions: HTMLDivElement) => {
+            const equipAction = createItemAction('EQUIP');
+            equipAction.onclick = () => {
+                const items = storageGetItemIds();
+                items.splice(i, 1);
+                storageSetItemIds(items);
+                const equipped = storageGetEquippedIds();
+                equipped[0] = itemId;
+                storageSetEquippedIds(equipped);
+                inventoryStart();
+            };
+            itemActions.appendChild(equipAction);
+        });
+
         invItems.appendChild(itemDiv);
+    }
+
+    const equippedIds = storageGetEquippedIds();
+    for (let i = 0; i < 10; i++) {
+        const itemId = equippedIds[i];
+        const itemDiv = createItemDiv(itemId, (itemActions: HTMLDivElement) => {
+            const unequipAction = createItemAction('UNEQUIP');
+            unequipAction.onclick = () => {
+                if (inventoryIsFull()) {
+                    return;
+                }
+
+                const items = storageGetItemIds();
+                items.push(itemId);
+                storageSetItemIds(items);
+                const equipped = storageGetEquippedIds();
+                equipped[0] = undefined;
+                storageSetEquippedIds(equipped);
+                inventoryStart();
+            };
+            itemActions.appendChild(unequipAction);
+        });
+
+        eqItems.appendChild(itemDiv);
     }
 
     inv.style.display = null;
