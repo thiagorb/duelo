@@ -1,5 +1,5 @@
 import { NearBindgen, near, call, view } from 'near-sdk-js';
-import { weaponGetRandomId, weaponTotalTypes } from '../../../src/weapon';
+import { weaponGetRandomId } from '../../../src/weapon';
 
 type Opponent = { type: number } | { weaponId: number };
 type Weapon = {

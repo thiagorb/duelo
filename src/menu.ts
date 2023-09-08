@@ -8,7 +8,7 @@ declare const start: HTMLButtonElement;
 export const menuStart = (program: Program, previousGame: Game = null) => {
     menuUi.classList.remove('hidden');
 
-    const game = previousGame || gameCreate(0);
+    const game = previousGame || gameCreate();
     let started = false;
     let previousTime = 0;
     const loop = (time: number) => {
@@ -26,11 +26,11 @@ export const menuStart = (program: Program, previousGame: Game = null) => {
     };
     requestAnimationFrame((time: number) => loop((previousTime = time)));
 
-    gameRender(gameCreate(0), program);
+    gameRender(gameCreate(), program);
 
     start.onclick = () => {
         menuUi.classList.add('hidden');
-        gameStart(gameCreate(0), program);
+        gameStart(gameCreate(), program);
         started = true;
         start.onclick = null;
     };

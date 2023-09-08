@@ -24,6 +24,7 @@ import {
     knightGetHealth,
     knightSetHealth,
     knightIncreaseHealth,
+    knightGetPosition,
 } from './knight';
 import { glClear, glDrawRect, glIncreaseTime, glSetViewMatrix, Program } from './gl';
 import {
@@ -36,11 +37,13 @@ import {
     vectorMultiply,
 } from './glm';
 import { keyboardInitialize } from './keyboard';
-import { weaponCreate, weaponGetGap, weaponGetRange } from './weapon';
+import { weaponCreate } from './weapon';
 import { uiOpponentUpdater, uiPlayerHealthUpdater, uiUpdaterSet } from './ui';
 import { menuStart } from './menu';
 import { Drop, dropCreate, dropDraw, dropGetItemId, dropIsPickable, dropStep } from './drop';
-import { inventoryAddItem, inventoryIsFull } from './inventory';
+import { inventoryAddItem, inventoryIsFull, inventorySetOnEquip } from './inventory';
+import { EquippedIds, equipGetWeaponId } from './equip';
+import { storageGetEquippedIds } from './storage';
 
 declare const gameUi: HTMLElement;
 declare const btnnext: HTMLElement;
@@ -82,13 +85,27 @@ export type Opponent = {
     [OpponentProperties.Name]: string;
 };
 
-export const gameCreate = (weaponType: number, initialHealth: number = 1) => ({
-    [GameProperties.Player]: knightCreate(vectorCreate(-200, FLOOR_LEVEL), weaponCreate(weaponType), initialHealth),
-    [GameProperties.Enemy]: knightCreate(vectorCreate(200, FLOOR_LEVEL), weaponCreate(weaponType), initialHealth),
-    [GameProperties.TimePassed]: 0,
-    [GameProperties.Opponent]: null as Opponent,
-    [GameProperties.Drop]: null as Drop,
-});
+const gameKnightCreate = (position: Vec2, equipped: EquippedIds) => {
+    const weaponId = equipGetWeaponId(equipped);
+    const weapon = weaponCreate(weaponId || 0);
+    return knightCreate(position, weapon);
+};
+
+export const gameCreate = () => {
+    const game = {
+        [GameProperties.Player]: gameKnightCreate(vectorCreate(-200, FLOOR_LEVEL), storageGetEquippedIds()),
+        [GameProperties.Enemy]: knightCreate(vectorCreate(200, FLOOR_LEVEL), weaponCreate(1)),
+        [GameProperties.TimePassed]: 0,
+        [GameProperties.Opponent]: null as Opponent,
+        [GameProperties.Drop]: null as Drop,
+    };
+
+    inventorySetOnEquip(equipped => {
+        game[GameProperties.Player] = gameKnightCreate(knightGetPosition(game[GameProperties.Player]), equipped);
+    });
+
+    return game;
+};
 
 let previousIntention = null;
 let responseDelay = 0;
@@ -98,7 +115,7 @@ export const gameEnemyStep = (player: Knight, enemy: Knight, deltaTime: number) 
     const playerDeltaX = playerCenter - enemyCenter;
     let desiredX;
     const weaponId = knightGetWeaponId(enemy);
-    const desiredDistance = weaponGetGap(weaponId) + weaponGetRange(weaponId);
+    const desiredDistance = weaponId === 0 ? 50 : 100;
     if (Math.abs(playerCenter) > GAME_WIDTH / 2 - 100) {
         desiredX = playerCenter + desiredDistance * (playerCenter > 0 ? -1 : 1);
     } else {

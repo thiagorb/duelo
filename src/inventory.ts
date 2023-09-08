@@ -11,6 +11,7 @@ import { objectDraw } from './model';
 import { storageGetEquippedIds, storageGetItemIds, storageSetEquippedIds, storageSetItemIds } from './storage';
 import { weaponCreate, weaponGetObject } from './weapon';
 import * as swordModelData from '../art/sword.svg';
+import { EquippedIds } from './equip';
 
 declare const inv: HTMLElement;
 declare const invItems: HTMLElement;
@@ -74,6 +75,7 @@ export const inventoryStart = () => {
                 const equipped = storageGetEquippedIds();
                 equipped[0] = itemId;
                 storageSetEquippedIds(equipped);
+                onEquip?.(equipped);
                 inventoryStart();
             };
             itemActions.appendChild(equipAction);
@@ -98,6 +100,7 @@ export const inventoryStart = () => {
                 const equipped = storageGetEquippedIds();
                 equipped[0] = undefined;
                 storageSetEquippedIds(equipped);
+                onEquip?.(equipped);
                 inventoryStart();
             };
             itemActions.appendChild(unequipAction);
@@ -150,4 +153,9 @@ btninv.onclick = () => {
 invClose.onclick = () => {
     inv.style.display = 'none';
     inv.classList.add('hidden');
+};
+
+let onEquip = null;
+export const inventorySetOnEquip = (callback: (equipped: EquippedIds) => void) => {
+    onEquip = callback;
 };

@@ -11,12 +11,14 @@ import {
 } from './glm';
 import * as manModelData from '../art/man.svg';
 import * as swordModelData from '../art/sword.svg';
+import * as dummyWeaponModelData from '../art/dummy-weapon.svg';
 import * as backgroundModelData from '../art/background.svg';
 import { COLOR_PRECISION, COORDINATES_PRECISION } from './config';
 
 export const enum ModelType {
     Man,
     Sword,
+    DummyWeapon,
     Background,
 }
 
@@ -142,6 +144,7 @@ export const modelCreate = (data: ModelData): Model => {
 const modelsData: Map<ModelType, ModelData> = new Map([
     [ModelType.Man, manModelData.model],
     [ModelType.Sword, swordModelData.model],
+    [ModelType.DummyWeapon, dummyWeaponModelData.model],
     [ModelType.Background, backgroundModelData.model],
 ]);
 const models = new Map([...modelsData.entries()].map(([modelType, modelData]) => [modelType, modelCreate(modelData)]));
@@ -273,4 +276,4 @@ export const objectGetComponentTransformOrder = (object: Object) => {
     const model = models.get(object[ObjectProperty.ModelType]);
     return model[ModelProperty.TransformOrder];
 };
-export const modelGetWeapons = () => [ModelType.Sword];
+export const modelGetWeapons = () => [ModelType.DummyWeapon, ModelType.Sword];

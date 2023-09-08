@@ -1,6 +1,5 @@
 ## Next Steps
 
-- apply equipped items to knight
 - make it possible to sell/cancel sales
 - make it possible to buy items
 - make it possible to drop items

@@ -1,17 +1,11 @@
+import { EquippedIds } from './equip';
+
 const enum StorageDataProperties {
     NetworkId,
     ItemIds,
     EquippedIds,
     Gold,
 }
-
-const enum EquippedIdsProperties {
-    WeaponId,
-}
-
-type EquippedIds = {
-    [EquippedIdsProperties.WeaponId]?: number;
-};
 
 export type StorageData = ReturnType<typeof storageLoad>;
 

@@ -25,7 +25,7 @@ import { Weapon, weaponGetId, weaponGetObject } from './weapon';
 import { glDrawRect, glSetGlobalOpacity, Program } from './gl';
 import { matrixScale, matrixSetIdentity, matrixTranslateVector, Vec2, vectorCreate } from './glm';
 import { ModelType, objectCalculateomponentTransformedOrigin, objectCreate } from './model';
-import { weaponGetAttack, weaponGetDefense, weaponGetTipPosition } from './weapon';
+import { weaponGetAttack, weaponGetTipPosition } from './weapon';
 
 const enum KnightProperties {
     Position,
@@ -81,7 +81,7 @@ export type Knight = {
 
 const ATTACK_START = -3;
 const ATTACK_END = -1.3;
-export const knightCreate = (position: Vec2, weapon: Weapon, initialHealth: number = 1): Knight => {
+export const knightCreate = (position: Vec2, weapon: Weapon): Knight => {
     const REST_LEFT_LEG_1 = 0.1;
     const REST_LEFT_LEG_2 = 0.7;
     const REST_RIGHT_LEG_1 = -0.7;
@@ -186,7 +186,7 @@ export const knightCreate = (position: Vec2, weapon: Weapon, initialHealth: numb
         [KnightProperties.Attacking]: false,
         [KnightProperties.Opacity]: 0,
         [KnightProperties.Weapon]: weapon,
-        [KnightProperties.Health]: initialHealth,
+        [KnightProperties.Health]: 1,
         [KnightProperties.SupportFoot]: false,
         [KnightProperties.SupportFootSwap]: false,
         [KnightProperties.DidDefend]: false,
@@ -656,8 +656,7 @@ export const knightGetCenter = (knight: Knight) => {
 export const knightGetAttackPower = (knight: Knight) =>
     2 + 2 * weaponGetAttack(weaponGetId(knight[KnightProperties.Weapon]));
 
-export const knightGetDefense = (knight: Knight) =>
-    15 + 2 * weaponGetDefense(weaponGetId(knight[KnightProperties.Weapon]));
+export const knightGetDefense = (knight: Knight) => 15;
 
 export const knightHit = (knight: Knight, power: number) => {
     if (knight[KnightProperties.CurrentAnimation] === knight[KnightProperties.HitAnimation] || knightIsDead(knight)) {
