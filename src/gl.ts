@@ -58,24 +58,7 @@ export const glProgramCreate = (canvas: HTMLCanvasElement, virtualWidth: number,
     gl.attachShader(glProgram, compileShader(gl, gl.VERTEX_SHADER, vertexShader.source));
     gl.attachShader(glProgram, compileShader(gl, gl.FRAGMENT_SHADER, fragmentShader.source));
     gl.linkProgram(glProgram);
-
     gl.useProgram(glProgram);
-
-    const updateViewport = () => {
-        const pixelSize = 1 / devicePixelRatio;
-
-        const vMinPx = Math.min(document.body.clientWidth / virtualWidth, document.body.clientHeight / virtualHeight);
-        canvas.width = (virtualWidth * vMinPx) / pixelSize;
-        canvas.height = (virtualHeight * vMinPx) / pixelSize;
-
-        gl.viewport(0, 0, canvas.width, canvas.height);
-
-        document.body.style.setProperty('--scale', `${vMinPx}`);
-        document.body.style.setProperty('--virtual-width', `${virtualWidth}px`);
-        document.body.style.setProperty('--virtual-height', `${virtualHeight}px`);
-    };
-    addEventListener('resize', updateViewport);
-    updateViewport();
 
     const program = {
         [ProgramProperty.WebGL2Context]: gl,
@@ -97,6 +80,10 @@ export const glProgramCreate = (canvas: HTMLCanvasElement, virtualWidth: number,
     glSetGlobalOpacity(program, 1);
 
     return program;
+};
+
+export const glSetViewport = (program: Program, x: number, y: number, width: number, height: number) => {
+    program[ProgramProperty.WebGL2Context].viewport(x, y, width, height);
 };
 
 export const glSetViewMatrix = (program: Program, matrix: Matrix3) => {
@@ -139,13 +126,11 @@ export const glClear = (program: Program, clearColor: [number, number, number, n
 const enum MeshProperty {
     VertexArrayObject,
     VerticesLength,
-    DrawMode,
-    Color,
 }
 
 export type Mesh = ReturnType<typeof glMeshCreate>;
 
-export const glMeshCreate = (program: Program, vertices: Array<number>, indices: Array<number>, color: ColorRGB) => {
+export const glMeshCreate = (program: Program, vertices: Array<number>, indices: Array<number>) => {
     const gl = program[ProgramProperty.WebGL2Context];
     const vertexArrayObject = gl.createVertexArray();
     gl.bindVertexArray(vertexArrayObject);
@@ -178,8 +163,6 @@ export const glMeshCreate = (program: Program, vertices: Array<number>, indices:
     return {
         [MeshProperty.VertexArrayObject]: vertexArrayObject,
         [MeshProperty.VerticesLength]: indices.length,
-        [MeshProperty.DrawMode]: gl.TRIANGLES,
-        [MeshProperty.Color]: new Float32Array(color),
     };
 };
 
@@ -238,11 +221,11 @@ export const glSetModelTransform = (program: Program, matrix: Matrix3) => {
     );
 };
 
-export const glMeshDraw = (program: Program, mesh: Mesh, colorOverride: Float32Array, material: number) => {
+export const glMeshDraw = (program: Program, mesh: Mesh, color: Float32Array, material: number) => {
     const gl = program[ProgramProperty.WebGL2Context];
     gl.bindVertexArray(mesh[MeshProperty.VertexArrayObject]);
-    gl.uniform3fv(program[ProgramProperty.Uniforms][UniformsProperty.Color], colorOverride || mesh[MeshProperty.Color]);
+    gl.uniform3fv(program[ProgramProperty.Uniforms][UniformsProperty.Color], color);
     gl.uniform1i(program[ProgramProperty.Uniforms][UniformsProperty.Material], material);
-    gl.drawElements(mesh[MeshProperty.DrawMode], mesh[MeshProperty.VerticesLength], gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl.TRIANGLES, mesh[MeshProperty.VerticesLength], gl.UNSIGNED_SHORT, 0);
     gl.bindVertexArray(null);
 };

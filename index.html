@@ -120,11 +120,12 @@
         }
 
         .inv-item {
-            width: 50px;
-            height: 50px;
+            display: flex;
+            width: 30px;
+            height: 30px;
             background-color: #ddd;
-            border: 3px solid #999;
-            border-radius: 40px;
+            border: 1px solid #999;
+            border-radius: 5px;
         }
     </style>
     <script src="https://js13kgames.com/src/near-api-js.js"></script>
@@ -151,23 +152,20 @@
                 </div>
             </div>
         </div>
-        <div id="inv" class="game-ui hidden" style="background-color: #000; display: none; flex-direction: column; justify-content: center;">
+        <div id="inv" class="game-ui hidden" style="background-color: #000; display: none; flex-direction: column; gap: 5px; justify-content: center;">
             <div id="invClose" style="position: absolute; right: 10px; top: 10px;">✕</div>
-            <template id="inv-item">
-                <div class="inv-item"></div>
-            </template>
-
+            
             INVENTORY
-            <div id="inv-items" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 10px; box-sizing: border-box;"></div>
+            <div id="invItems" style="display: flex; gap: 2px;"></div>
 
             EQUIPPED
-            <div id="eq-items" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 10px; box-sizing: border-box;"></div>
+            <div id="eqItems" style="display: flex; gap: 2px;"></div>
 
             SELLING
-            <div id="sell-items" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 10px; box-sizing: border-box;"></div>
+            <div id="sellItems" style="display: flex; gap: 2px;"></div>
 
             MARKET
-            <div id="mkt-items" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 10px; box-sizing: border-box;"></div>
+            <div id="mktItems" style="display: flex; gap: 2px;"></div>
 
             GOLD: 1234
         </div>

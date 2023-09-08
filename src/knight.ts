@@ -24,7 +24,7 @@ import {
 import { Weapon, weaponGetId, weaponGetObject } from './weapon';
 import { glDrawRect, glSetGlobalOpacity, Program } from './gl';
 import { matrixScale, matrixSetIdentity, matrixTranslateVector, Vec2, vectorCreate } from './glm';
-import { Models, models, objectCalculateomponentTransformedOrigin, objectCreate } from './model';
+import { ModelType, objectCalculateomponentTransformedOrigin, objectCreate } from './model';
 import { weaponGetAttack, weaponGetDefense, weaponGetTipPosition } from './weapon';
 
 const enum KnightProperties {
@@ -129,7 +129,7 @@ export const knightCreate = (position: Vec2, weapon: Weapon, initialHealth: numb
     const knight: Knight = {
         [KnightProperties.Position]: position,
         [KnightProperties.AnimatableRight]: animatableCreate(
-            objectCreate(models[Models.Man], {
+            objectCreate(ModelType.Man, {
                 [modelData.weaponLeftComponentId]: weapon && weaponGetObject(weapon),
                 [modelData.weaponRightComponentId]: null,
             }),
@@ -151,7 +151,7 @@ export const knightCreate = (position: Vec2, weapon: Weapon, initialHealth: numb
             ]
         ),
         [KnightProperties.AnimatableLeft]: animatableCreate(
-            objectCreate(models[Models.Man], {
+            objectCreate(ModelType.Man, {
                 [modelData.weaponLeftComponentId]: null,
                 [modelData.weaponRightComponentId]: weapon && weaponGetObject(weapon),
             }),

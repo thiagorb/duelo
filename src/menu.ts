@@ -1,11 +1,9 @@
 import { Game, gameCreate, gameRender, gameStart, gameStep } from './game';
 import { Program, glIncreaseTime } from './gl';
+import { inventoryStart } from './inventory';
 
 declare const menuUi: HTMLDivElement;
 declare const start: HTMLButtonElement;
-declare const inv: HTMLElement;
-declare const btninv: HTMLElement;
-declare const invClose: HTMLElement;
 
 export const menuStart = (program: Program, previousGame: Game = null) => {
     menuUi.classList.remove('hidden');
@@ -36,14 +34,4 @@ export const menuStart = (program: Program, previousGame: Game = null) => {
         started = true;
         start.onclick = null;
     };
-};
-
-btninv.onclick = () => {
-    inv.style.display = null;
-    setTimeout(() => inv.classList.remove('hidden'));
-};
-
-invClose.onclick = () => {
-    inv.style.display = 'none';
-    inv.classList.add('hidden');
 };

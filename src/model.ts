@@ -14,22 +14,13 @@ import * as swordModelData from '../art/sword.svg';
 import * as backgroundModelData from '../art/background.svg';
 import { COLOR_PRECISION, COORDINATES_PRECISION } from './config';
 
-export const enum Models {
+export const enum ModelType {
     Man,
     Sword,
     Background,
 }
 
-export let models: ReturnType<typeof modelsInit>;
-export const modelsInit = (program: Program) => {
-    const m = {
-        [Models.Man]: modelCreate(program, manModelData.model),
-        [Models.Sword]: modelCreate(program, swordModelData.model),
-        [Models.Background]: modelCreate(program, backgroundModelData.model),
-    };
-    models = m;
-    return m;
-};
+const modelStorage = new WeakMap<Program, Map<ModelType, Array<Mesh>>>();
 
 export const enum PolygonProperty {
     Vertices,
@@ -58,13 +49,13 @@ export type ModelData = {
 };
 
 const enum ModelMeshProperty {
-    Mesh,
     TransformOrigin,
+    Color,
 }
 
 export type ModelMesh = {
-    [ModelMeshProperty.Mesh]: Mesh;
     [ModelMeshProperty.TransformOrigin]: Vec2;
+    [ModelMeshProperty.Color]: Float32Array;
 };
 
 const enum ObjectComponentProperty {
@@ -84,7 +75,7 @@ const enum ModelProperty {
     TransformOrder,
 }
 
-export type Model = {
+type Model = {
     [ModelProperty.Meshes]: Array<ModelMesh>;
     [ModelProperty.ParentMap]: Array<number>;
     [ModelProperty.MaterialMap]: { [componentId: number]: number };
@@ -93,7 +84,7 @@ export type Model = {
 
 const enum ObjectProperty {
     Components,
-    Model,
+    ModelType,
     Transform,
     Subobjects,
     ColorOverrides,
@@ -101,7 +92,7 @@ const enum ObjectProperty {
 
 export type Object = {
     [ObjectProperty.Components]: Array<ObjectComponent>;
-    [ObjectProperty.Model]: Model;
+    [ObjectProperty.ModelType]: ModelType;
     [ObjectProperty.Transform]: Matrix3;
     [ObjectProperty.Subobjects]: {
         [componentId: number]: Object;
@@ -111,8 +102,20 @@ export type Object = {
     };
 };
 
-export const modelCreate = (program: Program, data: ModelData, loaded: boolean = true): Model => {
-    const meshes = data[ModelDataProperty.Polygons].map(polygon => modelMeshFromPolygon(program, polygon, loaded));
+const modelMeshFromPolygon = (polygon: Polygon): ModelMesh => {
+    const transformCoordinate = (c: number) => c / COORDINATES_PRECISION;
+    const transformColor = (c: number) => c / COLOR_PRECISION;
+
+    return {
+        [ModelMeshProperty.TransformOrigin]: vectorCreate(
+            ...(polygon[PolygonProperty.TransformOrigin].map(transformCoordinate) || [0, 0])
+        ),
+        [ModelMeshProperty.Color]: new Float32Array(polygon[PolygonProperty.Color].map(transformColor)),
+    };
+};
+
+export const modelCreate = (data: ModelData): Model => {
+    const meshes = data[ModelDataProperty.Polygons].map(polygon => modelMeshFromPolygon(polygon));
 
     const calculateLevel = (index: number) => {
         let level = 0;
@@ -136,16 +139,23 @@ export const modelCreate = (program: Program, data: ModelData, loaded: boolean =
     };
 };
 
+const modelsData: Map<ModelType, ModelData> = new Map([
+    [ModelType.Man, manModelData.model],
+    [ModelType.Sword, swordModelData.model],
+    [ModelType.Background, backgroundModelData.model],
+]);
+const models = new Map([...modelsData.entries()].map(([modelType, modelData]) => [modelType, modelCreate(modelData)]));
+
 export const objectCreate = (
-    model: Model,
+    modelType: ModelType,
     subobjects: Object[ObjectProperty.Subobjects] = {},
     colorOverrides: Object[ObjectProperty.ColorOverrides] = {}
 ): Object => {
-    const components = model[ModelProperty.Meshes].map(mesh => objectComponentFromMesh(mesh));
+    const components = models.get(modelType)[ModelProperty.Meshes].map(mesh => objectComponentFromMesh(mesh));
 
     return {
         [ObjectProperty.Components]: components,
-        [ObjectProperty.Model]: model,
+        [ObjectProperty.ModelType]: modelType,
         [ObjectProperty.Transform]: matrixCreate(),
         [ObjectProperty.Subobjects]: subobjects,
         [ObjectProperty.ColorOverrides]: colorOverrides,
@@ -164,7 +174,8 @@ export const objectTransformComponent = (object: Object, componentId: number) =>
     const subobject = object[ObjectProperty.Subobjects][componentId];
     const matrix = subobject ? objectGetRootTransform(subobject) : component[ObjectComponentProperty.Matrix];
 
-    const parentId = object[ObjectProperty.Model][ModelProperty.ParentMap][componentId];
+    const model = models.get(object[ObjectProperty.ModelType]);
+    const parentId = model[ModelProperty.ParentMap][componentId];
     if (typeof parentId === 'number') {
         matrixCopy(matrix, object[ObjectProperty.Components][parentId][ObjectComponentProperty.Matrix]);
     } else {
@@ -184,20 +195,23 @@ export const objectTransformApplyComponent = (object: Object, componentId: numbe
 
     matrixMultiply(matrix, matrix, transform);
     if (subobject) {
-        for (const subComponentId of subobject[ObjectProperty.Model][ModelProperty.TransformOrder]) {
+        const model = models.get(subobject[ObjectProperty.ModelType]);
+        for (const subComponentId of model[ModelProperty.TransformOrder]) {
             objectTransformApplyComponent(subobject, subComponentId, transform);
         }
     }
 };
 
 export const objectApplyTransforms = (object: Object) => {
-    for (const componentId of object[ObjectProperty.Model][ModelProperty.TransformOrder]) {
+    const model = models.get(object[ObjectProperty.ModelType]);
+    for (const componentId of model[ModelProperty.TransformOrder]) {
         objectTransformComponent(object, componentId);
     }
 };
 
 export const objectDraw = (object: Object, program: Program) => {
     const componentsLength = object[ObjectProperty.Components].length;
+    const meshes = meshesLoad(program, object[ObjectProperty.ModelType]);
     for (let componentId = 0; componentId < componentsLength; componentId++) {
         const subobject = object[ObjectProperty.Subobjects][componentId];
         if (subobject !== undefined) {
@@ -210,27 +224,36 @@ export const objectDraw = (object: Object, program: Program) => {
 
         const component = object[ObjectProperty.Components][componentId];
         glSetModelTransform(program, component[ObjectComponentProperty.Matrix]);
-        const colorOverride = object[ObjectProperty.ColorOverrides][componentId];
-        const material = object[ObjectProperty.Model][ModelProperty.MaterialMap][componentId] || 0;
-        glMeshDraw(program, component[ObjectComponentProperty.Mesh][ModelMeshProperty.Mesh], colorOverride, material);
+        const modelMesh = component[ObjectComponentProperty.Mesh];
+        const color = modelMesh[ModelMeshProperty.Color] || object[ObjectProperty.ColorOverrides][componentId];
+        const model = models.get(object[ObjectProperty.ModelType]);
+        const material = model[ModelProperty.MaterialMap][componentId] || 0;
+        glMeshDraw(program, meshes[componentId], color, material);
     }
 };
 
-const modelMeshFromPolygon = (program: Program, polygon: Polygon, loaded: boolean): ModelMesh => {
-    const transformCoordinate = (c: number) => c / (loaded ? COORDINATES_PRECISION : 1);
-    const transformColor = (c: number) => c / (loaded ? COLOR_PRECISION : 1);
+const meshesLoad = (program: Program, modelType: ModelType) => {
+    if (!modelStorage.has(program)) {
+        modelStorage.set(program, new Map());
+    }
 
-    return {
-        [ModelMeshProperty.Mesh]: glMeshCreate(
-            program,
-            polygon[PolygonProperty.Vertices].map(transformCoordinate),
-            polygon[PolygonProperty.Indices],
-            polygon[PolygonProperty.Color].map(transformColor) as ColorRGB
-        ),
-        [ModelMeshProperty.TransformOrigin]: vectorCreate(
-            ...(polygon[PolygonProperty.TransformOrigin].map(transformCoordinate) || [0, 0])
-        ),
-    };
+    const programModels = modelStorage.get(program);
+    if (!programModels.has(modelType)) {
+        const modelData = modelsData.get(modelType);
+        programModels.set(
+            modelType,
+            modelData[ModelDataProperty.Polygons].map(polygon => {
+                const transformCoordinate = (c: number) => c / COORDINATES_PRECISION;
+                return glMeshCreate(
+                    program,
+                    polygon[PolygonProperty.Vertices].map(transformCoordinate),
+                    polygon[PolygonProperty.Indices]
+                );
+            })
+        );
+    }
+
+    return programModels.get(modelType);
 };
 
 export const objectGetComponentTransform = (object: Object, componentId: number) =>
@@ -246,7 +269,8 @@ export const objectCalculateomponentTransformedOrigin = (object: Object, compone
 
 export const objectGetRootTransform = (object: Object) => object[ObjectProperty.Transform];
 
-export const objectGetComponentTransformOrder = (object: Object) =>
-    object[ObjectProperty.Model][ModelProperty.TransformOrder];
-
-export const modelGetWeapons = () => [models[Models.Sword]];
+export const objectGetComponentTransformOrder = (object: Object) => {
+    const model = models.get(object[ObjectProperty.ModelType]);
+    return model[ModelProperty.TransformOrder];
+};
+export const modelGetWeapons = () => [ModelType.Sword];

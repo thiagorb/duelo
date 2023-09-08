@@ -11,7 +11,7 @@ import {
 } from './animation';
 import { Program } from './gl';
 import { matrixScale, matrixSetIdentity, matrixTranslate, matrixTranslateVector, Vec2, vectorCreate } from './glm';
-import { Models, models, objectCreate, objectGetComponentTransform } from './model';
+import { ModelType, objectCreate, objectGetComponentTransform } from './model';
 import * as modelData from '../art/background.svg';
 import { VIRTUAL_HEIGHT } from './game';
 
@@ -44,7 +44,7 @@ export const backgroundCreate = (position: Vec2) => {
 
     const background = {
         [BackgroundProperties.Position]: position,
-        [BackgroundProperties.Animatable]: animatableCreate(objectCreate(models[Models.Background]), [
+        [BackgroundProperties.Animatable]: animatableCreate(objectCreate(ModelType.Background), [
             boundElementCreate(castleX, modelData.castleComponentId, AnimatedProperty.TranslationX),
             boundElementCreate(layer1X, modelData.mountainLayer1ComponentId, AnimatedProperty.TranslationX),
             boundElementCreate(layer2X, modelData.mountainLayer2ComponentId, AnimatedProperty.TranslationX),
