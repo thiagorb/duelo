@@ -57,6 +57,7 @@ declare const gold: HTMLElement;
 declare const cnf: HTMLElement;
 declare const yes: HTMLElement;
 declare const no: HTMLElement;
+declare const spinner: HTMLElement;
 
 export const inventoryIsFull = () => {
     return storageGetItemIds().length >= 10;
@@ -155,16 +156,16 @@ const loadInventory = (near: NearInstance) => {
                         return;
                     }
                     const price = parseInt(value, 10);
-                    const sale = await nearSell(near, itemId, price);
-                    if (!sale) {
-                        return;
+                    spinner.style.display = null;
+                    const sale = await nearSell(near, itemId, price).catch(() => null);
+                    if (sale) {
+                        const items = storageGetItemIds();
+                        items.splice(i, 1);
+                        storageSetItemIds(items);
+                        await loadUserSales(near);
+                        loadInventory(near);
                     }
-
-                    const items = storageGetItemIds();
-                    items.splice(i, 1);
-                    storageSetItemIds(items);
-                    await loadUserSales(near);
-                    loadInventory(near);
+                    spinner.style.display = 'none';
                 };
                 itemActions.appendChild(sellAction);
             }
@@ -228,20 +229,20 @@ const loadUserSales = async (near: NearInstance) => {
     for (let i = 0; i < 5; i++) {
         const [saleId, sale] = pendingSales[i] || [];
         const itemDiv = createItemDiv(sale?.itemId, (itemActions: HTMLDivElement) => {
-            const collectAction = createItemAction('CANCEL');
-            collectAction.onclick = async () => {
-                const sale = await nearCancelSale(near, saleId);
-                if (!sale) {
-                    return;
+            const cancelAction = createItemAction('CANCEL');
+            cancelAction.onclick = async () => {
+                spinner.style.display = null;
+                const sale = await nearCancelSale(near, saleId).catch(() => null);
+                if (sale) {
+                    const items = storageGetItemIds();
+                    items.push(sale.itemId);
+                    storageSetItemIds(items);
+                    await loadUserSales(near);
+                    loadInventory(near);
                 }
-
-                const items = storageGetItemIds();
-                items.push(sale.itemId);
-                storageSetItemIds(items);
-                await loadUserSales(near);
-                loadInventory(near);
+                spinner.style.display = 'none';
             };
-            itemActions.appendChild(collectAction);
+            itemActions.appendChild(cancelAction);
         });
 
         sellItems.appendChild(itemDiv);
@@ -252,14 +253,14 @@ const loadUserSales = async (near: NearInstance) => {
         const itemDiv = createItemDiv(sale?.itemId, (itemActions: HTMLDivElement) => {
             const collectAction = createItemAction('COLLECT');
             collectAction.onclick = async () => {
-                const sale = await nearCollectSale(near, saleId);
-                if (!sale) {
-                    return;
+                spinner.style.display = null;
+                const sale = await nearCollectSale(near, saleId).catch(() => null);
+                if (sale) {
+                    storageSetGold(storageGetGold() + sale.price);
+                    await loadUserSales(near);
+                    loadInventory(near);
                 }
-
-                storageSetGold(storageGetGold() + sale.price);
-                await loadUserSales(near);
-                loadInventory(near);
+                spinner.style.display = 'none';
             };
             itemActions.appendChild(collectAction);
         });
@@ -280,16 +281,17 @@ const loadMarket = async (near: NearInstance) => {
                     return;
                 }
 
-                const bought = await nearBuy(near, saleId);
-                if (!bought) {
-                    return;
+                spinner.style.display = null;
+                const bought = await nearBuy(near, saleId).catch(() => null);
+                if (bought) {
+                    const items = storageGetItemIds();
+                    items.push(bought.itemId);
+                    storageSetItemIds(items);
+                    loadInventory(near);
+                    itemDiv.replaceWith(createItemDiv(undefined, () => {}));
                 }
 
-                const items = storageGetItemIds();
-                items.push(bought.itemId);
-                storageSetItemIds(items);
-                loadInventory(near);
-                itemDiv.replaceWith(createItemDiv(undefined, () => {}));
+                spinner.style.display = 'none';
             };
             itemActions.appendChild(buyAction);
         });

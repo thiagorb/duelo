@@ -1,6 +1,6 @@
 ## Next Steps
 
-- add spinner for near calls
+- add price to market items
 - add more trees
 - add more mountains
 - add color details (red / blue)

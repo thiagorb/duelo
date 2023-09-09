@@ -19,37 +19,10 @@ const storageLoad = () => {
         [StorageDataProperties.Gold]: 0,
     };
 
-    try {
-        const parsed = JSON.parse(localStorage.getItem(storageKey));
-        if (process.env.NODE_ENV === 'production' || validateData(parsed)) {
-            storageData = parsed;
-        }
-    } catch (e) {}
+    let parsed = null;
+    parsed = JSON.parse(localStorage.getItem(storageKey));
 
-    return storageData;
-};
-
-const validateData = (parsed: any) => {
-    if (typeof parsed !== 'object') {
-        return false;
-    }
-
-    if (typeof parsed[StorageDataProperties.Gold] !== 'number') {
-        return false;
-    }
-
-    if (
-        !Array.isArray(parsed[StorageDataProperties.ItemIds]) ||
-        parsed[StorageDataProperties.ItemIds].some(swordId => typeof swordId !== 'number')
-    ) {
-        return false;
-    }
-
-    if (typeof parsed[StorageDataProperties.EquippedIds] !== 'object') {
-        return false;
-    }
-
-    return true;
+    return parsed || storageData;
 };
 
 const storageUpdate = (updater: (storageData: StorageData) => void) => {
