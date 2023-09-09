@@ -9,17 +9,15 @@ import {
     Vec2,
     vectorCreate,
 } from './glm';
-import * as manModelData from '../art/man.svg';
+import * as manModelData from '../art/knight.svg';
 import * as swordModelData from '../art/sword.svg';
-import * as dummyWeaponModelData from '../art/dummy-weapon.svg';
 import * as goldModelData from '../art/gold.svg';
 import * as backgroundModelData from '../art/background.svg';
 import { COLOR_PRECISION, COORDINATES_PRECISION } from './config';
 
 export const enum ModelType {
-    Man,
+    Knight,
     Sword,
-    DummyWeapon,
     Gold,
     Background,
 }
@@ -59,7 +57,7 @@ const enum ModelMeshProperty {
 
 export type ModelMesh = {
     [ModelMeshProperty.TransformOrigin]: Vec2;
-    [ModelMeshProperty.Color]: Float32Array;
+    [ModelMeshProperty.Color]: ColorRGB;
 };
 
 const enum ObjectComponentProperty {
@@ -92,6 +90,16 @@ const enum ObjectProperty {
     Transform,
     Subobjects,
     ColorOverrides,
+    MaterialType,
+    MaterialOverrides,
+}
+
+export const enum MaterialType {
+    Invisible = -1,
+    Solid = 0,
+    Matte = 1,
+    Shiny = 2,
+    Logo = 3,
 }
 
 export type Object = {
@@ -102,7 +110,11 @@ export type Object = {
         [componentId: number]: Object;
     };
     [ObjectProperty.ColorOverrides]: {
-        [componentId: number]: Float32Array;
+        [componentId: number]: ColorRGB;
+    };
+    [ObjectProperty.MaterialType]: MaterialType;
+    [ObjectProperty.MaterialOverrides]: {
+        [componentId: number]: number;
     };
 };
 
@@ -114,7 +126,7 @@ const modelMeshFromPolygon = (polygon: Polygon): ModelMesh => {
         [ModelMeshProperty.TransformOrigin]: vectorCreate(
             ...(polygon[PolygonProperty.TransformOrigin].map(transformCoordinate) || [0, 0])
         ),
-        [ModelMeshProperty.Color]: new Float32Array(polygon[PolygonProperty.Color].map(transformColor)),
+        [ModelMeshProperty.Color]: polygon[PolygonProperty.Color].map(transformColor) as ColorRGB,
     };
 };
 
@@ -144,28 +156,41 @@ export const modelCreate = (data: ModelData): Model => {
 };
 
 const modelsData: Map<ModelType, ModelData> = new Map([
-    [ModelType.Man, manModelData.model],
+    [ModelType.Knight, manModelData.model],
     [ModelType.Sword, swordModelData.model],
-    [ModelType.DummyWeapon, dummyWeaponModelData.model],
     [ModelType.Gold, goldModelData.model],
     [ModelType.Background, backgroundModelData.model],
 ]);
 const models = new Map([...modelsData.entries()].map(([modelType, modelData]) => [modelType, modelCreate(modelData)]));
 
-export const objectCreate = (
-    modelType: ModelType,
-    subobjects: Object[ObjectProperty.Subobjects] = {},
-    colorOverrides: Object[ObjectProperty.ColorOverrides] = {}
-): Object => {
+export const objectCreate = (modelType: ModelType): Object => {
     const components = models.get(modelType)[ModelProperty.Meshes].map(mesh => objectComponentFromMesh(mesh));
 
     return {
         [ObjectProperty.Components]: components,
         [ObjectProperty.ModelType]: modelType,
         [ObjectProperty.Transform]: matrixCreate(),
-        [ObjectProperty.Subobjects]: subobjects,
-        [ObjectProperty.ColorOverrides]: colorOverrides,
+        [ObjectProperty.Subobjects]: {},
+        [ObjectProperty.ColorOverrides]: {},
+        [ObjectProperty.MaterialType]: undefined,
+        [ObjectProperty.MaterialOverrides]: {},
     };
+};
+
+export const objectSetSubObject = (object: Object, componentId: number, subobject: Object) => {
+    object[ObjectProperty.Subobjects][componentId] = subobject;
+};
+
+export const objectSetMaterialOverride = (object: Object, componentId: number, material: number) => {
+    object[ObjectProperty.MaterialOverrides][componentId] = material;
+};
+
+export const objectSetColorOverride = (object: Object, componentId: number, color: ColorRGB) => {
+    object[ObjectProperty.ColorOverrides][componentId] = color;
+};
+
+export const objectSetMaterial = (object: Object, material: MaterialType) => {
+    object[ObjectProperty.MaterialType] = material;
 };
 
 const objectComponentFromMesh = (mesh: ModelMesh): ObjectComponent => {
@@ -178,7 +203,7 @@ const objectComponentFromMesh = (mesh: ModelMesh): ObjectComponent => {
 export const objectTransformComponent = (object: Object, componentId: number) => {
     const component = object[ObjectProperty.Components][componentId];
     const subobject = object[ObjectProperty.Subobjects][componentId];
-    const matrix = subobject ? objectGetRootTransform(subobject) : component[ObjectComponentProperty.Matrix];
+    const matrix = component[ObjectComponentProperty.Matrix];
 
     const model = models.get(object[ObjectProperty.ModelType]);
     const parentId = model[ModelProperty.ParentMap][componentId];
@@ -190,6 +215,7 @@ export const objectTransformComponent = (object: Object, componentId: number) =>
     matrixTranslateVector(matrix, component[ObjectComponentProperty.Mesh][ModelMeshProperty.TransformOrigin]);
 
     if (subobject) {
+        matrixCopy(objectGetRootTransform(subobject), matrix);
         objectApplyTransforms(subobject);
     }
 };
@@ -197,10 +223,11 @@ export const objectTransformComponent = (object: Object, componentId: number) =>
 export const objectTransformApplyComponent = (object: Object, componentId: number, transform: Matrix3) => {
     const component = object[ObjectProperty.Components][componentId];
     const subobject = object[ObjectProperty.Subobjects][componentId];
-    const matrix = subobject ? objectGetRootTransform(subobject) : component[ObjectComponentProperty.Matrix];
+    const matrix = component[ObjectComponentProperty.Matrix];
 
     matrixMultiply(matrix, matrix, transform);
     if (subobject) {
+        matrixCopy(objectGetRootTransform(subobject), matrix);
         const model = models.get(subobject[ObjectProperty.ModelType]);
         for (const subComponentId of model[ModelProperty.TransformOrder]) {
             objectTransformApplyComponent(subobject, subComponentId, transform);
@@ -222,7 +249,7 @@ export const objectDraw = (object: Object, program: Program) => {
         const subobject = object[ObjectProperty.Subobjects][componentId];
         if (subobject !== undefined) {
             if (subobject !== null) {
-                matrixCopy(objectGetRootTransform(subobject), objectGetComponentTransform(object, componentId));
+                // matrixCopy(objectGetRootTransform(subobject), objectGetComponentTransform(object, componentId));
                 objectDraw(subobject, program);
             }
             continue;
@@ -230,10 +257,18 @@ export const objectDraw = (object: Object, program: Program) => {
 
         const component = object[ObjectProperty.Components][componentId];
         glSetModelTransform(program, component[ObjectComponentProperty.Matrix]);
-        const modelMesh = component[ObjectComponentProperty.Mesh];
-        const color = modelMesh[ModelMeshProperty.Color] || object[ObjectProperty.ColorOverrides][componentId];
         const model = models.get(object[ObjectProperty.ModelType]);
-        const material = model[ModelProperty.MaterialMap][componentId] || 0;
+        const material =
+            object[ObjectProperty.MaterialOverrides][componentId] ||
+            object[ObjectProperty.MaterialType] ||
+            model[ModelProperty.MaterialMap][componentId];
+
+        if (material === MaterialType.Invisible) {
+            continue;
+        }
+
+        const modelMesh = component[ObjectComponentProperty.Mesh];
+        const color = object[ObjectProperty.ColorOverrides][componentId] || modelMesh[ModelMeshProperty.Color];
         glMeshDraw(program, meshes[componentId], color, material);
     }
 };
@@ -279,4 +314,3 @@ export const objectGetComponentTransformOrder = (object: Object) => {
     const model = models.get(object[ObjectProperty.ModelType]);
     return model[ModelProperty.TransformOrder];
 };
-export const modelGetWeapons = () => [ModelType.DummyWeapon, ModelType.Sword];

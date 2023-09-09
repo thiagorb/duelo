@@ -1,47 +1,57 @@
 import {
     Animatable,
     animatableBeginStep,
-    animatableCreate,
+    animatableDraw,
     animatableGetRootTransform,
+    animatableSetOriginComponent,
     animatableTransform,
+    animatableTransformApply,
 } from './animation';
 import { Program } from './gl';
 import { Vec2, matrixSetIdentity, matrixTranslateVector, vectorCreate } from './glm';
-import { Object, objectDraw } from './model';
 
 const enum DropProperties {
-    Item,
     Position,
     Animatable,
+    OriginComponentId,
     DirectionLeft,
     TimePassed,
 }
 
 export type Drop = {
-    [DropProperties.Item]: Object;
     [DropProperties.Position]: Vec2;
     [DropProperties.Animatable]: Animatable;
+    [DropProperties.OriginComponentId]: number;
     [DropProperties.DirectionLeft]: boolean;
     [DropProperties.TimePassed]: number;
 };
 
-export const dropCreate = (object: Object, x: number, directionLeft: boolean): Drop => {
+export const dropCreate = (
+    animatable: Animatable,
+    originComponentId: number,
+    x: number,
+    directionLeft: boolean
+): Drop => {
     return {
-        [DropProperties.Item]: object,
         [DropProperties.Position]: vectorCreate(x, 0),
-        [DropProperties.Animatable]: animatableCreate(object, []),
+        [DropProperties.Animatable]: animatable,
+        [DropProperties.OriginComponentId]: originComponentId,
         [DropProperties.DirectionLeft]: directionLeft,
         [DropProperties.TimePassed]: 0,
     };
 };
 
 export const dropDraw = (drop: Drop, program: Program) => {
-    const matrix = animatableGetRootTransform(drop[DropProperties.Animatable]);
+    const animatable = drop[DropProperties.Animatable];
+    const matrix = animatableGetRootTransform(animatable);
+    matrixSetIdentity(matrix);
+    animatableTransform(animatable);
+    animatableSetOriginComponent(animatable, drop[DropProperties.OriginComponentId]);
     matrixSetIdentity(matrix);
     matrixTranslateVector(matrix, drop[DropProperties.Position]);
-    animatableTransform(drop[DropProperties.Animatable]);
+    animatableTransformApply(animatable, matrix);
 
-    objectDraw(drop[DropProperties.Item], program);
+    animatableDraw(animatable, program);
 };
 
 const animationDuration = 500;
@@ -54,7 +64,7 @@ export const dropStep = (drop: Drop, timePassed: number) => {
     const curveHeight = 50;
     drop[DropProperties.TimePassed] += timePassed;
     drop[DropProperties.Position][1] =
-        -50 + curveHeight - Math.pow((drop[DropProperties.TimePassed] * 2) / animationDuration - 1, 2) * curveHeight;
+        -70 + curveHeight - Math.pow((drop[DropProperties.TimePassed] * 2) / animationDuration - 1, 2) * curveHeight;
     drop[DropProperties.Position][0] +=
         ((drop[DropProperties.DirectionLeft] ? -1 : 1) * 100 * timePassed) / animationDuration;
 };

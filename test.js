@@ -10,7 +10,7 @@ const testSvg2js = () => {
                 getOptions: () => ({}),
                 resourcePath: '',
             },
-            fs.readFileSync(path.join(__dirname, 'art/man.svg'))
+            fs.readFileSync(path.join(__dirname, 'art/knight.svg'))
         )
     );
 };

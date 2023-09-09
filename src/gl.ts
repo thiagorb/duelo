@@ -118,7 +118,7 @@ const compileShader = (
     return shader;
 };
 
-export const glClear = (program: Program, clearColor: [number, number, number, number] = [0, 0, 0, 1]) => {
+export const glClear = (program: Program, clearColor: ColorRGBA = [0, 0, 0, 1]) => {
     program[ProgramProperty.WebGL2Context].clearColor(...clearColor);
     program[ProgramProperty.WebGL2Context].clear(program[ProgramProperty.WebGL2Context].COLOR_BUFFER_BIT);
 };
@@ -221,7 +221,7 @@ export const glSetModelTransform = (program: Program, matrix: Matrix3) => {
     );
 };
 
-export const glMeshDraw = (program: Program, mesh: Mesh, color: Float32Array, material: number) => {
+export const glMeshDraw = (program: Program, mesh: Mesh, color: ColorRGB, material: number) => {
     const gl = program[ProgramProperty.WebGL2Context];
     gl.bindVertexArray(mesh[MeshProperty.VertexArrayObject]);
     gl.uniform3fv(program[ProgramProperty.Uniforms][UniformsProperty.Color], color);

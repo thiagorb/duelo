@@ -37,14 +37,21 @@ import {
     vectorMultiply,
 } from './glm';
 import { keyboardInitialize } from './keyboard';
-import { weaponCreate, weaponGetObject } from './weapon';
 import { uiOpponentUpdater, uiPlayerHealthUpdater, uiUpdaterSet } from './ui';
 import { menuStart } from './menu';
 import { Drop, dropCreate, dropDraw, dropIsPickable, dropStep } from './drop';
 import { inventoryAddItem, inventoryIsFull, inventorySetOnEquip } from './inventory';
-import { EquippedIds, equipGetWeaponId } from './equip';
+import {
+    EquippedIds,
+    EquippedIdsProperties,
+    equipCreateAnimatable,
+    equipGetOriginComponentId,
+    equipGetRandomId,
+    equipGetWeaponId,
+} from './equip';
 import { storageGetEquippedIds, storageGetGold, storageSetGold } from './storage';
-import { ModelType, Object, objectCreate } from './model';
+import { ModelType, objectCreate } from './model';
+import { Animatable, animatableCreate } from './animation';
 
 declare const gameUi: HTMLElement;
 declare const btnnext: HTMLElement;
@@ -86,12 +93,6 @@ export type Opponent = {
     [OpponentProperties.Name]: string;
 };
 
-const gameKnightCreate = (position: Vec2, equipped: EquippedIds) => {
-    const weaponId = equipGetWeaponId(equipped);
-    const weapon = weaponCreate(weaponId || 0);
-    return knightCreate(position, weapon);
-};
-
 const enum GameDropProperties {
     ItemId,
     Drop,
@@ -99,22 +100,24 @@ const enum GameDropProperties {
 }
 
 type GameDrop = {
-    [GameDropProperties.ItemId]: number;
+    [GameDropProperties.ItemId]: EquippedIdsProperties;
     [GameDropProperties.Drop]: Drop;
     [GameDropProperties.Gold]: number;
 };
 
 export const gameCreate = () => {
     const game = {
-        [GameProperties.Player]: gameKnightCreate(vectorCreate(-200, FLOOR_LEVEL), storageGetEquippedIds()),
-        [GameProperties.Enemy]: knightCreate(vectorCreate(200, FLOOR_LEVEL), weaponCreate(1)),
+        [GameProperties.Player]: knightCreate(vectorCreate(-200, FLOOR_LEVEL), storageGetEquippedIds()),
+        [GameProperties.Enemy]: null,
         [GameProperties.TimePassed]: 0,
         [GameProperties.Opponent]: null as Opponent,
         [GameProperties.Drops]: new Array<GameDrop>(),
     };
 
+    gameNextEnemy(game);
+
     inventorySetOnEquip(equipped => {
-        game[GameProperties.Player] = gameKnightCreate(knightGetPosition(game[GameProperties.Player]), equipped);
+        game[GameProperties.Player] = knightCreate(knightGetPosition(game[GameProperties.Player]), equipped);
     });
 
     return game;
@@ -126,18 +129,11 @@ export const gameEnemyStep = (player: Knight, enemy: Knight, deltaTime: number) 
     const playerCenter = knightGetCenter(player);
     const enemyCenter = knightGetCenter(enemy);
     const playerDeltaX = playerCenter - enemyCenter;
-    let desiredX;
-    const weaponId = knightGetWeaponId(enemy);
-    const desiredDistance = weaponId === 0 ? 50 : 100;
-    if (Math.abs(playerCenter) > GAME_WIDTH / 2 - 100) {
-        desiredX = playerCenter + desiredDistance * (playerCenter > 0 ? -1 : 1);
-    } else {
-        desiredX = playerCenter + desiredDistance * (playerDeltaX > 0 ? -1 : 1);
-    }
-
+    const desiredDistance = 100;
+    const desiredX = playerCenter + desiredDistance * (playerDeltaX > 0 ? -1 : 1);
     const deltaX = desiredX - enemyCenter;
 
-    const closeEnoughToAttack = Math.abs(deltaX) < 50;
+    const closeEnoughToAttack = Math.abs(playerDeltaX) < 100;
     let intention = null;
     if (Math.abs(deltaX) > 150 || (!closeEnoughToAttack && Math.random() < 0.3)) {
         intention = 1;
@@ -181,13 +177,12 @@ export const gameStep = (game: Game, deltaTime: number) => {
     const player = game[GameProperties.Player];
     const enemy = game[GameProperties.Enemy];
 
-    for (let i = 0; i < game[GameProperties.Drops].length; i++) {
+    for (let i = game[GameProperties.Drops].length - 1; i >= 0; i--) {
         const drop = game[GameProperties.Drops][i];
         dropStep(drop[GameDropProperties.Drop], deltaTime);
         if (dropIsPickable(drop[GameDropProperties.Drop], knightGetCenter(player))) {
-            if (drop[GameDropProperties.ItemId] === 0) {
+            if (drop[GameDropProperties.Gold] > 0) {
                 storageSetGold(storageGetGold() + drop[GameDropProperties.Gold]);
-                game[GameProperties.Drops].splice(i, 1);
             } else if (!inventoryIsFull()) {
                 inventoryAddItem(drop[GameDropProperties.ItemId]);
             } else {
@@ -240,19 +235,21 @@ const gameKnightEnemyCheckHit = (game: Game, player: Knight, enemy: Knight) => {
     if (knightIsDead(enemy)) {
         let gold = 0;
         let itemId = 0;
-        let object: Object;
+        let animatable: Animatable;
+        let originComponentId = 0;
         if (Math.random() < 0.7) {
-            gold = Math.floor(Math.random() * 10) + 3;
-            object = objectCreate(ModelType.Gold);
+            gold = ((Math.random() * 20) | 0) + 5;
+            animatable = animatableCreate(objectCreate(ModelType.Gold), []);
         } else {
-            itemId = 60;
-            object = weaponGetObject(weaponCreate(itemId));
+            itemId = equipGetRandomId();
+            animatable = equipCreateAnimatable(itemId);
+            originComponentId = equipGetOriginComponentId(itemId);
         }
 
         const directionLeft = knightGetCenter(enemy) < knightGetCenter(player);
         game[GameProperties.Drops].push({
             [GameDropProperties.ItemId]: itemId,
-            [GameDropProperties.Drop]: dropCreate(object, knightGetCenter(enemy), directionLeft),
+            [GameDropProperties.Drop]: dropCreate(animatable, originComponentId, knightGetCenter(enemy), directionLeft),
             [GameDropProperties.Gold]: gold,
         });
     }
@@ -359,7 +356,7 @@ export const gameStart = (game: Game, program: Program) => {
 
     btnnext.onclick = () => {
         knightSetHealth(game[GameProperties.Player], 1);
-        game[GameProperties.Enemy] = knightCreate(vectorCreate(200, FLOOR_LEVEL), weaponCreate(60));
+        gameNextEnemy(game);
     };
 
     requestAnimationFrame((time: number) => loop((previousTime = time)));
@@ -367,6 +364,13 @@ export const gameStart = (game: Game, program: Program) => {
     if (process.env.NODE_ENV !== 'production') {
         window['game'] = game;
     }
+};
+
+const gameNextEnemy = (game: Game) => {
+    game[GameProperties.Enemy] = knightCreate(vectorCreate(200, FLOOR_LEVEL), {
+        [EquippedIdsProperties.WeaponId]: 60,
+        [EquippedIdsProperties.ArmorId]: 1,
+    });
 };
 
 if (process.env.NODE_ENV !== 'production') {

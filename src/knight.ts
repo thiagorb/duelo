@@ -1,4 +1,4 @@
-import * as modelData from '../art/man.svg';
+import * as modelData from '../art/knight.svg';
 import {
     Animatable,
     animatableBeginStep,
@@ -21,11 +21,21 @@ import {
     animationStep,
     boundElementCreate,
 } from './animation';
-import { Weapon, weaponGetId, weaponGetObject } from './weapon';
-import { glDrawRect, glSetGlobalOpacity, Program } from './gl';
+import { weaponCreateObject } from './weapon';
+import { ColorRGB, glDrawRect, glSetGlobalOpacity, Program } from './gl';
 import { matrixScale, matrixSetIdentity, matrixTranslateVector, Vec2, vectorCreate } from './glm';
-import { ModelType, objectCalculateomponentTransformedOrigin, objectCreate } from './model';
-import { weaponGetAttack, weaponGetTipPosition } from './weapon';
+import {
+    MaterialType,
+    ModelType,
+    Object,
+    objectCalculateomponentTransformedOrigin,
+    objectCreate,
+    objectSetColorOverride,
+    objectSetMaterialOverride,
+    objectSetSubObject,
+} from './model';
+import { weaponGetAttack } from './weapon';
+import { equipGetColor, equipGetLevel, equipGetWeaponId, EquippedIds, EquippedIdsProperties } from './equip';
 
 const enum KnightProperties {
     Position,
@@ -46,7 +56,7 @@ const enum KnightProperties {
     FacingLeft,
     Attacking,
     Opacity,
-    Weapon,
+    WeaponId,
     Health,
     SupportFoot,
     SupportFootSwap,
@@ -71,7 +81,7 @@ export type Knight = {
     [KnightProperties.FacingLeft]: boolean;
     [KnightProperties.Attacking]: boolean;
     [KnightProperties.Opacity]: number;
-    [KnightProperties.Weapon]: Weapon;
+    [KnightProperties.WeaponId]: number;
     [KnightProperties.Health]: number;
     [KnightProperties.SupportFoot]: boolean;
     [KnightProperties.SupportFootSwap]: boolean;
@@ -81,7 +91,7 @@ export type Knight = {
 
 const ATTACK_START = -3;
 const ATTACK_END = -1.3;
-export const knightCreate = (position: Vec2, weapon: Weapon): Knight => {
+export const knightCreate = (position: Vec2, equipped: EquippedIds): Knight => {
     const REST_LEFT_LEG_1 = 0.1;
     const REST_LEFT_LEG_2 = 0.7;
     const REST_RIGHT_LEG_1 = -0.7;
@@ -126,52 +136,58 @@ export const knightCreate = (position: Vec2, weapon: Weapon): Knight => {
 
     const restAnimation = animationCreate([animationFrameCreate(restPosition)]);
 
+    const rightObject = objectCreate(ModelType.Knight);
+    const leftObject = objectCreate(ModelType.Knight);
+    knightApplyArmorOverrides(rightObject, equipped[EquippedIdsProperties.ArmorId]);
+    knightApplyArmorOverrides(leftObject, equipped[EquippedIdsProperties.ArmorId]);
+    knightApplyGauntletOverrides(rightObject, equipped[EquippedIdsProperties.GauntletsId]);
+    knightApplyGauntletOverrides(leftObject, equipped[EquippedIdsProperties.GauntletsId]);
+    knightApplyBootsOverrides(rightObject, equipped[EquippedIdsProperties.BootsId]);
+    knightApplyBootsOverrides(leftObject, equipped[EquippedIdsProperties.BootsId]);
+    knightApplyHelmetOverrides(rightObject, equipped[EquippedIdsProperties.HelmetId]);
+    knightApplyHelmetOverrides(leftObject, equipped[EquippedIdsProperties.HelmetId]);
+
+    const weaponId = equipped[EquippedIdsProperties.WeaponId];
+    if (weaponId >= 0) {
+        const weapon = weaponCreateObject(weaponId);
+        objectSetSubObject(rightObject, modelData.weaponLeftComponentId, weapon);
+        objectSetSubObject(leftObject, modelData.weaponRightComponentId, weapon);
+    }
+
     const knight: Knight = {
         [KnightProperties.Position]: position,
-        [KnightProperties.AnimatableRight]: animatableCreate(
-            objectCreate(ModelType.Man, {
-                [modelData.weaponLeftComponentId]: weapon && weaponGetObject(weapon),
-                [modelData.weaponRightComponentId]: null,
-            }),
-            [
-                boundElementCreate(body, modelData.bodyComponentId),
-                boundElementCreate(face, modelData.faceComponentId),
-                boundElementCreate(leftArm1, modelData.leftArm1ComponentId),
-                boundElementCreate(leftArm2, modelData.leftArm2ComponentId),
-                boundElementCreate(rightArm1, modelData.rightArm1ComponentId),
-                boundElementCreate(rightArm2, modelData.rightArm2ComponentId),
-                boundElementCreate(leftLeg1, modelData.leftLeg1ComponentId),
-                boundElementCreate(leftLeg2, modelData.leftLeg2ComponentId),
-                boundElementCreate(leftFoot, modelData.leftFootComponentId),
-                boundElementCreate(rightLeg1, modelData.rightLeg1ComponentId),
-                boundElementCreate(rightLeg2, modelData.rightLeg2ComponentId),
-                boundElementCreate(rightFoot, modelData.rightFootComponentId),
-                boundElementCreate(weaponAnimationElement, modelData.weaponLeftComponentId),
-                boundElementCreate(bodyTranslate, modelData.bodyComponentId, AnimatedProperty.TranslationY),
-            ]
-        ),
-        [KnightProperties.AnimatableLeft]: animatableCreate(
-            objectCreate(ModelType.Man, {
-                [modelData.weaponLeftComponentId]: null,
-                [modelData.weaponRightComponentId]: weapon && weaponGetObject(weapon),
-            }),
-            [
-                boundElementCreate(body, modelData.bodyComponentId),
-                boundElementCreate(face, modelData.faceComponentId),
-                boundElementCreate(rightArm1, modelData.leftArm1ComponentId),
-                boundElementCreate(rightArm2, modelData.leftArm2ComponentId),
-                boundElementCreate(leftArm1, modelData.rightArm1ComponentId),
-                boundElementCreate(leftArm2, modelData.rightArm2ComponentId),
-                boundElementCreate(leftLeg1, modelData.leftLeg1ComponentId),
-                boundElementCreate(leftLeg2, modelData.leftLeg2ComponentId),
-                boundElementCreate(leftFoot, modelData.leftFootComponentId),
-                boundElementCreate(rightLeg1, modelData.rightLeg1ComponentId),
-                boundElementCreate(rightLeg2, modelData.rightLeg2ComponentId),
-                boundElementCreate(rightFoot, modelData.rightFootComponentId),
-                boundElementCreate(weaponAnimationElement, modelData.weaponLeftComponentId),
-                boundElementCreate(bodyTranslate, modelData.bodyComponentId, AnimatedProperty.TranslationY),
-            ]
-        ),
+        [KnightProperties.AnimatableRight]: animatableCreate(rightObject, [
+            boundElementCreate(body, modelData.bodyComponentId),
+            boundElementCreate(face, modelData.faceComponentId),
+            boundElementCreate(leftArm1, modelData.leftArm1ComponentId),
+            boundElementCreate(leftArm2, modelData.leftArm2ComponentId),
+            boundElementCreate(rightArm1, modelData.rightArm1ComponentId),
+            boundElementCreate(rightArm2, modelData.rightArm2ComponentId),
+            boundElementCreate(leftLeg1, modelData.leftLeg1ComponentId),
+            boundElementCreate(leftLeg2, modelData.leftLeg2ComponentId),
+            boundElementCreate(leftFoot, modelData.leftFootComponentId),
+            boundElementCreate(rightLeg1, modelData.rightLeg1ComponentId),
+            boundElementCreate(rightLeg2, modelData.rightLeg2ComponentId),
+            boundElementCreate(rightFoot, modelData.rightFootComponentId),
+            boundElementCreate(weaponAnimationElement, modelData.weaponLeftComponentId),
+            boundElementCreate(bodyTranslate, modelData.bodyComponentId, AnimatedProperty.TranslationY),
+        ]),
+        [KnightProperties.AnimatableLeft]: animatableCreate(leftObject, [
+            boundElementCreate(body, modelData.bodyComponentId),
+            boundElementCreate(face, modelData.faceComponentId),
+            boundElementCreate(rightArm1, modelData.leftArm1ComponentId),
+            boundElementCreate(rightArm2, modelData.leftArm2ComponentId),
+            boundElementCreate(leftArm1, modelData.rightArm1ComponentId),
+            boundElementCreate(leftArm2, modelData.rightArm2ComponentId),
+            boundElementCreate(leftLeg1, modelData.leftLeg1ComponentId),
+            boundElementCreate(leftLeg2, modelData.leftLeg2ComponentId),
+            boundElementCreate(leftFoot, modelData.leftFootComponentId),
+            boundElementCreate(rightLeg1, modelData.rightLeg1ComponentId),
+            boundElementCreate(rightLeg2, modelData.rightLeg2ComponentId),
+            boundElementCreate(rightFoot, modelData.rightFootComponentId),
+            boundElementCreate(weaponAnimationElement, modelData.weaponLeftComponentId),
+            boundElementCreate(bodyTranslate, modelData.bodyComponentId, AnimatedProperty.TranslationY),
+        ]),
         [KnightProperties.CurrentAnimation]: null,
         [KnightProperties.AttackAnimation]: null,
         [KnightProperties.DefendAnimation]: null,
@@ -185,7 +201,7 @@ export const knightCreate = (position: Vec2, weapon: Weapon): Knight => {
         [KnightProperties.FacingLeft]: false,
         [KnightProperties.Attacking]: false,
         [KnightProperties.Opacity]: 0,
-        [KnightProperties.Weapon]: weapon,
+        [KnightProperties.WeaponId]: weaponId,
         [KnightProperties.Health]: 1,
         [KnightProperties.SupportFoot]: false,
         [KnightProperties.SupportFootSwap]: false,
@@ -403,6 +419,65 @@ export const knightCreate = (position: Vec2, weapon: Weapon): Knight => {
     return knight;
 };
 
+export const knightApplyArmorOverrides = (object: Object, itemId: number) => {
+    if (!(itemId >= 0)) {
+        objectSetMaterialOverride(object, modelData.rightShoulderComponentId, MaterialType.Invisible);
+        objectSetMaterialOverride(object, modelData.leftShoulderComponentId, MaterialType.Invisible);
+        return;
+    }
+    if (itemId >= 0) {
+        const color = equipGetColor(itemId);
+        objectSetMaterialOverride(object, modelData.bodyComponentId, MaterialType.Shiny);
+        objectSetMaterialOverride(object, modelData.rightArm1ComponentId, MaterialType.Shiny);
+        objectSetMaterialOverride(object, modelData.leftArm1ComponentId, MaterialType.Shiny);
+        objectSetMaterialOverride(object, modelData.rightShoulderComponentId, MaterialType.Shiny);
+        objectSetMaterialOverride(object, modelData.leftShoulderComponentId, MaterialType.Shiny);
+        objectSetColorOverride(object, modelData.bodyComponentId, color);
+        objectSetColorOverride(object, modelData.rightShoulderComponentId, color);
+        objectSetColorOverride(object, modelData.leftShoulderComponentId, color);
+        objectSetColorOverride(object, modelData.rightArm1ComponentId, color);
+        objectSetColorOverride(object, modelData.leftArm1ComponentId, color);
+    }
+};
+
+export const knightApplyGauntletOverrides = (object: Object, itemId: number) => {
+    if (!(itemId >= 0)) {
+        return;
+    }
+    const color = equipGetColor(itemId);
+    objectSetMaterialOverride(object, modelData.rightGauntletComponentId, MaterialType.Shiny);
+    objectSetMaterialOverride(object, modelData.leftGauntletComponentId, MaterialType.Shiny);
+    objectSetColorOverride(object, modelData.rightGauntletComponentId, color);
+    objectSetColorOverride(object, modelData.leftGauntletComponentId, color);
+};
+
+export const knightApplyBootsOverrides = (object: Object, itemId: number) => {
+    if (!(itemId >= 0)) {
+        return;
+    }
+
+    const color = equipGetColor(itemId);
+    objectSetMaterialOverride(object, modelData.rightLeg2ComponentId, MaterialType.Shiny);
+    objectSetMaterialOverride(object, modelData.rightFootComponentId, MaterialType.Shiny);
+    objectSetMaterialOverride(object, modelData.leftLeg2ComponentId, MaterialType.Shiny);
+    objectSetMaterialOverride(object, modelData.leftFootComponentId, MaterialType.Shiny);
+    objectSetColorOverride(object, modelData.rightLeg2ComponentId, color);
+    objectSetColorOverride(object, modelData.rightFootComponentId, color);
+    objectSetColorOverride(object, modelData.leftLeg2ComponentId, color);
+    objectSetColorOverride(object, modelData.leftFootComponentId, color);
+};
+
+export const knightApplyHelmetOverrides = (object: Object, itemId: number) => {
+    if (!(itemId >= 0)) {
+        objectSetMaterialOverride(object, modelData.hairComponentId, MaterialType.Matte);
+        return;
+    }
+
+    const color = equipGetColor(itemId);
+    objectSetMaterialOverride(object, modelData.helmetComponentId, MaterialType.Shiny);
+    objectSetColorOverride(object, modelData.helmetComponentId, color);
+};
+
 const knightChangeSupportFootV1 = vectorCreate();
 const knightChangeSupportFootV2 = vectorCreate();
 const knightChangeSupportFoot = (knight: Knight) => {
@@ -448,9 +523,7 @@ export const knightDraw = (knight: Knight, program: Program) => {
     glSetGlobalOpacity(program, 1);
 
     if (false && process.env.NODE_ENV !== 'production') {
-        if (knight[KnightProperties.Weapon]) {
-            glDrawRect(program, vectorCreate(knightGetWeaponTip(knight), 0), vectorCreate(1, 100));
-        }
+        glDrawRect(program, vectorCreate(knightGetWeaponTip(knight), 0), vectorCreate(1, 100));
 
         glDrawRect(
             program,
@@ -597,19 +670,26 @@ export const knightStep = (knight: Knight, deltaTime: number) => {
 
 const knightGetWeaponTipVector = vectorCreate();
 export const knightGetWeaponTip = (knight: Knight) => {
-    weaponGetTipPosition(knight[KnightProperties.Weapon], knightGetWeaponTipVector);
+    const weaponComponentId = knight[KnightProperties.FacingLeft]
+        ? modelData.weaponRightComponentId
+        : modelData.weaponLeftComponentId;
+    knightGetComponentTransformedOrigin(knight, weaponComponentId, knightGetWeaponTipVector);
     const weaponTip = knightGetWeaponTipVector[0];
-    const armComponentId = knight[KnightProperties.FacingLeft]
-        ? modelData.rightArm1ComponentId
-        : modelData.leftArm1ComponentId;
 
     const bounding = knight[KnightProperties.FacingLeft]
         ? knightGetBoundingLeft(knight)
         : knightGetBoundingRight(knight);
 
+    const armComponentId = knight[KnightProperties.FacingLeft]
+        ? modelData.rightArm1ComponentId
+        : modelData.leftArm1ComponentId;
     knightGetComponentTransformedOrigin(knight, armComponentId, knightGetWeaponTipVector);
     const arm = knightGetWeaponTipVector[0];
 
+    if (!knight[1000] || knight[1000] < Math.abs(weaponTip - arm)) {
+        knight[1000] = Math.abs(weaponTip - arm);
+        console.log(knight[1000]);
+    }
     return bounding + weaponTip - arm;
 };
 
@@ -654,7 +734,7 @@ export const knightGetCenter = (knight: Knight) => {
 };
 
 export const knightGetAttackPower = (knight: Knight) =>
-    2 + 2 * weaponGetAttack(weaponGetId(knight[KnightProperties.Weapon]));
+    2 + 2 * (knight[KnightProperties.WeaponId] >= 0 ? weaponGetAttack(knight[KnightProperties.WeaponId]) : 0);
 
 export const knightGetDefense = (knight: Knight) => 15;
 
@@ -696,4 +776,4 @@ export const knightIncreaseHealth = (knight: Knight, amount: number) => {
     }
 };
 
-export const knightGetWeaponId = (knight: Knight) => weaponGetId(knight[KnightProperties.Weapon]);
+export const knightGetWeaponId = (knight: Knight) => knight[KnightProperties.WeaponId];

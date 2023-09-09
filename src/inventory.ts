@@ -1,13 +1,12 @@
 import {
-    animatableBeginStep,
-    animatableCreate,
+    animatableDraw,
     animatableGetRootTransform,
     animatableSetOriginComponent,
     animatableTransform,
+    animatableTransformApply,
 } from './animation';
-import { glClear, glDrawRect, glProgramCreate, glSetViewMatrix, glSetViewport } from './gl';
+import { glClear, glProgramCreate, glSetViewMatrix, glSetViewport } from './gl';
 import { matrixCreate, matrixScale, matrixSetIdentity, matrixTranslateVector, vectorCreate } from './glm';
-import { objectDraw } from './model';
 import {
     storageGetEquippedIds,
     storageGetGold,
@@ -16,9 +15,7 @@ import {
     storageSetGold,
     storageSetItemIds,
 } from './storage';
-import { weaponCreate, weaponGetObject } from './weapon';
-import * as swordModelData from '../art/sword.svg';
-import { EquippedIds } from './equip';
+import { EquippedIds, equipCreateAnimatable, equipGetOriginComponentId, equipGetType } from './equip';
 import {
     NearInstance,
     nearBuy,
@@ -26,7 +23,6 @@ import {
     nearCollectSale,
     nearGetAccountId,
     nearGetCompletedSales,
-    nearGetNeworkId,
     nearGetPendingSales,
     nearGetRandomSales,
     nearGetSignedIn,
@@ -116,10 +112,10 @@ const loadInventory = (near: NearInstance) => {
             const equipAction = createItemAction('EQUIP');
             equipAction.onclick = () => {
                 const equipped = storageGetEquippedIds();
-                const equipSlot = 0;
+                const equipSlot = equipGetType(itemId);
                 const oldEquipped = equipped[equipSlot];
                 const items = storageGetItemIds();
-                items.splice(i, 1, oldEquipped);
+                items.splice(i, 1, ...(oldEquipped ? [oldEquipped] : []));
                 storageSetItemIds(items);
                 equipped[equipSlot] = itemId;
                 storageSetEquippedIds(equipped);
@@ -182,7 +178,7 @@ const loadEquippedItems = (near: NearInstance) => {
                 items.push(itemId);
                 storageSetItemIds(items);
                 const equipped = storageGetEquippedIds();
-                equipped[0] = undefined;
+                equipped[equipGetType(itemId)] = undefined;
                 storageSetEquippedIds(equipped);
                 onEquip?.(equipped);
                 loadInventory(near);
@@ -287,7 +283,9 @@ const toggleSignIn = async (near: NearInstance) => {
     }
 };
 
-mainnet.onclick = testnet.onclick = (event: MouseEvent) => nearRequestSignIn((event.target as HTMLDivElement).id);
+mainnet.onclick = testnet.onclick = (event: MouseEvent) => {
+    nearRequestSignIn((event.target as HTMLDivElement).id);
+};
 
 signOut.onclick = async () => {
     await nearSignOut();
@@ -310,18 +308,17 @@ const renderItem = (() => {
 
     return (itemId: number) => {
         glClear(program);
-        const item = weaponCreate(itemId);
-        const object = weaponGetObject(item);
-        const animatable = animatableCreate(object, []);
-        const matrix = animatableGetRootTransform(animatable);
 
+        const animatable = equipCreateAnimatable(itemId);
+        const originComponentId = equipGetOriginComponentId(itemId);
+        const matrix = animatableGetRootTransform(animatable);
+        matrixSetIdentity(matrix);
+        animatableTransform(animatable);
+        animatableSetOriginComponent(animatable, originComponentId);
         matrixSetIdentity(matrix);
         matrixTranslateVector(matrix, vectorCreate(0, 0));
-
-        animatableBeginStep(animatable);
-        animatableTransform(animatable);
-        animatableSetOriginComponent(animatable, swordModelData.centerComponentId);
-        objectDraw(object, program);
+        animatableTransformApply(animatable, matrix);
+        animatableDraw(animatable, program);
 
         return canvas.toDataURL('image/png');
     };
