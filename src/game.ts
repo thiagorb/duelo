@@ -333,7 +333,6 @@ export const gameStart = (game: Game, program: Program) => {
 
     if (process.env.NODE_ENV !== 'production') {
         window['game'] = game;
-        console.log(game);
     }
 };
 

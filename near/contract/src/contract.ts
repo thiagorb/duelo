@@ -1,102 +1,115 @@
 import { NearBindgen, near, call, view } from 'near-sdk-js';
-import { weaponGetRandomId } from '../../../src/weapon';
 
-type Opponent = { type: number } | { weaponId: number };
-type Weapon = {
-    type: number;
-    ownerId: string;
+type Sale = {
+    itemId: number;
+    price: number;
+    sellerId: string;
 };
 
 @NearBindgen({})
 export class DueloGame {
-    registeredPlayers: { [playerId: string]: { opponent: Opponent } } = {};
-    weapons: Array<Weapon> = [];
+    pendingSales: { [saleId: string]: Sale } = {};
+    completedSales: { [userId: string]: { [saleId: string]: Sale } } = {};
 
     @view({})
-    is_registered({ playerId }: { playerId: string }): boolean {
-        return typeof this.registeredPlayers[playerId] !== 'undefined';
+    get_random_sales({ playerId }: { playerId: string }): { [saleId: string]: Sale } {
+        const maxSales = 50;
+
+        const othersSales: Array<[number, [string, Sale]]> = Object.entries(this.pendingSales)
+            .filter(([saleId, sale]) => sale.sellerId !== playerId)
+            .slice(0, maxSales)
+            .map(([saleId, sale]) => [Math.random(), [saleId, sale]]);
+
+        othersSales.sort((a, b) => a[0] - b[0]);
+        return Object.fromEntries(othersSales.slice(0, 10).map(s => s[1]));
     }
 
     @view({})
-    get_opponent({ playerId }: { playerId: string }) {
-        const player = this.registeredPlayers[playerId];
-        if ('weaponId' in player.opponent) {
-            return {
-                weaponType: this.weapons[player.opponent.weaponId].type,
-                playerId: this.weapons[player.opponent.weaponId].ownerId,
-            };
-        } else {
-            return {
-                weaponType: player.opponent.type,
-                playerId: null,
-            };
-        }
+    get_user_pending_sales({ playerId }: { playerId: string }) {
+        return Object.fromEntries(
+            Object.entries(this.pendingSales).filter(([saleId, sale]) => sale.sellerId === playerId)
+        );
     }
 
     @view({})
-    get_player_weapons({ playerId }: { playerId: string }) {
-        return this.weapons.filter(weapon => weapon.ownerId === playerId).map(weapon => weapon.type);
-    }
-
-    @view({})
-    get_registered_players() {
-        return Object.entries(this.registeredPlayers).map(([accountId, player]) => ({
-            accountId,
-            opponentId: 'weaponId' in player.opponent ? player.opponent.weaponId : null,
-            weaponType: 'weaponId' in player.opponent ? null : player.opponent.type,
-        }));
-    }
-
-    @view({})
-    get_weapons(): Array<Weapon> {
-        return this.weapons;
+    get_user_completed_sales({ playerId }: { playerId: string }) {
+        return this.completedSales[playerId] || {};
     }
 
     @call({})
-    register_player(): void {
-        const accountId = near.signerAccountId();
-        this.registeredPlayers[accountId] = {
-            opponent: this.select_opponent(accountId),
+    sell({ saleId, itemId, price }: { saleId: string; itemId: number; price: number }): Sale {
+        const userId = near.signerAccountId();
+
+        // if user has more than 3 pending sales, don't allow
+        let userSaleIds = this.get_user_pending_sales({ playerId: userId });
+        if (Object.keys(userSaleIds).length >= 3) {
+            return;
+        }
+
+        if (this.pendingSales[saleId]) {
+            return;
+        }
+
+        const sale = {
+            itemId,
+            price,
+            sellerId: userId,
         };
+
+        this.pendingSales[saleId] = sale;
+        return sale;
     }
 
     @call({})
-    claim_weapon(): void {
-        const accountId = near.signerAccountId();
-        const player = this.registeredPlayers[accountId];
-        if ('weaponId' in player.opponent) {
-            this.weapons[player.opponent.weaponId].ownerId = accountId;
-        } else {
-            this.weapons.push({ type: player.opponent.type, ownerId: accountId });
+    buy({ saleId }: { saleId: string }): Sale {
+        const sale = this.pendingSales[saleId];
+        if (sale === null) {
+            return;
         }
-        player.opponent = this.select_opponent(accountId);
+
+        const sellerId = sale.sellerId;
+        delete this.pendingSales[saleId];
+        const sellerCompletedSales = this.get_user_completed_sales({ playerId: sellerId });
+        sellerCompletedSales[saleId] = sale;
+        this.completedSales[sellerId] = sellerCompletedSales;
+
+        return sale;
+    }
+
+    @call({})
+    collect_sale({ saleId }: { saleId: string }): Sale {
+        const userId = near.signerAccountId();
+        const sellerCompletedSales = this.get_user_completed_sales({ playerId: userId });
+        const sale = sellerCompletedSales[saleId];
+        if (sale === null) {
+            return;
+        }
+
+        delete sellerCompletedSales[saleId];
+        this.completedSales[userId] = sellerCompletedSales;
+
+        return sale;
+    }
+
+    @call({})
+    cancel_sale({ saleId }: { saleId: string }): Sale {
+        const userId = near.signerAccountId();
+        const sale = this.pendingSales[saleId];
+        if (sale === null) {
+            return;
+        }
+
+        if (sale.sellerId !== userId) {
+            return;
+        }
+
+        delete this.pendingSales[saleId];
+        return sale;
     }
 
     @call({})
     reset(): void {
-        this.registeredPlayers = {};
-        this.weapons = [];
-    }
-
-    select_opponent(playerId: string): Opponent {
-        const options = Math.max(
-            50,
-            (Object.keys(this.registeredPlayers).length * 0.75) | 0,
-            Object.keys(this.weapons).length
-        );
-
-        let selectedOption = Number(near.blockTimestamp() % BigInt(options));
-        while (selectedOption < this.weapons.length && this.weapons[selectedOption].ownerId === playerId) {
-            selectedOption++;
-        }
-
-        if (selectedOption < this.weapons.length) {
-            return {
-                weaponId: selectedOption,
-            };
-        } else {
-            const precision = 1_000_000;
-            return { type: weaponGetRandomId(Number(near.blockTimestamp() % BigInt(precision)) / precision) };
-        }
+        this.pendingSales = {};
+        this.completedSales = {};
     }
 }

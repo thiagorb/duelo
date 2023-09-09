@@ -9,6 +9,12 @@ const enum NearInstanceProperties {
     Contract,
 }
 
+type Sale = {
+    itemId: number;
+    price: number;
+    sellerId: string;
+};
+
 export type NearOpponent = { weaponType: number; playerId: string };
 
 export type NearInstance = {
@@ -22,13 +28,13 @@ export type NearInstance = {
         signOut(): void;
     };
     [NearInstanceProperties.Contract]: {
-        is_registered(_: { playerId: string }): Promise<boolean>;
-        get_opponent(_: { playerId: string }): Promise<NearOpponent>;
-        get_player_weapons(_: { playerId: string }): Promise<Array<number>>;
-        get_registered_players(): Promise<Object>;
-        get_weapons(): Promise<Object>;
-        register_player(): Promise<void>;
-        claim_weapon(): Promise<void>;
+        get_random_sales(_: { playerId: string }): Promise<{ [saleId: string]: Sale }>;
+        get_user_pending_sales(_: { playerId: string }): Promise<{ [saleId: string]: Sale }>;
+        get_user_completed_sales(_: { playerId: string }): Promise<{ [saleId: string]: Sale }>;
+        sell(_: { saleId: string; itemId: number; price: number }): Promise<Sale>;
+        buy(_: { saleId: string }): Promise<Sale>;
+        collect_sale(_: { saleId: string }): Promise<Sale>;
+        cancel_sale(_: { saleId: string }): Promise<Sale>;
     };
 };
 
@@ -47,11 +53,11 @@ const nearCreate = async (networkId: string): Promise<NearInstance> => {
     const walletConnection = new nearApi.WalletConnection(nearConnection, contractStorageKey);
 
     const contract = ((window as any).contract = await new nearApi.Contract(walletConnection.account(), contractName, {
-        viewMethods: ['is_registered', 'get_opponent', 'get_player_weapons', 'get_registered_players', 'get_weapons'],
+        viewMethods: ['get_random_sales', 'get_user_pending_sales', 'get_user_completed_sales'],
         changeMethods:
             process.env.NODE_ENV !== 'production'
-                ? ['register_player', 'claim_weapon', 'reset']
-                : ['register_player', 'claim_weapon'],
+                ? ['sell', 'buy', 'collect_sale', 'cancel_sale', 'reset']
+                : ['sell', 'buy', 'collect_sale', 'cancel_sale'],
         sender: walletConnection.getAccountId(),
     }));
 
@@ -73,19 +79,7 @@ let nearSignedIn: Promise<NearInstance>;
 export const nearRequestSignIn = async (networkId: string) => {
     storageSetNetworkId(networkId);
     const near = await (networkId === 'testnet' ? getNearTest() : getNearMain());
-    near[NearInstanceProperties.Connection].requestSignIn(near[NearInstanceProperties.ContractName], 'Duelo');
-};
-
-const registerIfNewPlayer = async (near: NearInstance) => {
-    if (!nearIsSignedIn(near)) {
-        return;
-    }
-
-    if (await near[NearInstanceProperties.Contract].is_registered({ playerId: nearGetAccountId(near) })) {
-        return;
-    }
-
-    await near[NearInstanceProperties.Contract].register_player();
+    near[NearInstanceProperties.Connection].requestSignIn(near[NearInstanceProperties.ContractName], 'DUELO');
 };
 
 export const nearGetSignedIn = (): Promise<NearInstance> => {
@@ -97,10 +91,10 @@ export const nearGetSignedIn = (): Promise<NearInstance> => {
             }
 
             const near = await (networkId === 'testnet' ? getNearTest() : getNearMain());
-            registerIfNewPlayer(near);
 
-            // console.log('players', await near[NearInstanceProperties.Contract].get_registered_players());
-            // console.log('weapons', await near[NearInstanceProperties.Contract].get_weapons());
+            if (process.env.NODE_ENV !== 'production') {
+                (window as any).near = near;
+            }
 
             return nearIsSignedIn(near) ? near : null;
         })();
@@ -117,14 +111,32 @@ export const nearSignOut = async () => {
 
 export const nearGetNeworkId = (near: NearInstance) => near[NearInstanceProperties.NetworkId];
 
-export const nearGetOpponent = (near: NearInstance) => {
-    return near[NearInstanceProperties.Contract].get_opponent({ playerId: nearGetAccountId(near) });
+export const nearGetRandomSales = (near: NearInstance) => {
+    return near[NearInstanceProperties.Contract].get_random_sales({ playerId: nearGetAccountId(near) });
 };
 
-export const nearClaimWeapon = (near: NearInstance) => {
-    return near[NearInstanceProperties.Contract].claim_weapon();
+export const nearGetPendingSales = (near: NearInstance) => {
+    return near[NearInstanceProperties.Contract].get_user_pending_sales({ playerId: nearGetAccountId(near) });
 };
 
-export const nearGetPlayerWeapons = (near: NearInstance) => {
-    return near[NearInstanceProperties.Contract].get_player_weapons({ playerId: nearGetAccountId(near) });
+export const nearGetCompletedSales = (near: NearInstance) => {
+    return near[NearInstanceProperties.Contract].get_user_completed_sales({ playerId: nearGetAccountId(near) });
+};
+
+const rand = () => (Math.random() * 0x10000000000000).toString(16);
+
+export const nearSell = (near: NearInstance, itemId: number, price: number) => {
+    return near[NearInstanceProperties.Contract].sell({ saleId: rand() + rand(), itemId, price });
+};
+
+export const nearBuy = (near: NearInstance, saleId: string) => {
+    return near[NearInstanceProperties.Contract].buy({ saleId });
+};
+
+export const nearCollectSale = (near: NearInstance, saleId: string) => {
+    return near[NearInstanceProperties.Contract].collect_sale({ saleId });
+};
+
+export const nearCancelSale = (near: NearInstance, saleId: string) => {
+    return near[NearInstanceProperties.Contract].cancel_sale({ saleId });
 };

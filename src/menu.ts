@@ -1,6 +1,5 @@
 import { Game, gameCreate, gameRender, gameStart, gameStep } from './game';
 import { Program, glIncreaseTime } from './gl';
-import { inventoryStart } from './inventory';
 
 declare const menuUi: HTMLDivElement;
 declare const start: HTMLButtonElement;

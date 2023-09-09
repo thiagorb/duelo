@@ -160,6 +160,14 @@
         .inv-item.selected .inv-actions {
             display: flex;
         }
+
+        #inv, #nearArea {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
     <script src="https://js13kgames.com/src/near-api-js.js"></script>
 </head>
@@ -185,7 +193,7 @@
                 </div>
             </div>
         </div>
-        <div id="inv" class="game-ui hidden" style="background-color: #000; display: none; flex-direction: column; gap: 5px; justify-content: center;">
+        <div id="inv" class="game-ui hidden" style="background-color: #000; display: none;">
             <div id="invClose" style="position: absolute; right: 10px; top: 10px;">✕</div>
             
             INVENTORY
@@ -194,13 +202,22 @@
             EQUIPPED
             <div id="eqItems" style="display: flex; gap: 2px;"></div>
 
-            SELLING
-            <div id="sellItems" style="display: flex; gap: 2px;"></div>
+            <span id="signMsg" style="display: none">SIGN IN WITH NEAR TO BUY/SELL ITEMS</span>
+            <div id="mainnet" style="display: none" class="btn" data-text="MAIN NET"></div>
+            <div id="testnet" style="display: none" class="btn" data-text="TEST NET"></div>
 
-            MARKET
-            <div id="mktItems" style="display: flex; gap: 2px;"></div>
+            <div id="nearArea" style="display: none">
+                <div id="logged"></div>
+                <div id="signOut" class="btn" data-text="SIGN OUT"></div>
 
-            GOLD: 1234
+                SELLING
+                <div id="sellItems" style="display: flex; gap: 2px;"></div>
+
+                MARKET
+                <div id="mktItems" style="display: flex; gap: 2px;"></div>
+            </div>
+
+            <span id="gold"></span>
         </div>
     </div>
     <div id="touch" class="hidden game-ui" style="position:absolute; padding: 0 10px; display:grid; grid-template-columns: 1fr auto; width: 100%; gap: 10px; bottom: 20px; box-sizing: border-box;">
