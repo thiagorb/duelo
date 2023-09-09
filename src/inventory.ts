@@ -54,6 +54,9 @@ declare const signOut: HTMLElement;
 declare const mainnet: HTMLElement;
 declare const testnet: HTMLElement;
 declare const gold: HTMLElement;
+declare const cnf: HTMLElement;
+declare const yes: HTMLElement;
+declare const no: HTMLElement;
 
 export const inventoryIsFull = () => {
     return storageGetItemIds().length >= 10;
@@ -168,10 +171,16 @@ const loadInventory = (near: NearInstance) => {
 
             const dropAction = createItemAction('DROP');
             dropAction.onclick = () => {
-                const items = storageGetItemIds();
-                items.splice(i, 1);
-                storageSetItemIds(items);
-                loadInventory(near);
+                cnf.style.display = null;
+                const close = () => (cnf.style.display = 'none');
+                yes.onclick = () => {
+                    const items = storageGetItemIds();
+                    items.splice(i, 1);
+                    storageSetItemIds(items);
+                    loadInventory(near);
+                    close();
+                };
+                no.onclick = close;
             };
             itemActions.appendChild(dropAction);
         });

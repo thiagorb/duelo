@@ -176,6 +176,19 @@
         #btns.hidden {
             transform: translateY(-50px);
         }
+
+        #cnf {
+            position: absolute;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            align-content: center;
+            text-align: center;
+        }
     </style>
     <script src="https://js13kgames.com/src/near-api-js.js"></script>
 </head>
@@ -227,6 +240,11 @@
                 MARKET
                 <div id="mktItems" style="display: flex; gap: 2px;"></div>
             </div>
+        </div>
+        <div id="cnf" style="display: none;">
+            <div style="width: 100%;">ARE YOU SURE YOU WANT TO DROP THIS ITEM?</div>
+            <div id="yes" class="btn" data-text="YES"></div>
+            <div id="no" class="btn" data-text="NO"></div>
         </div>
     </div>
     <div id="touch" class="hidden game-ui" style="position:absolute; padding: 0 10px; display:grid; grid-template-columns: 1fr auto; width: 100%; gap: 10px; bottom: 20px; box-sizing: border-box;">
