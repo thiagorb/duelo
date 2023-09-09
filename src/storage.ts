@@ -40,7 +40,7 @@ const validateData = (parsed: any) => {
 
     if (
         !Array.isArray(parsed[StorageDataProperties.ItemIds]) ||
-        parsed[StorageDataProperties.ItemIds].some(weaponId => typeof weaponId !== 'number')
+        parsed[StorageDataProperties.ItemIds].some(swordId => typeof swordId !== 'number')
     ) {
         return false;
     }

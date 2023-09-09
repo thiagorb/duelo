@@ -21,8 +21,7 @@ import {
     animationStep,
     boundElementCreate,
 } from './animation';
-import { weaponCreateObject } from './weapon';
-import { ColorRGB, glDrawRect, glSetGlobalOpacity, Program } from './gl';
+import { glDrawRect, glSetGlobalOpacity, Program } from './gl';
 import { matrixScale, matrixSetIdentity, matrixTranslateVector, Vec2, vectorCreate } from './glm';
 import {
     MaterialType,
@@ -34,8 +33,15 @@ import {
     objectSetMaterialOverride,
     objectSetSubObject,
 } from './model';
-import { weaponGetAttack } from './weapon';
-import { equipGetColor, equipGetLevel, equipGetWeaponId, EquippedIds, EquippedIdsProperties } from './equip';
+import {
+    equipCreateSwordObject,
+    equipGetAttack,
+    equipGetColor,
+    equipGetDefense,
+    equipGetLevel,
+    EquippedIds,
+    EquippedIdsProperties,
+} from './equip';
 
 const enum KnightProperties {
     Position,
@@ -56,7 +62,7 @@ const enum KnightProperties {
     FacingLeft,
     Attacking,
     Opacity,
-    WeaponId,
+    EquippedIds,
     Health,
     SupportFoot,
     SupportFootSwap,
@@ -81,7 +87,7 @@ export type Knight = {
     [KnightProperties.FacingLeft]: boolean;
     [KnightProperties.Attacking]: boolean;
     [KnightProperties.Opacity]: number;
-    [KnightProperties.WeaponId]: number;
+    [KnightProperties.EquippedIds]: EquippedIds;
     [KnightProperties.Health]: number;
     [KnightProperties.SupportFoot]: boolean;
     [KnightProperties.SupportFootSwap]: boolean;
@@ -138,20 +144,20 @@ export const knightCreate = (position: Vec2, equipped: EquippedIds): Knight => {
 
     const rightObject = objectCreate(ModelType.Knight);
     const leftObject = objectCreate(ModelType.Knight);
-    knightApplyArmorOverrides(rightObject, equipped[EquippedIdsProperties.ArmorId]);
-    knightApplyArmorOverrides(leftObject, equipped[EquippedIdsProperties.ArmorId]);
     knightApplyGauntletOverrides(rightObject, equipped[EquippedIdsProperties.GauntletsId]);
     knightApplyGauntletOverrides(leftObject, equipped[EquippedIdsProperties.GauntletsId]);
     knightApplyBootsOverrides(rightObject, equipped[EquippedIdsProperties.BootsId]);
     knightApplyBootsOverrides(leftObject, equipped[EquippedIdsProperties.BootsId]);
     knightApplyHelmetOverrides(rightObject, equipped[EquippedIdsProperties.HelmetId]);
     knightApplyHelmetOverrides(leftObject, equipped[EquippedIdsProperties.HelmetId]);
+    knightApplyArmorOverrides(rightObject, equipped[EquippedIdsProperties.ArmorId]);
+    knightApplyArmorOverrides(leftObject, equipped[EquippedIdsProperties.ArmorId]);
 
-    const weaponId = equipped[EquippedIdsProperties.WeaponId];
-    if (weaponId >= 0) {
-        const weapon = weaponCreateObject(weaponId);
-        objectSetSubObject(rightObject, modelData.weaponLeftComponentId, weapon);
-        objectSetSubObject(leftObject, modelData.weaponRightComponentId, weapon);
+    const swordId = equipped[EquippedIdsProperties.SwordId];
+    if (swordId >= 0) {
+        const sword = equipCreateSwordObject(swordId);
+        objectSetSubObject(rightObject, modelData.weaponLeftComponentId, sword);
+        objectSetSubObject(leftObject, modelData.weaponRightComponentId, sword);
     }
 
     const knight: Knight = {
@@ -201,7 +207,7 @@ export const knightCreate = (position: Vec2, equipped: EquippedIds): Knight => {
         [KnightProperties.FacingLeft]: false,
         [KnightProperties.Attacking]: false,
         [KnightProperties.Opacity]: 0,
-        [KnightProperties.WeaponId]: weaponId,
+        [KnightProperties.EquippedIds]: equipped,
         [KnightProperties.Health]: 1,
         [KnightProperties.SupportFoot]: false,
         [KnightProperties.SupportFootSwap]: false,
@@ -730,9 +736,14 @@ export const knightGetCenter = (knight: Knight) => {
 };
 
 export const knightGetAttackPower = (knight: Knight) =>
-    2 + 2 * (knight[KnightProperties.WeaponId] >= 0 ? weaponGetAttack(knight[KnightProperties.WeaponId]) : 0);
+    2 + equipGetAttack(knight[KnightProperties.EquippedIds][EquippedIdsProperties.SwordId]);
 
-export const knightGetDefense = (knight: Knight) => 15;
+export const knightGetDefense = (knight: Knight) =>
+    3 +
+    equipGetDefense(knight[KnightProperties.EquippedIds][EquippedIdsProperties.GauntletsId]) +
+    equipGetDefense(knight[KnightProperties.EquippedIds][EquippedIdsProperties.BootsId]) +
+    equipGetDefense(knight[KnightProperties.EquippedIds][EquippedIdsProperties.HelmetId]) +
+    equipGetDefense(knight[KnightProperties.EquippedIds][EquippedIdsProperties.ArmorId]);
 
 export const knightHit = (knight: Knight, power: number) => {
     if (knight[KnightProperties.CurrentAnimation] === knight[KnightProperties.HitAnimation] || knightIsDead(knight)) {
@@ -771,5 +782,3 @@ export const knightIncreaseHealth = (knight: Knight, amount: number) => {
         knightDie(knight);
     }
 };
-
-export const knightGetWeaponId = (knight: Knight) => knight[KnightProperties.WeaponId];

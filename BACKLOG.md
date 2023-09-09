@@ -1,7 +1,7 @@
 ## Next Steps
 
-- fix name of items in inventory
-- fix stats of items in inventory
+- spawn enemies at a certain distance
+- show sell button only when logged in
 - use items to calculate knight stats
 - adjust drops to enemy difficulty
 - customize items for enemy knight

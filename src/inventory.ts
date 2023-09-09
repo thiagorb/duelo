@@ -15,7 +15,16 @@ import {
     storageSetGold,
     storageSetItemIds,
 } from './storage';
-import { EquippedIds, equipCreateAnimatable, equipGetOriginComponentId, equipGetType } from './equip';
+import {
+    EquippedIds,
+    EquippedIdsProperties,
+    equipCreateAnimatable,
+    equipGetAttack,
+    equipGetDefense,
+    equipGetName,
+    equipGetOriginComponentId,
+    equipGetType,
+} from './equip';
 import {
     NearInstance,
     nearBuy,
@@ -73,7 +82,14 @@ const createItemDiv = (itemId: number, actionsBuilder: (itemActions: HTMLDivElem
     if (itemId !== undefined) {
         const itemImg = renderItem(itemId);
         itemDiv.style.backgroundImage = `url(${itemImg})`;
-        itemDiv.dataset.name = 'STEEL SWORD (ATT +3)';
+
+        const name = equipGetName(itemId);
+        const stats =
+            equipGetType(itemId) === EquippedIdsProperties.SwordId
+                ? `+${equipGetAttack(itemId)} ATK`
+                : `+${equipGetDefense(itemId)} DEF`;
+
+        itemDiv.dataset.name = `${name} (${stats})`;
 
         const itemActions = document.createElement('div');
         itemActions.classList.add('inv-actions');

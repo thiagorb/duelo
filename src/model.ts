@@ -155,16 +155,22 @@ export const modelCreate = (data: ModelData): Model => {
     };
 };
 
-const modelsData: Map<ModelType, ModelData> = new Map([
-    [ModelType.Knight, manModelData.model],
-    [ModelType.Sword, swordModelData.model],
-    [ModelType.Gold, goldModelData.model],
-    [ModelType.Background, backgroundModelData.model],
-]);
-const models = new Map([...modelsData.entries()].map(([modelType, modelData]) => [modelType, modelCreate(modelData)]));
+const modelsData = {
+    [ModelType.Knight]: manModelData.model,
+    [ModelType.Sword]: swordModelData.model,
+    [ModelType.Gold]: goldModelData.model,
+    [ModelType.Background]: backgroundModelData.model,
+};
+
+const models = {
+    [ModelType.Knight]: modelCreate(manModelData.model),
+    [ModelType.Sword]: modelCreate(swordModelData.model),
+    [ModelType.Gold]: modelCreate(goldModelData.model),
+    [ModelType.Background]: modelCreate(backgroundModelData.model),
+};
 
 export const objectCreate = (modelType: ModelType): Object => {
-    const components = models.get(modelType)[ModelProperty.Meshes].map(mesh => objectComponentFromMesh(mesh));
+    const components = models[modelType][ModelProperty.Meshes].map(mesh => objectComponentFromMesh(mesh));
 
     return {
         [ObjectProperty.Components]: components,
@@ -205,7 +211,7 @@ export const objectTransformComponent = (object: Object, componentId: number) =>
     const subobject = object[ObjectProperty.Subobjects][componentId];
     const matrix = component[ObjectComponentProperty.Matrix];
 
-    const model = models.get(object[ObjectProperty.ModelType]);
+    const model = models[object[ObjectProperty.ModelType]];
     const parentId = model[ModelProperty.ParentMap][componentId];
     if (typeof parentId === 'number') {
         matrixCopy(matrix, object[ObjectProperty.Components][parentId][ObjectComponentProperty.Matrix]);
@@ -228,7 +234,7 @@ export const objectTransformApplyComponent = (object: Object, componentId: numbe
     matrixMultiply(matrix, matrix, transform);
     if (subobject) {
         matrixCopy(objectGetRootTransform(subobject), matrix);
-        const model = models.get(subobject[ObjectProperty.ModelType]);
+        const model = models[subobject[ObjectProperty.ModelType]];
         for (const subComponentId of model[ModelProperty.TransformOrder]) {
             objectTransformApplyComponent(subobject, subComponentId, transform);
         }
@@ -236,7 +242,7 @@ export const objectTransformApplyComponent = (object: Object, componentId: numbe
 };
 
 export const objectApplyTransforms = (object: Object) => {
-    const model = models.get(object[ObjectProperty.ModelType]);
+    const model = models[object[ObjectProperty.ModelType]];
     for (const componentId of model[ModelProperty.TransformOrder]) {
         objectTransformComponent(object, componentId);
     }
@@ -257,7 +263,7 @@ export const objectDraw = (object: Object, program: Program) => {
 
         const component = object[ObjectProperty.Components][componentId];
         glSetModelTransform(program, component[ObjectComponentProperty.Matrix]);
-        const model = models.get(object[ObjectProperty.ModelType]);
+        const model = models[object[ObjectProperty.ModelType]];
         const material =
             object[ObjectProperty.MaterialOverrides][componentId] ||
             object[ObjectProperty.MaterialType] ||
@@ -280,7 +286,7 @@ const meshesLoad = (program: Program, modelType: ModelType) => {
 
     const programModels = modelStorage.get(program);
     if (!programModels.has(modelType)) {
-        const modelData = modelsData.get(modelType);
+        const modelData = modelsData[modelType];
         programModels.set(
             modelType,
             modelData[ModelDataProperty.Polygons].map(polygon => {
@@ -311,6 +317,6 @@ export const objectCalculateomponentTransformedOrigin = (object: Object, compone
 export const objectGetRootTransform = (object: Object) => object[ObjectProperty.Transform];
 
 export const objectGetComponentTransformOrder = (object: Object) => {
-    const model = models.get(object[ObjectProperty.ModelType]);
+    const model = models[object[ObjectProperty.ModelType]];
     return model[ModelProperty.TransformOrder];
 };

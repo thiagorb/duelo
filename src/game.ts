@@ -80,6 +80,7 @@ export const enum GameProperties {
     TimePassed,
     Drops,
     Level,
+    IsOver,
 }
 
 export type Game = ReturnType<typeof gameCreate>;
@@ -104,6 +105,7 @@ export const gameCreate = () => {
         [GameProperties.EnemyEquips]: {} as EquippedIds,
         [GameProperties.Drops]: new Array<GameDrop>(),
         [GameProperties.Level]: 0,
+        [GameProperties.IsOver]: false,
     };
 
     gameNextEnemy(game);
@@ -232,13 +234,12 @@ const gameKnightEnemyCheckHit = (game: Game, player: Knight, enemy: Knight) => {
     gameKnightCheckHit(player, enemy);
 
     if (knightIsDead(enemy)) {
-        const enemyItems = Object.values(game[GameProperties.EnemyEquips]).filter(id => id !== -1);
+        const enemyItems = Object.values(game[GameProperties.EnemyEquips]).filter(id => id >= 0);
         let gold = 0;
         let itemId = enemyItems[(Math.random() * enemyItems.length) | 0];
-        console.log(itemId);
         let animatable: Animatable;
         let originComponentId = 0;
-        if (Math.random() < 0.7 || !(itemId >= 0)) {
+        if (Math.random() < 0.3 || !(itemId >= 0)) {
             gold = ((Math.random() * 20) | 0) + 5;
             animatable = animatableCreate(objectCreate(ModelType.Gold), []);
         } else {
@@ -333,6 +334,7 @@ export const gameStart = (game: Game, program: Program) => {
     gameUi.style.display = null;
     setTimeout(() => gameUi.classList.remove('hidden'));
 
+    let ending = 0;
     let previousTime = 0;
     const loop = (time: number) => {
         const deltaTime = time - previousTime;
@@ -344,14 +346,20 @@ export const gameStart = (game: Game, program: Program) => {
 
         game[GameProperties.TimePassed] += deltaTime;
 
-        if (gameIsOver(game)) {
-            gameUi.style.display = 'none';
-            gameUi.classList.add('hidden');
-            menuStart(program, game);
-            return;
+        if (ending === 0 && knightIsDead(game[GameProperties.Player])) {
+            ending = 1;
+            setTimeout(() => {
+                ending = 2;
+                gameUi.classList.add('hidden');
+                setTimeout(() => (gameUi.style.display = 'none'), 500);
+                game[GameProperties.IsOver] = true;
+                menuStart(program, game);
+            }, 2000);
         }
 
-        requestAnimationFrame(loop);
+        if (ending < 2) {
+            requestAnimationFrame(loop);
+        }
     };
 
     btnnext.onclick = () => {
@@ -374,11 +382,11 @@ const gameNextEnemy = (game: Game) => {
     enemyName.innerText = `ENEMY LEVEL ${game[GameProperties.Level]}`;
     const level = (game[GameProperties.Level] / 3) | 0;
     game[GameProperties.EnemyEquips] = {
-        [EquippedIdsProperties.WeaponId]: equipGetItemId(EquippedIdsProperties.WeaponId, randomEquipLevel(level)),
-        [EquippedIdsProperties.ArmorId]: equipGetItemId(EquippedIdsProperties.ArmorId, randomEquipLevel(level)),
+        [EquippedIdsProperties.SwordId]: equipGetItemId(EquippedIdsProperties.SwordId, randomEquipLevel(level)),
         [EquippedIdsProperties.GauntletsId]: equipGetItemId(EquippedIdsProperties.GauntletsId, randomEquipLevel(level)),
         [EquippedIdsProperties.BootsId]: equipGetItemId(EquippedIdsProperties.BootsId, randomEquipLevel(level)),
         [EquippedIdsProperties.HelmetId]: equipGetItemId(EquippedIdsProperties.HelmetId, randomEquipLevel(level)),
+        [EquippedIdsProperties.ArmorId]: equipGetItemId(EquippedIdsProperties.ArmorId, randomEquipLevel(level)),
     };
     game[GameProperties.Enemy] = knightCreate(vectorCreate(200, FLOOR_LEVEL), game[GameProperties.EnemyEquips]);
 };
@@ -390,7 +398,11 @@ if (process.env.NODE_ENV !== 'production') {
             knightIncreaseHealth(game[GameProperties.Enemy], -1);
             gameKnightEnemyCheckHit(game, game[GameProperties.Player], game[GameProperties.Enemy]);
         }
+
+        if (e.key === 'd') {
+            knightIncreaseHealth(game[GameProperties.Player], -1);
+        }
     });
 }
 
-export const gameIsOver = (game: Game) => knightIsDead(game[GameProperties.Player]);
+export const gameIsOver = (game: Game) => game[GameProperties.IsOver];

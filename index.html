@@ -128,6 +128,7 @@
             border-radius: 5px;
             position: relative;
             background-size: cover;
+            font-size: 5px;
         }
 
         .inv-item:before {
@@ -139,7 +140,6 @@
             transform: translate(-50%, -100%);
             background: #07d;
             padding: 3px;
-            font-size: 5px;
             white-space: nowrap;
         }
 
@@ -150,14 +150,20 @@
         .inv-actions {
             display: none;
             position: absolute;
-            bottom: 0;
+            bottom: -1px;
             left: 50%;
             gap: 5px;
             transform: translate(-50%, 100%);
+            gap: 1px;
         }
 
         .inv-item.selected .inv-actions {
             display: flex;
+        }
+
+        .inv-action {
+            padding: 5px;
+            background-color: #777;
         }
 
         #inv, #nearArea {

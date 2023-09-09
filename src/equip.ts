@@ -1,6 +1,5 @@
 import { Animatable, animatableCreate } from './animation';
-import { MaterialType, ModelType, objectCreate, objectSetMaterial } from './model';
-import { weaponCreateObject } from './weapon';
+import { MaterialType, ModelType, Object, objectCreate, objectSetColorOverride, objectSetMaterial } from './model';
 import * as knightModelData from '../art/knight.svg';
 import * as swordModelData from '../art/sword.svg';
 import {
@@ -12,19 +11,19 @@ import {
 import { ColorRGB } from './gl';
 
 export const enum EquippedIdsProperties {
-    WeaponId,
-    ArmorId,
+    SwordId,
     GauntletsId,
     BootsId,
     HelmetId,
+    ArmorId,
 }
 
 export type EquippedIds = {
-    [EquippedIdsProperties.WeaponId]?: number;
-    [EquippedIdsProperties.ArmorId]?: number;
+    [EquippedIdsProperties.SwordId]?: number;
     [EquippedIdsProperties.GauntletsId]?: number;
     [EquippedIdsProperties.BootsId]?: number;
     [EquippedIdsProperties.HelmetId]?: number;
+    [EquippedIdsProperties.ArmorId]?: number;
 };
 
 const EQUIP_TYPES = 5;
@@ -39,20 +38,22 @@ export const equipGetItemId = (type: EquippedIdsProperties, level: number = 0) =
 
 export const equipGetRandomId = (): number => (Math.random() * ITEM_TYPES) | 0;
 
-export const equipGetWeaponId = (equippedIds: EquippedIds): number | undefined => {
-    return equippedIds[EquippedIdsProperties.WeaponId];
+export const equipGetSwordId = (equippedIds: EquippedIds): number | undefined => {
+    return equippedIds[EquippedIdsProperties.SwordId];
+};
+
+export const equipCreateSwordObject = (itemId: number): Object => {
+    const object = objectCreate(ModelType.Sword);
+    objectSetColorOverride(object, swordModelData.metalComponentId, equipGetColor(itemId));
+    return object;
 };
 
 export const equipCreateAnimatable = (itemId: number): Animatable => {
     const knight = objectCreate(ModelType.Knight);
     objectSetMaterial(knight, MaterialType.Invisible);
     switch (equipGetType(itemId)) {
-        case EquippedIdsProperties.WeaponId:
-            return animatableCreate(weaponCreateObject(itemId), []);
-        case EquippedIdsProperties.ArmorId: {
-            knightApplyArmorOverrides(knight, itemId);
-            return animatableCreate(knight, []);
-        }
+        case EquippedIdsProperties.SwordId:
+            return animatableCreate(equipCreateSwordObject(itemId), []);
         case EquippedIdsProperties.GauntletsId: {
             knightApplyGauntletOverrides(knight, itemId);
             return animatableCreate(knight, []);
@@ -65,22 +66,36 @@ export const equipCreateAnimatable = (itemId: number): Animatable => {
             knightApplyHelmetOverrides(knight, itemId);
             return animatableCreate(knight, []);
         }
+        case EquippedIdsProperties.ArmorId: {
+            knightApplyArmorOverrides(knight, itemId);
+            return animatableCreate(knight, []);
+        }
     }
 };
 
 export const equipGetOriginComponentId = (itemId: number): number => {
     switch (equipGetType(itemId)) {
-        case EquippedIdsProperties.WeaponId:
+        case EquippedIdsProperties.SwordId:
             return swordModelData.centerComponentId;
-        case EquippedIdsProperties.ArmorId:
-            return knightModelData.bodyComponentId;
         case EquippedIdsProperties.GauntletsId:
             return knightModelData.gauntletsCenterComponentId;
         case EquippedIdsProperties.BootsId:
             return knightModelData.bootsCenterComponentId;
         case EquippedIdsProperties.HelmetId:
             return knightModelData.helmetComponentId;
+        case EquippedIdsProperties.ArmorId:
+            return knightModelData.bodyComponentId;
     }
+};
+
+const TYPE_NAMES = ['SWORD', 'GAUNTLETS', 'BOOTS', 'HELMET', 'ARMOR'];
+
+const MATERIAL_NAMES = ['BRONZE', 'IRON', 'STEEL', 'GOLD'];
+
+export const equipGetName = (itemId: number): string => {
+    const type = equipGetType(itemId);
+    const level = equipGetLevel(itemId);
+    return `${MATERIAL_NAMES[level]} ${TYPE_NAMES[type]}`;
 };
 
 const equipColors: Array<ColorRGB> = [
@@ -93,4 +108,12 @@ const equipColors: Array<ColorRGB> = [
 export const equipGetColor = (itemId: number): ColorRGB => {
     const level = equipGetLevel(itemId);
     return equipColors[level];
+};
+
+export const equipGetAttack = (itemId: number): number => {
+    return itemId >= 0 ? Math.pow(2, equipGetLevel(itemId) + 1) : 0;
+};
+
+export const equipGetDefense = (itemId: number): number => {
+    return itemId >= 0 ? Math.pow(2, equipGetLevel(itemId)) * equipGetType(itemId) : 0;
 };
