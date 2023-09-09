@@ -1,6 +1,5 @@
 ## Next Steps
 
-- add gold drop
 - add other types of items
 - add enemies with different difficulties
 - customize items for enemy knight

@@ -37,13 +37,14 @@ import {
     vectorMultiply,
 } from './glm';
 import { keyboardInitialize } from './keyboard';
-import { weaponCreate } from './weapon';
+import { weaponCreate, weaponGetObject } from './weapon';
 import { uiOpponentUpdater, uiPlayerHealthUpdater, uiUpdaterSet } from './ui';
 import { menuStart } from './menu';
-import { Drop, dropCreate, dropDraw, dropGetItemId, dropIsPickable, dropStep } from './drop';
+import { Drop, dropCreate, dropDraw, dropIsPickable, dropStep } from './drop';
 import { inventoryAddItem, inventoryIsFull, inventorySetOnEquip } from './inventory';
 import { EquippedIds, equipGetWeaponId } from './equip';
-import { storageGetEquippedIds } from './storage';
+import { storageGetEquippedIds, storageGetGold, storageSetGold } from './storage';
+import { ModelType, Object, objectCreate } from './model';
 
 declare const gameUi: HTMLElement;
 declare const btnnext: HTMLElement;
@@ -70,7 +71,7 @@ export const enum GameProperties {
     Enemy,
     TimePassed,
     Opponent,
-    Drop,
+    Drops,
 }
 
 export type Game = ReturnType<typeof gameCreate>;
@@ -91,13 +92,25 @@ const gameKnightCreate = (position: Vec2, equipped: EquippedIds) => {
     return knightCreate(position, weapon);
 };
 
+const enum GameDropProperties {
+    ItemId,
+    Drop,
+    Gold,
+}
+
+type GameDrop = {
+    [GameDropProperties.ItemId]: number;
+    [GameDropProperties.Drop]: Drop;
+    [GameDropProperties.Gold]: number;
+};
+
 export const gameCreate = () => {
     const game = {
         [GameProperties.Player]: gameKnightCreate(vectorCreate(-200, FLOOR_LEVEL), storageGetEquippedIds()),
         [GameProperties.Enemy]: knightCreate(vectorCreate(200, FLOOR_LEVEL), weaponCreate(1)),
         [GameProperties.TimePassed]: 0,
         [GameProperties.Opponent]: null as Opponent,
-        [GameProperties.Drop]: null as Drop,
+        [GameProperties.Drops]: new Array<GameDrop>(),
     };
 
     inventorySetOnEquip(equipped => {
@@ -168,13 +181,19 @@ export const gameStep = (game: Game, deltaTime: number) => {
     const player = game[GameProperties.Player];
     const enemy = game[GameProperties.Enemy];
 
-    if (game[GameProperties.Drop]) {
-        dropStep(game[GameProperties.Drop], deltaTime);
-        if (dropIsPickable(game[GameProperties.Drop], knightGetCenter(player))) {
-            if (!inventoryIsFull()) {
-                inventoryAddItem(dropGetItemId(game[GameProperties.Drop]));
-                game[GameProperties.Drop] = null;
+    for (let i = 0; i < game[GameProperties.Drops].length; i++) {
+        const drop = game[GameProperties.Drops][i];
+        dropStep(drop[GameDropProperties.Drop], deltaTime);
+        if (dropIsPickable(drop[GameDropProperties.Drop], knightGetCenter(player))) {
+            if (drop[GameDropProperties.ItemId] === 0) {
+                storageSetGold(storageGetGold() + drop[GameDropProperties.Gold]);
+                game[GameProperties.Drops].splice(i, 1);
+            } else if (!inventoryIsFull()) {
+                inventoryAddItem(drop[GameDropProperties.ItemId]);
+            } else {
+                continue;
             }
+            game[GameProperties.Drops].splice(i, 1);
         }
     }
 
@@ -219,9 +238,23 @@ const gameKnightEnemyCheckHit = (game: Game, player: Knight, enemy: Knight) => {
     gameKnightCheckHit(player, enemy);
 
     if (knightIsDead(enemy)) {
-        const itemId = 60;
+        let gold = 0;
+        let itemId = 0;
+        let object: Object;
+        if (Math.random() < 0.7) {
+            gold = Math.floor(Math.random() * 10) + 3;
+            object = objectCreate(ModelType.Gold);
+        } else {
+            itemId = 60;
+            object = weaponGetObject(weaponCreate(itemId));
+        }
+
         const directionLeft = knightGetCenter(enemy) < knightGetCenter(player);
-        game[GameProperties.Drop] = dropCreate(itemId, knightGetCenter(enemy), directionLeft);
+        game[GameProperties.Drops].push({
+            [GameDropProperties.ItemId]: itemId,
+            [GameDropProperties.Drop]: dropCreate(object, knightGetCenter(enemy), directionLeft),
+            [GameDropProperties.Gold]: gold,
+        });
     }
 };
 
@@ -281,8 +314,8 @@ export const gameRender = (game: Game, program: Program) => {
         knightDraw(game[GameProperties.Enemy], program);
     }
 
-    if (game[GameProperties.Drop]) {
-        dropDraw(game[GameProperties.Drop], program);
+    for (const drop of game[GameProperties.Drops]) {
+        dropDraw(drop[GameDropProperties.Drop], program);
     }
 
     if (false && process.env.NODE_ENV !== 'production') {

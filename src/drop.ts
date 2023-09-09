@@ -8,10 +8,8 @@ import {
 import { Program } from './gl';
 import { Vec2, matrixSetIdentity, matrixTranslateVector, vectorCreate } from './glm';
 import { Object, objectDraw } from './model';
-import { Weapon, weaponCreate, weaponGetObject } from './weapon';
 
 const enum DropProperties {
-    ItemId,
     Item,
     Position,
     Animatable,
@@ -20,7 +18,6 @@ const enum DropProperties {
 }
 
 export type Drop = {
-    [DropProperties.ItemId]: number;
     [DropProperties.Item]: Object;
     [DropProperties.Position]: Vec2;
     [DropProperties.Animatable]: Animatable;
@@ -28,11 +25,8 @@ export type Drop = {
     [DropProperties.TimePassed]: number;
 };
 
-export const dropCreate = (itemId: number, x: number, directionLeft: boolean): Drop => {
-    const item = weaponCreate(itemId);
-    const object = weaponGetObject(item);
+export const dropCreate = (object: Object, x: number, directionLeft: boolean): Drop => {
     return {
-        [DropProperties.ItemId]: itemId,
         [DropProperties.Item]: object,
         [DropProperties.Position]: vectorCreate(x, 0),
         [DropProperties.Animatable]: animatableCreate(object, []),
@@ -66,6 +60,4 @@ export const dropStep = (drop: Drop, timePassed: number) => {
 };
 
 export const dropIsPickable = (drop: Drop, x: number) =>
-    drop[DropProperties.TimePassed] > animationDuration && Math.abs(x - drop[DropProperties.Position][0]) < 10;
-
-export const dropGetItemId = (drop: Drop) => drop[DropProperties.ItemId];
+    drop[DropProperties.TimePassed] > animationDuration && Math.abs(x - drop[DropProperties.Position][0]) < 15;
