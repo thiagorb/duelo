@@ -56,6 +56,8 @@ declare const gameUi: HTMLElement;
 declare const btnnext: HTMLElement;
 declare const enemyName: HTMLElement;
 declare const touch: HTMLElement;
+declare const bars: HTMLElement;
+declare const btns: HTMLElement;
 
 export const FLOOR_LEVEL = -90;
 export const VIRTUAL_WIDTH = 1600 / 3;
@@ -254,6 +256,14 @@ const gameKnightEnemyCheckHit = (game: Game, player: Knight, enemy: Knight) => {
             [GameDropProperties.Drop]: dropCreate(animatable, originComponentId, knightGetCenter(enemy), directionLeft),
             [GameDropProperties.Gold]: gold,
         });
+
+        bars.classList.add('hidden');
+        btns.classList.remove('hidden');
+
+        btnnext.onclick = () => {
+            knightSetHealth(game[GameProperties.Player], 1);
+            gameNextEnemy(game);
+        };
     }
 };
 
@@ -367,11 +377,6 @@ export const gameStart = (game: Game, program: Program) => {
         }
     };
 
-    btnnext.onclick = () => {
-        knightSetHealth(game[GameProperties.Player], 1);
-        gameNextEnemy(game);
-    };
-
     requestAnimationFrame((time: number) => loop((previousTime = time)));
 
     if (process.env.NODE_ENV !== 'production') {
@@ -398,6 +403,9 @@ const gameNextEnemy = (game: Game) => {
     const enemyX = playerX + (200 + Math.random() * 100) * (playerX > 0 ? -1 : 1);
 
     game[GameProperties.Enemy] = knightCreate(vectorCreate(enemyX, FLOOR_LEVEL), game[GameProperties.EnemyEquips]);
+    bars.classList.remove('hidden');
+    btns.classList.add('hidden');
+    btnnext.onclick = null;
 };
 
 if (process.env.NODE_ENV !== 'production') {

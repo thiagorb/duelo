@@ -1,6 +1,5 @@
 ## Next Steps
 
-- hide health bars after killing enemy and reposition buttons
 - add confirmation for dropping item
 - add spinner for near calls
 - add more trees

@@ -70,7 +70,7 @@
             justify-items: center;
         }
 
-        .game-ui, #menuUi, .player-name, .bar {
+        .game-ui, #menuUi, .player-name, .bar, #btns, #bars {
             transition: 0.5s opacity, 0.5s filter, 0.5s transform;
         }
 
@@ -172,6 +172,10 @@
             align-items: center;
             justify-content: center;
         }
+
+        #btns.hidden {
+            transform: translateY(-50px);
+        }
     </style>
     <script src="https://js13kgames.com/src/near-api-js.js"></script>
 </head>
@@ -184,17 +188,17 @@
             <div class="btn" data-text="START" id="start"></div>
         </div>
         <div id="gameUi" class="game-ui hidden" style="display: none;">
-            <div style="position: absolute; display: flex; top: 20px; left: 10%; right: 10%; overflow: visible; justify-content: space-between;">
+            <div id="bars" style="position: absolute; display: flex; top: 20px; left: 10%; right: 10%; overflow: visible; justify-content: space-between;">
                 <div id="barPlayer" class="bar">
                     PLAYER
                 </div>
                 <div id="barEnemy" class="bar">
                     <span id="enemyName"></span>
                 </div>
-                <div>
-                    <div id="btninv">INVENTORY</div>
-                    <div id="btnnext">NEXT ENEMY</div>
-                </div>
+            </div>
+            <div id="btns" style="position: absolute; display: flex; top: 20px; left: 10%; right: 10%; overflow: visible; justify-content: space-between;">
+                <div class="btn" id="btninv" data-text="INVENTORY"></div>
+                <div class="btn" id="btnnext" data-text="NEXT ENEMY"></div>
             </div>
         </div>
         <div id="inv" class="game-ui hidden" style="background-color: #000; display: none;">

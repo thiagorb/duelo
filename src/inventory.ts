@@ -299,7 +299,7 @@ const toggleSignIn = async (near: NearInstance) => {
     toggleElement(testnet, near === null);
     toggleElement(nearArea, near !== null);
     if (near) {
-        logged.innerText = `logged in to NEAR as ${nearGetAccountId(near)}`;
+        logged.innerText = `LOGGED IN TO NEAR AS ${nearGetAccountId(near)}`;
     }
 };
 
