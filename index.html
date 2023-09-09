@@ -18,7 +18,7 @@
 
         html {
             height: -webkit-fill-available;
-            font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+            font-family: Arial;
             font-weight: 1000;
             color: #fff;
             background: #000;
@@ -128,7 +128,6 @@
             border-radius: 5px;
             position: relative;
             background-size: cover;
-            font-size: 5px;
         }
 
         .inv-item:before {
@@ -203,26 +202,27 @@
             
             INVENTORY
             <div id="invItems" style="display: flex; gap: 2px;"></div>
-
+    
             EQUIPPED
-            <div id="eqItems" style="display: flex; gap: 2px;"></div>
-
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <div id="eqItems" style="display: flex; gap: 2px;"></div>
+                <span id="gold"></span>
+            </div>
+    
             <span id="signMsg" style="display: none">SIGN IN WITH NEAR TO BUY/SELL ITEMS</span>
             <div id="mainnet" style="display: none" class="btn" data-text="mainnet"></div>
             <div id="testnet" style="display: none" class="btn" data-text="testnet"></div>
-
+    
             <div id="nearArea" style="display: none">
                 <div id="logged"></div>
                 <div id="signOut" class="btn" data-text="SIGN OUT"></div>
-
+    
                 SELLING
                 <div id="sellItems" style="display: flex; gap: 2px;"></div>
-
+    
                 MARKET
                 <div id="mktItems" style="display: flex; gap: 2px;"></div>
             </div>
-
-            <span id="gold"></span>
         </div>
     </div>
     <div id="touch" class="hidden game-ui" style="position:absolute; padding: 0 10px; display:grid; grid-template-columns: 1fr auto; width: 100%; gap: 10px; bottom: 20px; box-sizing: border-box;">

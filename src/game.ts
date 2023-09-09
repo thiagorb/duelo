@@ -55,6 +55,7 @@ import { Animatable, animatableCreate } from './animation';
 declare const gameUi: HTMLElement;
 declare const btnnext: HTMLElement;
 declare const enemyName: HTMLElement;
+declare const touch: HTMLElement;
 
 export const FLOOR_LEVEL = -90;
 export const VIRTUAL_WIDTH = 1600 / 3;
@@ -332,7 +333,10 @@ const renderDebuggingRects = (program: Program) => {
 
 export const gameStart = (game: Game, program: Program) => {
     gameUi.style.display = null;
-    setTimeout(() => gameUi.classList.remove('hidden'));
+    setTimeout(() => {
+        gameUi.classList.remove('hidden');
+        touch.classList.remove('hidden');
+    });
 
     let ending = 0;
     let previousTime = 0;
@@ -351,6 +355,7 @@ export const gameStart = (game: Game, program: Program) => {
             setTimeout(() => {
                 ending = 2;
                 gameUi.classList.add('hidden');
+                touch.classList.add('hidden');
                 setTimeout(() => (gameUi.style.display = 'none'), 500);
                 game[GameProperties.IsOver] = true;
                 menuStart(program, game);

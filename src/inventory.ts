@@ -71,8 +71,11 @@ const createItemAction = (action: string) => {
 };
 
 const selectItem = (itemDiv: HTMLDivElement) => {
-    inv.querySelector('.selected')?.classList.remove('selected');
-    itemDiv.classList.add('selected');
+    const current = inv.querySelector('.selected');
+    current?.classList.remove('selected');
+    if (current !== itemDiv) {
+        itemDiv.classList.add('selected');
+    }
 };
 
 const createItemDiv = (itemId: number, actionsBuilder: (itemActions: HTMLDivElement) => void) => {
@@ -141,25 +144,27 @@ const loadInventory = (near: NearInstance) => {
             };
             itemActions.appendChild(equipAction);
 
-            const sellAction = createItemAction('SELL');
-            sellAction.onclick = async () => {
-                const value = prompt('How much do you want to sell this item for?');
-                if (!value || !/^\d+$/.test(value)) {
-                    return;
-                }
-                const price = parseInt(value, 10);
-                const sale = await nearSell(near, itemId, price);
-                if (!sale) {
-                    return;
-                }
+            if (near) {
+                const sellAction = createItemAction('SELL');
+                sellAction.onclick = async () => {
+                    const value = prompt('How much do you want to sell this item for?');
+                    if (!value || !/^\d+$/.test(value)) {
+                        return;
+                    }
+                    const price = parseInt(value, 10);
+                    const sale = await nearSell(near, itemId, price);
+                    if (!sale) {
+                        return;
+                    }
 
-                const items = storageGetItemIds();
-                items.splice(i, 1);
-                storageSetItemIds(items);
-                await loadUserSales(near);
-                loadInventory(near);
-            };
-            itemActions.appendChild(sellAction);
+                    const items = storageGetItemIds();
+                    items.splice(i, 1);
+                    storageSetItemIds(items);
+                    await loadUserSales(near);
+                    loadInventory(near);
+                };
+                itemActions.appendChild(sellAction);
+            }
 
             const dropAction = createItemAction('DROP');
             dropAction.onclick = () => {
@@ -180,7 +185,7 @@ const loadInventory = (near: NearInstance) => {
 const loadEquippedItems = (near: NearInstance) => {
     eqItems.innerHTML = '';
     const equippedIds = storageGetEquippedIds();
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 5; i++) {
         const itemId = equippedIds[i];
         const itemDiv = createItemDiv(itemId, (itemActions: HTMLDivElement) => {
             const unequipAction = createItemAction('UNEQUIP');

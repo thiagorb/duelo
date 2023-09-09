@@ -35,7 +35,7 @@ export const keyboardInitialize = <Key extends string>(keys: Key[]): { [K in Key
     if (typeof ontouchstart !== 'undefined') {
         enableTouch();
     } else {
-        touch.remove();
+        touch.style.display = 'none';
     }
 
     return state;
