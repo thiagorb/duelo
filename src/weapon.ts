@@ -3,9 +3,8 @@ import { equipGetColor, equipGetLevel } from './equip';
 import { ModelType, Object, objectCreate, objectSetColorOverride } from './model';
 
 export const weaponCreateObject = (itemId: number): Object => {
-    const level = equipGetLevel(itemId);
     const object = objectCreate(ModelType.Sword);
-    objectSetColorOverride(object, swordModelData.metalComponentId, equipGetColor(level));
+    objectSetColorOverride(object, swordModelData.metalComponentId, equipGetColor(itemId));
     return object;
 };
 

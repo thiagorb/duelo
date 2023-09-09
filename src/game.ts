@@ -9,7 +9,6 @@ import {
     knightGetBoundingLeft,
     knightGetBoundingRight,
     knightGetCenter,
-    knightGetWeaponId,
     knightHit,
     knightIsAttacking,
     knightIsDead,
@@ -44,10 +43,10 @@ import { inventoryAddItem, inventoryIsFull, inventorySetOnEquip } from './invent
 import {
     EquippedIds,
     EquippedIdsProperties,
+    ITEM_LEVELS,
     equipCreateAnimatable,
+    equipGetItemId,
     equipGetOriginComponentId,
-    equipGetRandomId,
-    equipGetWeaponId,
 } from './equip';
 import { storageGetEquippedIds, storageGetGold, storageSetGold } from './storage';
 import { ModelType, objectCreate } from './model';
@@ -55,6 +54,7 @@ import { Animatable, animatableCreate } from './animation';
 
 declare const gameUi: HTMLElement;
 declare const btnnext: HTMLElement;
+declare const enemyName: HTMLElement;
 
 export const FLOOR_LEVEL = -90;
 export const VIRTUAL_WIDTH = 1600 / 3;
@@ -76,22 +76,13 @@ export const gameIsOutOfArea = (position: Vec2) => {
 export const enum GameProperties {
     Player,
     Enemy,
+    EnemyEquips,
     TimePassed,
-    Opponent,
     Drops,
+    Level,
 }
 
 export type Game = ReturnType<typeof gameCreate>;
-
-export const enum OpponentProperties {
-    WeaponType,
-    Name,
-}
-
-export type Opponent = {
-    [OpponentProperties.WeaponType]: number;
-    [OpponentProperties.Name]: string;
-};
 
 const enum GameDropProperties {
     ItemId,
@@ -110,8 +101,9 @@ export const gameCreate = () => {
         [GameProperties.Player]: knightCreate(vectorCreate(-200, FLOOR_LEVEL), storageGetEquippedIds()),
         [GameProperties.Enemy]: null,
         [GameProperties.TimePassed]: 0,
-        [GameProperties.Opponent]: null as Opponent,
+        [GameProperties.EnemyEquips]: {} as EquippedIds,
         [GameProperties.Drops]: new Array<GameDrop>(),
+        [GameProperties.Level]: 0,
     };
 
     gameNextEnemy(game);
@@ -125,17 +117,21 @@ export const gameCreate = () => {
 
 let previousIntention = null;
 let responseDelay = 0;
-export const gameEnemyStep = (player: Knight, enemy: Knight, deltaTime: number) => {
+
+const interpolate = (a: number, b: number, t: number) => a + (b - a) * t;
+
+export const gameEnemyStep = (game: Game, player: Knight, enemy: Knight, deltaTime: number) => {
     const playerCenter = knightGetCenter(player);
     const enemyCenter = knightGetCenter(enemy);
     const playerDeltaX = playerCenter - enemyCenter;
-    const desiredDistance = 100;
+    const desiredDistance = 90;
     const desiredX = playerCenter + desiredDistance * (playerDeltaX > 0 ? -1 : 1);
     const deltaX = desiredX - enemyCenter;
+    const difficulty = Math.min(1, Math.max(0, game[GameProperties.Level] / 10));
 
-    const closeEnoughToAttack = Math.abs(playerDeltaX) < 100;
+    const closeEnoughToAttack = Math.abs(playerDeltaX) < desiredDistance;
     let intention = null;
-    if (Math.abs(deltaX) > 150 || (!closeEnoughToAttack && Math.random() < 0.3)) {
+    if (Math.abs(deltaX) > desiredDistance * 1.5 || (!closeEnoughToAttack && Math.random() < 0.3)) {
         intention = 1;
     }
 
@@ -153,11 +149,14 @@ export const gameEnemyStep = (player: Knight, enemy: Knight, deltaTime: number) 
     }
 
     if (closeEnoughToAttack) {
-        if (Math.random() < (knightIsDefending(enemy) ? 0.3 : 0.01)) {
+        if (
+            Math.random() <
+            (knightIsDefending(enemy) ? interpolate(0.01, 0.3, difficulty) : interpolate(0.001, 0.01, difficulty))
+        ) {
             knightAttack(enemy);
         }
 
-        if (knightIsAttacking(player) && Math.random() < 0.2) {
+        if (knightIsAttacking(player) && Math.random() < interpolate(0.05, 0.2, difficulty)) {
             knightDefend(enemy);
         }
     }
@@ -209,7 +208,7 @@ export const gameStep = (game: Game, deltaTime: number) => {
     gameKnightTurnIfNecessary(player, enemy);
     gameKnightTurnIfNecessary(enemy, player);
     if (!knightIsDead(enemy) && !knightIsDead(player)) {
-        gameEnemyStep(player, enemy, deltaTime);
+        gameEnemyStep(game, player, enemy, deltaTime);
         gameKnightCheckHit(enemy, player);
         gameKnightEnemyCheckHit(game, player, enemy);
     }
@@ -233,15 +232,16 @@ const gameKnightEnemyCheckHit = (game: Game, player: Knight, enemy: Knight) => {
     gameKnightCheckHit(player, enemy);
 
     if (knightIsDead(enemy)) {
+        const enemyItems = Object.values(game[GameProperties.EnemyEquips]).filter(id => id !== -1);
         let gold = 0;
-        let itemId = 0;
+        let itemId = enemyItems[(Math.random() * enemyItems.length) | 0];
+        console.log(itemId);
         let animatable: Animatable;
         let originComponentId = 0;
-        if (Math.random() < 0.7) {
+        if (Math.random() < 0.7 || !(itemId >= 0)) {
             gold = ((Math.random() * 20) | 0) + 5;
             animatable = animatableCreate(objectCreate(ModelType.Gold), []);
         } else {
-            itemId = equipGetRandomId();
             animatable = equipCreateAnimatable(itemId);
             originComponentId = equipGetOriginComponentId(itemId);
         }
@@ -366,11 +366,21 @@ export const gameStart = (game: Game, program: Program) => {
     }
 };
 
+const randomEquipLevel = (level: number) =>
+    Math.min(ITEM_LEVELS - 1, Math.min(ITEM_LEVELS - 2, level - 2) + ((Math.random() * 2) | 0));
+
 const gameNextEnemy = (game: Game) => {
-    game[GameProperties.Enemy] = knightCreate(vectorCreate(200, FLOOR_LEVEL), {
-        [EquippedIdsProperties.WeaponId]: 60,
-        [EquippedIdsProperties.ArmorId]: 1,
-    });
+    game[GameProperties.Level]++;
+    enemyName.innerText = `ENEMY LEVEL ${game[GameProperties.Level]}`;
+    const level = (game[GameProperties.Level] / 3) | 0;
+    game[GameProperties.EnemyEquips] = {
+        [EquippedIdsProperties.WeaponId]: equipGetItemId(EquippedIdsProperties.WeaponId, randomEquipLevel(level)),
+        [EquippedIdsProperties.ArmorId]: equipGetItemId(EquippedIdsProperties.ArmorId, randomEquipLevel(level)),
+        [EquippedIdsProperties.GauntletsId]: equipGetItemId(EquippedIdsProperties.GauntletsId, randomEquipLevel(level)),
+        [EquippedIdsProperties.BootsId]: equipGetItemId(EquippedIdsProperties.BootsId, randomEquipLevel(level)),
+        [EquippedIdsProperties.HelmetId]: equipGetItemId(EquippedIdsProperties.HelmetId, randomEquipLevel(level)),
+    };
+    game[GameProperties.Enemy] = knightCreate(vectorCreate(200, FLOOR_LEVEL), game[GameProperties.EnemyEquips]);
 };
 
 if (process.env.NODE_ENV !== 'production') {

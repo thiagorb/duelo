@@ -686,10 +686,6 @@ export const knightGetWeaponTip = (knight: Knight) => {
     knightGetComponentTransformedOrigin(knight, armComponentId, knightGetWeaponTipVector);
     const arm = knightGetWeaponTipVector[0];
 
-    if (!knight[1000] || knight[1000] < Math.abs(weaponTip - arm)) {
-        knight[1000] = Math.abs(weaponTip - arm);
-        console.log(knight[1000]);
-    }
     return bounding + weaponTip - arm;
 };
 

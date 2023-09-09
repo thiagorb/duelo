@@ -133,7 +133,6 @@ const loadInventory = (near: NearInstance) => {
                 }
                 const price = parseInt(value, 10);
                 const sale = await nearSell(near, itemId, price);
-                console.log('sell', { sale });
                 if (!sale) {
                     return;
                 }

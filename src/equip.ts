@@ -22,16 +22,20 @@ export const enum EquippedIdsProperties {
 export type EquippedIds = {
     [EquippedIdsProperties.WeaponId]?: number;
     [EquippedIdsProperties.ArmorId]?: number;
+    [EquippedIdsProperties.GauntletsId]?: number;
+    [EquippedIdsProperties.BootsId]?: number;
+    [EquippedIdsProperties.HelmetId]?: number;
 };
 
 const EQUIP_TYPES = 5;
-const ITEM_LEVELS = 4;
+export const ITEM_LEVELS = 4;
 const ITEM_TYPES = EQUIP_TYPES * ITEM_LEVELS;
 
 export const equipGetType = (itemId: number) => (itemId % EQUIP_TYPES) as EquippedIdsProperties;
 export const equipGetLevel = (itemId: number) => (itemId / EQUIP_TYPES) | 0;
 
-export const equipGetItemId = (type: EquippedIdsProperties, level: number = 0) => type + level * EQUIP_TYPES;
+export const equipGetItemId = (type: EquippedIdsProperties, level: number = 0) =>
+    level >= 0 ? type + level * EQUIP_TYPES : -1;
 
 export const equipGetRandomId = (): number => (Math.random() * ITEM_TYPES) | 0;
 
@@ -81,8 +85,8 @@ export const equipGetOriginComponentId = (itemId: number): number => {
 
 const equipColors: Array<ColorRGB> = [
     [0.75, 0.54, 0.44], // bronze
-    [0.4, 0.4, 0.4], // iron
-    [0.81, 0.82, 0.84], // steel
+    [0.3, 0.3, 0.3], // iron
+    [0.6, 0.6, 0.6], // steel
     [0.83, 0.69, 0.22], // gold
 ];
 
