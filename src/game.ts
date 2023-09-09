@@ -411,6 +411,10 @@ if (process.env.NODE_ENV !== 'production') {
         if (e.key === 'd') {
             knightIncreaseHealth(game[GameProperties.Player], -1);
         }
+
+        if (e.key === 'n') {
+            gameNextEnemy(game);
+        }
     });
 }
 

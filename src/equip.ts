@@ -26,8 +26,8 @@ export type EquippedIds = {
     [EquippedIdsProperties.ArmorId]?: number;
 };
 
-const EQUIP_TYPES = 5;
-export const ITEM_LEVELS = 4;
+export const EQUIP_TYPES = 5;
+export const ITEM_LEVELS = 5;
 const ITEM_TYPES = EQUIP_TYPES * ITEM_LEVELS;
 
 export const equipGetType = (itemId: number) => (itemId % EQUIP_TYPES) as EquippedIdsProperties;
@@ -90,7 +90,7 @@ export const equipGetOriginComponentId = (itemId: number): number => {
 
 const TYPE_NAMES = ['SWORD', 'GAUNTLETS', 'BOOTS', 'HELMET', 'ARMOR'];
 
-const MATERIAL_NAMES = ['BRONZE', 'IRON', 'STEEL', 'GOLD'];
+const MATERIAL_NAMES = ['BRONZE', 'IRON', 'STEEL', 'GOLD', 'DRAGON'];
 
 export const equipGetName = (itemId: number): string => {
     const type = equipGetType(itemId);
@@ -103,6 +103,7 @@ const equipColors: Array<ColorRGB> = [
     [0.3, 0.3, 0.3], // iron
     [0.6, 0.6, 0.6], // steel
     [0.83, 0.69, 0.22], // gold
+    [0.7, 0.0, 0.0], // gold
 ];
 
 export const equipGetColor = (itemId: number): ColorRGB => {
