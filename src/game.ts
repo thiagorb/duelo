@@ -388,7 +388,11 @@ const gameNextEnemy = (game: Game) => {
         [EquippedIdsProperties.HelmetId]: equipGetItemId(EquippedIdsProperties.HelmetId, randomEquipLevel(level)),
         [EquippedIdsProperties.ArmorId]: equipGetItemId(EquippedIdsProperties.ArmorId, randomEquipLevel(level)),
     };
-    game[GameProperties.Enemy] = knightCreate(vectorCreate(200, FLOOR_LEVEL), game[GameProperties.EnemyEquips]);
+
+    const playerX = knightGetPosition(game[GameProperties.Player])[0];
+    const enemyX = playerX + (200 + Math.random() * 100) * (playerX > 0 ? -1 : 1);
+
+    game[GameProperties.Enemy] = knightCreate(vectorCreate(enemyX, FLOOR_LEVEL), game[GameProperties.EnemyEquips]);
 };
 
 if (process.env.NODE_ENV !== 'production') {
