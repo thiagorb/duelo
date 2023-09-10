@@ -37,6 +37,7 @@ import {
     nearRequestSignIn,
     nearSell,
     nearSignOut,
+    UserSales,
 } from './near';
 import { uiHideElement, uiShowElement } from './ui';
 
@@ -73,7 +74,6 @@ const enum InventoryProperties {
     Near,
 }
 
-type UserSales = Awaited<ReturnType<typeof nearGetUserSales>>;
 type MarketItems = Awaited<ReturnType<typeof nearGetRandomSales>>;
 
 type Inventory = {
@@ -120,7 +120,7 @@ const selectItem = (itemDiv: HTMLDivElement) => {
 
 const createItemDiv = (
     itemId: number,
-    actionsBuilder: (itemActions: HTMLDivElement, itemDiv: HTMLDivElement) => void
+    actionsBuilder: (itemActions: HTMLDivElement, itemTop: HTMLDivElement, itemDiv: HTMLDivElement) => void
 ) => {
     const itemDiv = document.createElement('div');
     itemDiv.classList.add('inv-item');
@@ -134,13 +134,19 @@ const createItemDiv = (
                 ? `+${equipGetAttack(itemId)} ATK`
                 : `+${equipGetDefense(itemId)} DEF`;
 
-        itemDiv.dataset.name = `${name} (${stats})`;
+        const itemName = document.createElement('div');
+        itemName.classList.add('inv-name');
+        itemName.innerText = `${name} (${stats})`;
+        const itemTop = document.createElement('div');
+        itemTop.classList.add('inv-top');
+        itemTop.appendChild(itemName);
+        itemDiv.appendChild(itemTop);
 
         const itemActions = document.createElement('div');
         itemActions.classList.add('inv-actions');
         itemDiv.appendChild(itemActions);
 
-        actionsBuilder(itemActions, itemDiv);
+        actionsBuilder(itemActions, itemTop, itemDiv);
 
         itemDiv.onclick = () => selectItem(itemDiv);
     }
@@ -150,8 +156,8 @@ const createItemDiv = (
 const inventory = {
     [InventoryProperties.InventoryItems]: storageGetItemIds(),
     [InventoryProperties.EquippedItems]: storageGetEquippedIds(),
-    [InventoryProperties.SellItems]: [],
-    [InventoryProperties.MarketItems]: [],
+    [InventoryProperties.SellItems]: [] as UserSales,
+    [InventoryProperties.MarketItems]: [] as MarketItems,
     [InventoryProperties.Near]: null,
 };
 
@@ -179,7 +185,7 @@ const renderInventory = () => {
     invItems.innerHTML = '';
     for (let i = 0; i < 10; i++) {
         const itemId = inventory[InventoryProperties.InventoryItems][i];
-        const itemDiv = createItemDiv(itemId, (itemActions: HTMLDivElement) => {
+        const itemDiv = createItemDiv(itemId, itemActions => {
             const equipAction = createItemAction('EQUIP');
             equipAction.onclick = () => {
                 const equipped = storageGetEquippedIds();
@@ -274,7 +280,7 @@ const renderEquippedItems = () => {
     eqItems.innerHTML = '';
     for (let i = 0; i < 5; i++) {
         const itemId = inventory[InventoryProperties.EquippedItems][i];
-        const itemDiv = createItemDiv(itemId, (itemActions: HTMLDivElement) => {
+        const itemDiv = createItemDiv(itemId, itemActions => {
             const unequipAction = createItemAction('UNEQUIP');
             unequipAction.onclick = () => {
                 if (inventoryIsFull()) {
@@ -297,7 +303,7 @@ const renderUserSales = () => {
     sellItems.innerHTML = '';
     for (let i = 0; i < 10; i++) {
         const userSale = inventory[InventoryProperties.SellItems][i];
-        const itemDiv = createItemDiv(userSale?.sale.itemId, (itemActions: HTMLDivElement, itemDiv: HTMLDivElement) => {
+        const itemDiv = createItemDiv(userSale?.sale.itemId, (itemActions, itemTop, itemDiv) => {
             if (!userSale) {
                 return;
             }
@@ -317,6 +323,10 @@ const renderUserSales = () => {
                     uiHideElement(spinner);
                 };
                 itemActions.appendChild(collectAction);
+                const sellerName = document.createElement('div');
+                sellerName.classList.add('inv-seller');
+                sellerName.innerText = `SOLD TO ${userSale.buyerId}`;
+                itemTop.appendChild(sellerName);
                 const sold = document.createElement('div');
                 sold.classList.add('inv-sold');
                 sold.innerText = 'SOLD!';
@@ -350,7 +360,7 @@ const renderMarket = () => {
     mktItems.innerHTML = '';
     for (let i = 0; i < 10; i++) {
         const saleEntry = inventory[InventoryProperties.MarketItems][i];
-        const itemDiv = createItemDiv(saleEntry?.sale.itemId, (itemActions: HTMLDivElement, itemDiv) => {
+        const itemDiv = createItemDiv(saleEntry?.sale.itemId, (itemActions, itemTop, itemDiv) => {
             if (!saleEntry) {
                 return;
             }
@@ -380,6 +390,10 @@ const renderMarket = () => {
 
                 uiHideElement(spinner);
             };
+            const sellerName = document.createElement('div');
+            sellerName.classList.add('inv-seller');
+            sellerName.innerText = `SOLD BY ${sale.sellerId}`;
+            itemTop.appendChild(sellerName);
             itemActions.appendChild(buyAction);
         });
 

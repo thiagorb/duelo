@@ -1,6 +1,5 @@
 ## Next Steps
 
-- add seller / buyer name
 - add more trees
 - add more mountains
 - add gold image to inv

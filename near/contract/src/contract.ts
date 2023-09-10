@@ -6,11 +6,18 @@ type Sale = {
     sellerId: string;
 };
 
+type UserSale = { completed: false } | { completed: true; buyerId: string };
+type UserSales = {
+    [userId: string]: {
+        [saleId: string]: UserSale;
+    };
+};
+
 @NearBindgen({})
 export class DueloGame {
     pendingSales: { [saleId: string]: Sale } = {};
     completedSales: { [saleId: string]: Sale } = {};
-    userSales: { [userId: string]: { [saleId: string]: { completed: boolean } } } = {};
+    userSales: UserSales = {};
 
     @view({})
     get_random_sales({ playerId }: { playerId: string }): Array<{ id: string; sale: Sale }> {
@@ -33,15 +40,15 @@ export class DueloGame {
     }
 
     @view({})
-    get_user_sales({ playerId }: { playerId: string }): Array<{ id: string; sale: Sale; completed: boolean }> {
+    get_user_sales({ playerId }: { playerId: string }): Array<{ id: string; sale: Sale } & UserSale> {
         const userSales = this.userSales[playerId] || {};
-        return Object.entries(userSales).map(([saleId, { completed }]) => {
-            const sale = completed ? this.completedSales[saleId] : this.pendingSales[saleId];
+        return Object.entries(userSales).map(([saleId, userSale]) => {
+            const sale = userSale.completed ? this.completedSales[saleId] : this.pendingSales[saleId];
 
             return {
                 id: saleId,
                 sale,
-                completed,
+                ...userSale,
             };
         });
     }
@@ -93,7 +100,7 @@ export class DueloGame {
         const sellerId = sale.sellerId;
         delete this.pendingSales[saleId];
         this.completedSales[saleId] = sale;
-        this.userSales[sellerId][saleId] = { completed: true };
+        this.userSales[sellerId][saleId] = { completed: true, buyerId: near.signerAccountId() };
 
         return sale;
     }

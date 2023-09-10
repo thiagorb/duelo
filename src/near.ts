@@ -15,7 +15,8 @@ type Sale = {
     sellerId: string;
 };
 
-export type NearOpponent = { weaponType: number; playerId: string };
+export type UserSale = { completed: false } | { completed: true; buyerId: string };
+export type UserSales = Array<{ id: string; sale: Sale } & UserSale>;
 
 export type NearInstance = {
     [NearInstanceProperties.NetworkId]: string;
@@ -29,7 +30,7 @@ export type NearInstance = {
     };
     [NearInstanceProperties.Contract]: {
         get_random_sales(_: { playerId: string }): Promise<Array<{ id: string; sale: Sale }>>;
-        get_user_sales(_: { playerId: string }): Promise<Array<{ id: string; sale: Sale; completed: boolean }>>;
+        get_user_sales(_: { playerId: string }): Promise<UserSales>;
         sell(_: { saleId: string; itemId: number; price: number }): Promise<Sale>;
         buy(_: { saleId: string }): Promise<Sale>;
         collect_sale(_: { saleId: string }): Promise<Sale>;
@@ -114,9 +115,7 @@ export const nearGetRandomSales = (near: NearInstance) => {
     return near[NearInstanceProperties.Contract].get_random_sales({ playerId: nearGetAccountId(near) });
 };
 
-export const nearGetUserSales = (
-    near: NearInstance
-): Promise<Array<{ id: string; sale: Sale; completed: boolean }>> => {
+export const nearGetUserSales = (near: NearInstance): Promise<UserSales> => {
     return near[NearInstanceProperties.Contract].get_user_sales({ playerId: nearGetAccountId(near) });
 };
 
