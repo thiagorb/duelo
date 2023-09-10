@@ -65,6 +65,11 @@ declare const css: HTMLElement;
 declare const err: HTMLElement;
 declare const msg: HTMLElement;
 declare const ok: HTMLElement;
+declare const calc: HTMLElement;
+declare const price: HTMLElement;
+declare const invprice: HTMLElement;
+declare const sellSell: HTMLElement;
+declare const sellCancel: HTMLElement;
 
 const enum InventoryProperties {
     InventoryItems,
@@ -203,14 +208,13 @@ const renderInventory = () => {
             if (near) {
                 const sellAction = createItemAction('SELL');
                 if (inventory[InventoryProperties.SellItems].length >= 10) {
-                    inventoryAlert('You can only have 10 items for sale at a time.');
+                    inventoryAlert('YOU CAN ONLY HAVE 10 ITEMS FOR SALE AT A TIME.');
                     return;
                 }
 
                 sellAction.onclick = async () => {
-                    const value = prompt('How much do you want to sell this item for?');
-                    const price = parseInt(value, 10);
-                    if (!value || !/^\d+$/.test(value) || price > 99999) {
+                    const price = await inventoryShowCalc();
+                    if (!price) {
                         return;
                     }
                     uiShowElement(spinner);
@@ -246,7 +250,7 @@ const renderInventory = () => {
     }
 };
 
-const showGenericError = () => inventoryAlert('An error occurred. Please try again later.');
+const showGenericError = () => inventoryAlert('AN ERROR OCCURRED. PLEASE TRY AGAIN LATER.');
 
 const renderGold = () => {
     gold.innerText = `GOLD: ${storageGetGold()}`;
@@ -284,7 +288,7 @@ const renderEquippedItems = () => {
             const unequipAction = createItemAction('UNEQUIP');
             unequipAction.onclick = () => {
                 if (inventoryIsFull()) {
-                    inventoryAlert('Your inventory is full.');
+                    inventoryAlert('YOUR INVENTORY IS FULL.');
                 }
 
                 const equipped = storageGetEquippedIds();
@@ -336,7 +340,7 @@ const renderUserSales = () => {
                 const cancelAction = createItemAction('CANCEL');
                 cancelAction.onclick = async () => {
                     if (inventoryIsFull()) {
-                        inventoryAlert('Your inventory is full.');
+                        inventoryAlert('YOUR INVENTORY IS FULL.');
                         return;
                     }
 
@@ -369,12 +373,12 @@ const renderMarket = () => {
             itemDiv.dataset.price = `$ ${sale.price}`;
             buyAction.onclick = async () => {
                 if (inventoryIsFull()) {
-                    inventoryAlert('Your inventory is full.');
+                    inventoryAlert('YOUR INVENTORY IS FULL.');
                     return;
                 }
 
                 if (storageGetGold() < sale.price) {
-                    inventoryAlert("You don't have enough gold.");
+                    inventoryAlert("YOU DON'T HAVE ENOUGH GOLD.");
                     return;
                 }
 
@@ -481,6 +485,58 @@ export const inventoryInit = () => {
         };
     };
 };
+
+const inventoryShowCalc = (): Promise<number> =>
+    new Promise(resolve => {
+        let value = 0;
+        debugger;
+
+        const renderValue = () => {
+            price.innerText = `${value}`;
+        };
+
+        calc.onclick = event => {
+            const pressed = (event.target as HTMLElement).innerText;
+            switch (pressed) {
+                case 'AC':
+                    value = 0;
+                    break;
+                case 'CE':
+                    value = Math.floor(value / 10);
+                    break;
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    value = Math.min(99999, value * 10 + parseInt(pressed, 10));
+                    break;
+            }
+
+            renderValue();
+        };
+
+        renderValue();
+        uiShowElement(invprice);
+
+        sellSell.onclick = () => {
+            if (value === 0) {
+                return;
+            }
+            uiHideElement(invprice);
+            resolve(value);
+        };
+
+        sellCancel.onclick = () => {
+            uiHideElement(invprice);
+            resolve(null);
+        };
+    });
 
 let onEquip = null;
 export const inventorySetOnEquip = (callback: (equipped: EquippedIds) => void) => {
