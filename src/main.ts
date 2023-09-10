@@ -2,7 +2,7 @@ import { backgroundInit } from './background';
 import { VIRTUAL_HEIGHT, VIRTUAL_WIDTH, gameInit } from './game';
 import { glProgramCreate, glSetViewport } from './gl';
 import { menuStart } from './menu';
-import html from './game.template';
+import html from '../game.html';
 import { inventoryInit } from './inventory';
 
 declare const canvas: HTMLCanvasElement;

@@ -39,6 +39,7 @@ import {
     nearSell,
     nearSignOut,
 } from './near';
+import { uiHideElement, uiShowElement } from './ui';
 
 declare const inv: HTMLElement;
 declare const invItems: HTMLElement;
@@ -58,6 +59,7 @@ declare const cnf: HTMLElement;
 declare const yes: HTMLElement;
 declare const no: HTMLElement;
 declare const spinner: HTMLElement;
+declare const touch: HTMLElement;
 
 export const inventoryIsFull = () => {
     return storageGetItemIds().length >= 10;
@@ -82,7 +84,10 @@ const selectItem = (itemDiv: HTMLDivElement) => {
     }
 };
 
-const createItemDiv = (itemId: number, actionsBuilder: (itemActions: HTMLDivElement) => void) => {
+const createItemDiv = (
+    itemId: number,
+    actionsBuilder: (itemActions: HTMLDivElement, itemDiv: HTMLDivElement) => void
+) => {
     const itemDiv = document.createElement('div');
     itemDiv.classList.add('inv-item');
 
@@ -102,7 +107,7 @@ const createItemDiv = (itemId: number, actionsBuilder: (itemActions: HTMLDivElem
         itemActions.classList.add('inv-actions');
         itemDiv.appendChild(itemActions);
 
-        actionsBuilder(itemActions);
+        actionsBuilder(itemActions, itemDiv);
 
         itemDiv.onclick = () => selectItem(itemDiv);
     }
@@ -122,8 +127,7 @@ export const inventoryStart = async () => {
         loadMarket(near);
     }
 
-    inv.style.display = null;
-    setTimeout(() => inv.classList.remove('hidden'));
+    uiShowElement(inv);
 };
 
 const loadInventory = (near: NearInstance) => {
@@ -228,7 +232,8 @@ const loadUserSales = async (near: NearInstance) => {
     ).map(o => Object.entries(o));
     for (let i = 0; i < 5; i++) {
         const [saleId, sale] = pendingSales[i] || [];
-        const itemDiv = createItemDiv(sale?.itemId, (itemActions: HTMLDivElement) => {
+        const itemDiv = createItemDiv(sale?.itemId, (itemActions: HTMLDivElement, itemDiv: HTMLDivElement) => {
+            itemDiv.dataset.price = `$ ${sale.price}`;
             const cancelAction = createItemAction('CANCEL');
             cancelAction.onclick = async () => {
                 spinner.style.display = null;
@@ -274,8 +279,9 @@ const loadMarket = async (near: NearInstance) => {
     const randomSales = Object.entries(await nearGetRandomSales(near));
     for (let i = 0; i < 10; i++) {
         const [saleId, sale] = randomSales[i] || [];
-        const itemDiv = createItemDiv(sale?.itemId, (itemActions: HTMLDivElement) => {
+        const itemDiv = createItemDiv(sale?.itemId, (itemActions: HTMLDivElement, itemDiv) => {
             const buyAction = createItemAction('BUY');
+            itemDiv.dataset.price = `$ ${sale.price}`;
             buyAction.onclick = async () => {
                 if (inventoryIsFull() || storageGetGold() < sale.price) {
                     return;
@@ -358,11 +364,12 @@ export const inventoryInit = () => {
 
     btninv.onclick = () => {
         inventoryStart();
+        uiHideElement(touch);
     };
 
     invClose.onclick = () => {
-        inv.style.display = 'none';
-        inv.classList.add('hidden');
+        uiHideElement(inv);
+        uiShowElement(touch);
     };
 };
 

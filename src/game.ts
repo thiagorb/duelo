@@ -36,7 +36,7 @@ import {
     vectorMultiply,
 } from './glm';
 import { keyboardInitialize } from './keyboard';
-import { uiOpponentUpdater, uiPlayerHealthUpdater, uiUpdaterSet } from './ui';
+import { uiHideElement, uiShowElement, uiOpponentUpdater, uiPlayerHealthUpdater, uiUpdaterSet } from './ui';
 import { menuStart } from './menu';
 import { Drop, dropCreate, dropDraw, dropIsPickable, dropStep } from './drop';
 import { inventoryAddItem, inventoryIsFull, inventorySetOnEquip } from './inventory';
@@ -342,11 +342,8 @@ const renderDebuggingRects = (program: Program) => {
 };
 
 export const gameStart = (game: Game, program: Program) => {
-    gameUi.style.display = null;
-    setTimeout(() => {
-        gameUi.classList.remove('hidden');
-        touch.classList.remove('hidden');
-    });
+    uiShowElement(gameUi);
+    uiShowElement(touch);
 
     let ending = 0;
     let previousTime = 0;
@@ -364,9 +361,9 @@ export const gameStart = (game: Game, program: Program) => {
             ending = 1;
             setTimeout(() => {
                 ending = 2;
-                gameUi.classList.add('hidden');
-                touch.classList.add('hidden');
-                setTimeout(() => (gameUi.style.display = 'none'), 500);
+
+                uiHideElement(gameUi);
+                uiHideElement(touch);
                 game[GameProperties.IsOver] = true;
                 menuStart(program, game);
             }, 2000);
@@ -390,6 +387,29 @@ const gameKeyboardInit = () => {
 
 export const gameInit = () => {
     keyboard = keyboardInitialize(['Space', 'ArrowLeft', 'Shift', 'ArrowUp', 'ArrowRight']);
+
+    if (process.env.NODE_ENV !== 'production') {
+        document.body.addEventListener('keydown', e => {
+            const game = window['game'];
+            if (!game) {
+                return;
+            }
+
+            console.log(e);
+            if (e.key === 'k') {
+                knightIncreaseHealth(game[GameProperties.Enemy], -1);
+                gameKnightEnemyCheckHit(game, game[GameProperties.Player], game[GameProperties.Enemy]);
+            }
+
+            if (e.key === 'd') {
+                knightIncreaseHealth(game[GameProperties.Player], -1);
+            }
+
+            if (e.key === 'n') {
+                gameNextEnemy(game);
+            }
+        });
+    }
 };
 
 const randomEquipLevel = (level: number) =>
@@ -415,23 +435,5 @@ const gameNextEnemy = (game: Game) => {
     btns.classList.add('hidden');
     btnnext.onclick = null;
 };
-
-if (process.env.NODE_ENV !== 'production') {
-    document.body.addEventListener('keydown', e => {
-        const game = window['game'];
-        if (e.key === 'k') {
-            knightIncreaseHealth(game[GameProperties.Enemy], -1);
-            gameKnightEnemyCheckHit(game, game[GameProperties.Player], game[GameProperties.Enemy]);
-        }
-
-        if (e.key === 'd') {
-            knightIncreaseHealth(game[GameProperties.Player], -1);
-        }
-
-        if (e.key === 'n') {
-            gameNextEnemy(game);
-        }
-    });
-}
 
 export const gameIsOver = (game: Game) => game[GameProperties.IsOver];

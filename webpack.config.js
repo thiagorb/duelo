@@ -46,7 +46,7 @@ module.exports = {
                 use: [{ loader: path.resolve('tools/glsl-loader.js') }],
             },
             {
-                test: /\.template$/i,
+                test: /game\.html$/i,
                 use: 'html-loader',
             },
         ],

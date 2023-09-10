@@ -13,7 +13,7 @@ declare module '*.frag' {
     export = x;
 }
 
-declare module '*.template' {
+declare module '*.html' {
     var x: any;
     export = x;
 }

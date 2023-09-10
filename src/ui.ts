@@ -28,3 +28,13 @@ export const uiOpponentUpdater = uiUpdaterCreate((n: number) => updateHealth(bar
 
 const updateHealth = (healthBar: HTMLElement, n: number) =>
     healthBar.style.setProperty('--progress', Math.max(0, Math.min(1, n)) as any as string);
+
+export const uiHideElement = (element: HTMLElement) => {
+    element.classList.add('hidden');
+    setTimeout(() => (element.style.display = 'none'), 500);
+};
+
+export const uiShowElement = (element: HTMLElement) => {
+    element.style.display = null;
+    setTimeout(() => element.classList.remove('hidden'));
+};
