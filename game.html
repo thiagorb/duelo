@@ -67,7 +67,7 @@
         justify-items: center;
     }
 
-    #menuUi, #btns, #bars, #inv, #touch, #cnf, #spinner {
+    #menuUi, #btns, #bars, #inv, #touch, #cnf, #spinner, #err {
         transition: 0.5s opacity, 0.5s filter, 0.5s transform;
     }
 
@@ -199,7 +199,7 @@
         transform: translateY(-50px);
     }
 
-    #cnf, #spinner {
+    #cnf, #spinner, #err {
         position: absolute;
         display: flex;
         gap: 15px;
@@ -292,6 +292,10 @@
     </div>
     <div id="spinner" class="hidden" style="display: none;">
         <div style="width: 10px; height: 10px; border: 2px solid; border-color: #eee; border-top-color: #3E67EC; border-radius: 50%; animation: loadingspin 1s linear infinite;"></div>
+    </div>
+    <div id="err" class="hidden" style="display: none;">
+        <div style="width: 100%;" id="msg"></div>
+        <div id="ok" class="btn" data-text="OK"></div>
     </div>
 </div>
 <div id="touch" class="hidden game-ui" style="position:absolute; padding: 0 10px; display:none; grid-template-columns: 1fr auto; width: 100%; gap: 10px; bottom: 20px; box-sizing: border-box;">

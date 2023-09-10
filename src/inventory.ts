@@ -61,6 +61,9 @@ declare const no: HTMLElement;
 declare const spinner: HTMLElement;
 declare const touch: HTMLElement;
 declare const css: HTMLElement;
+declare const err: HTMLElement;
+declare const msg: HTMLElement;
+declare const ok: HTMLElement;
 
 const enum InventoryProperties {
     InventoryItems,
@@ -194,17 +197,18 @@ const renderInventory = () => {
             if (near) {
                 const sellAction = createItemAction('SELL');
                 if (inventory[InventoryProperties.SellItems].length >= 10) {
+                    inventoryAlert('You can only have 10 items for sale at a time.');
                     return;
                 }
 
                 sellAction.onclick = async () => {
                     const value = prompt('How much do you want to sell this item for?');
-                    if (!value || !/^\d+$/.test(value)) {
+                    const price = parseInt(value, 10);
+                    if (!value || !/^\d+$/.test(value) || price > 99999) {
                         return;
                     }
-                    const price = parseInt(value, 10);
                     uiShowElement(spinner);
-                    const sale = await nearSell(near, itemId, price).catch(() => null);
+                    const sale = await nearSell(near, itemId, price).catch(showGenericError);
                     if (sale) {
                         const items = storageGetItemIds();
                         items.splice(i, 1);
@@ -236,6 +240,8 @@ const renderInventory = () => {
     }
 };
 
+const showGenericError = () => inventoryAlert('An error occurred. Please try again later.');
+
 const renderGold = () => {
     gold.innerText = `GOLD: ${storageGetGold()}`;
 };
@@ -258,6 +264,12 @@ const inventorySetUserSales = async () => {
     renderUserSales();
 };
 
+const inventoryAlert = (message: string) => {
+    msg.innerText = message;
+    uiShowElement(err);
+    ok.onclick = () => uiHideElement(err);
+};
+
 const renderEquippedItems = () => {
     eqItems.innerHTML = '';
     for (let i = 0; i < 5; i++) {
@@ -266,14 +278,12 @@ const renderEquippedItems = () => {
             const unequipAction = createItemAction('UNEQUIP');
             unequipAction.onclick = () => {
                 if (inventoryIsFull()) {
-                    return;
+                    inventoryAlert('Your inventory is full.');
                 }
 
-                const items = storageGetItemIds();
-                items.push(itemId);
                 const equipped = storageGetEquippedIds();
                 equipped[equipGetType(itemId)] = undefined;
-                inventorySetItems(items);
+                inventoryAddItem(itemId);
                 inventorySetEquippedItems(equipped);
             };
             itemActions.appendChild(unequipAction);
@@ -299,7 +309,7 @@ const renderUserSales = () => {
                 itemDiv.dataset.price = `$ ${sale.price}`;
                 collectAction.onclick = async () => {
                     uiShowElement(spinner);
-                    const sale = await nearCollectSale(near, userSale.id).catch(() => null);
+                    const sale = await nearCollectSale(near, userSale.id).catch(showGenericError);
                     if (sale) {
                         inventoryAddGold(sale.price);
                         inventorySetUserSales();
@@ -315,13 +325,16 @@ const renderUserSales = () => {
                 itemDiv.dataset.price = `$ ${sale.price}`;
                 const cancelAction = createItemAction('CANCEL');
                 cancelAction.onclick = async () => {
+                    if (inventoryIsFull()) {
+                        inventoryAlert('Your inventory is full.');
+                        return;
+                    }
+
                     uiShowElement(spinner);
-                    const sale = await nearCancelSale(near, userSale.id).catch(() => null);
+                    const sale = await nearCancelSale(near, userSale.id).catch(showGenericError);
                     if (sale) {
-                        const items = storageGetItemIds();
-                        items.push(sale.itemId);
                         inventorySetUserSales();
-                        inventorySetItems(items);
+                        inventoryAddItem(sale.itemId);
                     }
                     uiHideElement(spinner);
                 };
@@ -345,19 +358,23 @@ const renderMarket = () => {
             const buyAction = createItemAction('BUY');
             itemDiv.dataset.price = `$ ${sale.price}`;
             buyAction.onclick = async () => {
-                if (inventoryIsFull() || storageGetGold() < sale.price) {
+                if (inventoryIsFull()) {
+                    inventoryAlert('Your inventory is full.');
+                    return;
+                }
+
+                if (storageGetGold() < sale.price) {
+                    inventoryAlert("You don't have enough gold.");
                     return;
                 }
 
                 const near = inventory[InventoryProperties.Near];
 
                 uiShowElement(spinner);
-                const bought = await nearBuy(near, saleEntry.id).catch(() => null);
+                const bought = await nearBuy(near, saleEntry.id).catch(showGenericError);
                 if (bought) {
-                    const items = storageGetItemIds();
-                    items.push(bought.itemId);
                     inventoryAddGold(-bought.price);
-                    inventorySetItems(items);
+                    inventoryAddItem(bought.itemId);
                     itemDiv.replaceWith(createItemDiv(undefined, () => {}));
                 }
 

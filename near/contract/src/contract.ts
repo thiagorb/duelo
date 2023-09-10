@@ -50,6 +50,14 @@ export class DueloGame {
     sell({ saleId, itemId, price }: { saleId: string; itemId: number; price: number }): Sale {
         const userId = near.signerAccountId();
 
+        if (price < 1 || price > 99999) {
+            return;
+        }
+
+        if (itemId < 0 || itemId >= 25) {
+            return;
+        }
+
         // if user has more than 10 sales, don't allow
         if (this.userSales[userId] && Object.keys(this.userSales[userId]).length >= 10) {
             return;
