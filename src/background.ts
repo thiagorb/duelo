@@ -1,4 +1,5 @@
 import {
+    Animatable,
     AnimatedProperty,
     animatableCreate,
     animatableDraw,
@@ -10,10 +11,10 @@ import {
     boundElementCreate,
 } from './animation';
 import { Program } from './gl';
-import { matrixScale, matrixSetIdentity, matrixTranslate, matrixTranslateVector, Vec2, vectorCreate } from './glm';
-import { ModelType, objectCreate, objectGetComponentTransform } from './model';
+import { matrixScale, matrixSetIdentity, matrixTranslateVector, Vec2, vectorCreate } from './glm';
+import { ModelType, objectCreate } from './model';
 import * as modelData from '../art/background.svg';
-import { VIRTUAL_HEIGHT } from './game';
+import { FLOOR_LEVEL, GAME_WIDTH, VIRTUAL_HEIGHT } from './game';
 
 const enum BackgroundProperties {
     Position,
@@ -28,7 +29,19 @@ const enum BackgroundProperties {
 
 export type Background = ReturnType<typeof backgroundCreate>;
 
+const enum TreeProperties {
+    Position,
+    Animatable,
+}
+
+export type Tree = {
+    [TreeProperties.Position]: Vec2;
+    [TreeProperties.Animatable]: Animatable;
+};
+
 let background: Background = null;
+let tree: Animatable;
+const treePosition = vectorCreate(0, 0);
 
 export const backgroundCreate = (position: Vec2) => {
     const castleX = animationElementCreate(0);
@@ -97,10 +110,28 @@ export const backgroundDraw = (
 
     animatableTransform(background[BackgroundProperties.Animatable]);
     animatableDraw(background[BackgroundProperties.Animatable], program);
+
+    const trees = 30;
+    let j = trees;
+    let randomizer = 0xfffff;
+    while (j--) {
+        const factor = 1 - j / trees;
+        treePosition[1] = FLOOR_LEVEL + 55 - 45 * factor;
+        randomizer = (randomizer * 1103534 + 123456) & 0x7fffffff;
+        treePosition[0] =
+            -GAME_WIDTH / 2 + (randomizer % GAME_WIDTH) - currentViewPosition * (10 * (1 / (trees * (1 + factor))));
+        const treeMatrix = animatableGetRootTransform(tree);
+        matrixSetIdentity(treeMatrix);
+        matrixTranslateVector(treeMatrix, treePosition);
+        matrixScale(treeMatrix, 0.1 + factor * 0.9, 0.1 + factor * 0.9);
+        animatableTransform(tree);
+        animatableDraw(tree, program);
+    }
 };
 
 export const backgroundInit = () => {
     background = backgroundCreate(vectorCreate(0, -VIRTUAL_HEIGHT * 0.1));
+    tree = animatableCreate(objectCreate(ModelType.Tree), []);
 };
 
 export const backgroundGetPosition = (background: Background) => background[BackgroundProperties.Position];

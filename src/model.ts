@@ -13,6 +13,7 @@ import * as manModelData from '../art/knight.svg';
 import * as swordModelData from '../art/sword.svg';
 import * as goldModelData from '../art/gold.svg';
 import * as backgroundModelData from '../art/background.svg';
+import * as treeModelData from '../art/tree.svg';
 import { COLOR_PRECISION, COORDINATES_PRECISION } from './config';
 
 export const enum ModelType {
@@ -20,6 +21,7 @@ export const enum ModelType {
     Sword,
     Gold,
     Background,
+    Tree,
 }
 
 const modelStorage = new WeakMap<Program, Map<ModelType, Array<Mesh>>>();
@@ -160,6 +162,7 @@ const modelsData = {
     [ModelType.Sword]: swordModelData.model,
     [ModelType.Gold]: goldModelData.model,
     [ModelType.Background]: backgroundModelData.model,
+    [ModelType.Tree]: treeModelData.model,
 };
 
 const models = {
@@ -167,6 +170,7 @@ const models = {
     [ModelType.Sword]: modelCreate(swordModelData.model),
     [ModelType.Gold]: modelCreate(goldModelData.model),
     [ModelType.Background]: modelCreate(backgroundModelData.model),
+    [ModelType.Tree]: modelCreate(treeModelData.model),
 };
 
 export const objectCreate = (modelType: ModelType): Object => {
