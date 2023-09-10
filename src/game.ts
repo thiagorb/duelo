@@ -395,7 +395,6 @@ export const gameInit = () => {
                 return;
             }
 
-            console.log(e);
             if (e.key === 'k') {
                 knightIncreaseHealth(game[GameProperties.Enemy], -1);
                 gameKnightEnemyCheckHit(game, game[GameProperties.Player], game[GameProperties.Enemy]);

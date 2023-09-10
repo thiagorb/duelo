@@ -1,5 +1,5 @@
 import { Packer } from 'roadroller';
-import { readFileSync, rm, writeFileSync } from 'fs';
+import { readFileSync, renameSync, rm, writeFileSync } from 'fs';
 
 console.error('Roadrolling...');
 const startTime = Date.now();
@@ -24,7 +24,7 @@ if (finalHtml === html) {
     throw new Error('Unable to find script tag');
 }
 
+renameSync('dist/index.html', 'dist/index.html.bak');
 writeFileSync('dist/index.html', finalHtml);
-rm('dist/main.js', () => {});
 
 console.error(`Roadrolled in ${Date.now() - startTime}ms`);

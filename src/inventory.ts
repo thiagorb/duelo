@@ -60,6 +60,7 @@ declare const yes: HTMLElement;
 declare const no: HTMLElement;
 declare const spinner: HTMLElement;
 declare const touch: HTMLElement;
+declare const css: HTMLElement;
 
 export const inventoryIsFull = () => {
     return storageGetItemIds().length >= 10;
@@ -92,8 +93,7 @@ const createItemDiv = (
     itemDiv.classList.add('inv-item');
 
     if (itemId !== undefined) {
-        const itemImg = renderItem(itemId);
-        itemDiv.style.backgroundImage = `url(${itemImg})`;
+        itemDiv.classList.add(getRenderedItemClass(itemId));
 
         const name = equipGetName(itemId);
         const stats =
@@ -320,7 +320,7 @@ const toggleSignIn = async (near: NearInstance) => {
     }
 };
 
-const renderItem = (() => {
+const getRenderedItemClass = (() => {
     const WIDTH = 128;
     const HEIGHT = 128;
     const SCALE = 0.05;
@@ -333,22 +333,28 @@ const renderItem = (() => {
     matrixSetIdentity(viewMatrix);
     matrixScale(viewMatrix, SCALE, SCALE);
     glSetViewMatrix(program, viewMatrix);
+    const renderedIds = {};
 
     return (itemId: number) => {
-        glClear(program);
+        if (!renderedIds[itemId]) {
+            glClear(program);
 
-        const animatable = equipCreateAnimatable(itemId);
-        const originComponentId = equipGetOriginComponentId(itemId);
-        const matrix = animatableGetRootTransform(animatable);
-        matrixSetIdentity(matrix);
-        animatableTransform(animatable);
-        animatableSetOriginComponent(animatable, originComponentId);
-        matrixSetIdentity(matrix);
-        matrixTranslateVector(matrix, vectorCreate(0, 0));
-        animatableTransformApply(animatable, matrix);
-        animatableDraw(animatable, program);
+            const animatable = equipCreateAnimatable(itemId);
+            const originComponentId = equipGetOriginComponentId(itemId);
+            const matrix = animatableGetRootTransform(animatable);
+            matrixSetIdentity(matrix);
+            animatableTransform(animatable);
+            animatableSetOriginComponent(animatable, originComponentId);
+            matrixSetIdentity(matrix);
+            matrixTranslateVector(matrix, vectorCreate(0, 0));
+            animatableTransformApply(animatable, matrix);
+            animatableDraw(animatable, program);
 
-        return canvas.toDataURL('image/png');
+            const img = canvas.toDataURL('image/png');
+            css.innerHTML += `.img-${itemId} { background-image: url(${img}); }`;
+            renderedIds[itemId] = true;
+        }
+        return `img-${itemId}`;
     };
 })();
 
