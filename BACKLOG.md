@@ -1,6 +1,7 @@
 ## Next Steps
 
 - add price to market items
+- cache rendered images
 - add more trees
 - add more mountains
 - add color details (red / blue)

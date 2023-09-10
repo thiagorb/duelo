@@ -5,7 +5,7 @@
     "scripts": {
         "serve": "webpack-dev-server",
         "clean": "rm -rf ./dist ./build.zip",
-        "build": "NODE_ENV=production webpack --mode production",
+        "build": "NODE_ENV=production webpack --mode production && node roadroll.mjs",
         "zip": "npm run clean && npm run build && (cd dist; zip -9 -X ../build.zip index.html) && npm run build-size",
         "build-size": "node -e \"console.log('Current build size:', parseFloat(($(wc -c < build.zip) / 1024).toFixed(2)), 'KiB')\"",
         "gh-pages": "node -e 'require(`gh-pages`).publish(`dist`);'",
@@ -28,5 +28,9 @@
         "typescript": "^4.7.4",
         "webpack-dev-server": "^4.9.3",
         "zzfx": "^1.1.8"
+    },
+    "devDependencies": {
+        "html-loader": "^4.2.0",
+        "roadroller": "^2.1.0"
     }
 }

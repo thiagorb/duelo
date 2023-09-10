@@ -65,7 +65,7 @@ export const VIRTUAL_HEIGHT = 900 / 3;
 export const GAME_WIDTH = 2000;
 export const INITIAL_TIME = 30;
 
-const keyboard = keyboardInitialize(['Space', 'ArrowLeft', 'Shift', 'ArrowUp', 'ArrowRight']);
+let keyboard: ReturnType<typeof gameKeyboardInit>;
 
 export const gameIsOutOfArea = (position: Vec2) => {
     return (
@@ -382,6 +382,14 @@ export const gameStart = (game: Game, program: Program) => {
     if (process.env.NODE_ENV !== 'production') {
         window['game'] = game;
     }
+};
+
+const gameKeyboardInit = () => {
+    return keyboardInitialize(['Space', 'ArrowLeft', 'Shift', 'ArrowUp', 'ArrowRight']);
+};
+
+export const gameInit = () => {
+    keyboard = keyboardInitialize(['Space', 'ArrowLeft', 'Shift', 'ArrowUp', 'ArrowRight']);
 };
 
 const randomEquipLevel = (level: number) =>

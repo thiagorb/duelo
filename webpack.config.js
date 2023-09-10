@@ -6,7 +6,7 @@ module.exports = {
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     entry: './src/main.ts',
     output: {
-        filename: '[name].[contenthash].js',
+        filename: '[name].js',
         path: path.resolve(__dirname, 'dist'),
     },
     devServer: {
@@ -24,7 +24,7 @@ module.exports = {
                 minifyCSS: true,
             },
         }),
-        new HtmlInlineScriptPlugin(),
+        //new HtmlInlineScriptPlugin(),
     ],
     module: {
         rules: [
@@ -44,6 +44,10 @@ module.exports = {
             {
                 test: /\.(vert|frag)$/,
                 use: [{ loader: path.resolve('tools/glsl-loader.js') }],
+            },
+            {
+                test: /\.template$/i,
+                use: 'html-loader',
             },
         ],
     },

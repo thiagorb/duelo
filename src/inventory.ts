@@ -314,15 +314,6 @@ const toggleSignIn = async (near: NearInstance) => {
     }
 };
 
-mainnet.onclick = testnet.onclick = (event: MouseEvent) => {
-    nearRequestSignIn((event.target as HTMLDivElement).id);
-};
-
-signOut.onclick = async () => {
-    await nearSignOut();
-    toggleSignIn(null);
-};
-
 const renderItem = (() => {
     const WIDTH = 128;
     const HEIGHT = 128;
@@ -355,13 +346,24 @@ const renderItem = (() => {
     };
 })();
 
-btninv.onclick = () => {
-    inventoryStart();
-};
+export const inventoryInit = () => {
+    mainnet.onclick = testnet.onclick = (event: MouseEvent) => {
+        nearRequestSignIn((event.target as HTMLDivElement).id);
+    };
 
-invClose.onclick = () => {
-    inv.style.display = 'none';
-    inv.classList.add('hidden');
+    signOut.onclick = async () => {
+        await nearSignOut();
+        toggleSignIn(null);
+    };
+
+    btninv.onclick = () => {
+        inventoryStart();
+    };
+
+    invClose.onclick = () => {
+        inv.style.display = 'none';
+        inv.classList.add('hidden');
+    };
 };
 
 let onEquip = null;

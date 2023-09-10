@@ -12,3 +12,8 @@ declare module '*.frag' {
     var x: any;
     export = x;
 }
+
+declare module '*.template' {
+    var x: any;
+    export = x;
+}
