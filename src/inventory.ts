@@ -8,11 +8,11 @@ import {
 import { glClear, glProgramCreate, glSetViewMatrix, glSetViewport } from './gl';
 import { matrixCreate, matrixScale, matrixSetIdentity, matrixTranslateVector, vectorCreate } from './glm';
 import {
+    storageAddGold,
     storageGetEquippedIds,
     storageGetGold,
     storageGetItemIds,
     storageSetEquippedIds,
-    storageSetGold,
     storageSetItemIds,
 } from './storage';
 import {
@@ -47,6 +47,7 @@ declare const eqItems: HTMLElement;
 declare const sellItems: HTMLElement;
 declare const mktItems: HTMLElement;
 declare const btninv: HTMLElement;
+declare const menuinv: HTMLElement;
 declare const invClose: HTMLElement;
 declare const signMsg: HTMLElement;
 declare const nearArea: HTMLElement;
@@ -115,7 +116,7 @@ const createItemDiv = (
 };
 
 export const inventoryStart = async () => {
-    const near = await nearGetSignedIn();
+    const near = await nearGetSignedIn().catch(() => null);
 
     toggleSignIn(near);
 
@@ -142,7 +143,7 @@ const loadInventory = (near: NearInstance) => {
                 const equipSlot = equipGetType(itemId);
                 const oldEquipped = equipped[equipSlot];
                 const items = storageGetItemIds();
-                items.splice(i, 1, ...(oldEquipped ? [oldEquipped] : []));
+                items.splice(i, 1, ...(oldEquipped >= 0 ? [oldEquipped] : []));
                 storageSetItemIds(items);
                 equipped[equipSlot] = itemId;
                 storageSetEquippedIds(equipped);
@@ -262,7 +263,7 @@ const loadUserSales = async (near: NearInstance) => {
                 spinner.style.display = null;
                 const sale = await nearCollectSale(near, saleId).catch(() => null);
                 if (sale) {
-                    storageSetGold(storageGetGold() + sale.price);
+                    storageAddGold(sale.price);
                     await loadUserSales(near);
                     loadInventory(near);
                 }
@@ -295,6 +296,7 @@ const loadMarket = async (near: NearInstance) => {
                     const items = storageGetItemIds();
                     items.push(bought.itemId);
                     storageSetItemIds(items);
+                    storageAddGold(-bought.price);
                     loadInventory(near);
                     itemDiv.replaceWith(createItemDiv(undefined, () => {}));
                 }
@@ -372,12 +374,19 @@ export const inventoryInit = () => {
 
     btninv.onclick = () => {
         inventoryStart();
-        uiHideElement(touch);
+
+        invClose.onclick = () => {
+            uiHideElement(inv);
+            uiShowElement(touch);
+        };
     };
 
-    invClose.onclick = () => {
-        uiHideElement(inv);
-        uiShowElement(touch);
+    menuinv.onclick = () => {
+        inventoryStart();
+
+        invClose.onclick = () => {
+            uiHideElement(inv);
+        };
     };
 };
 

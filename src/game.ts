@@ -48,7 +48,7 @@ import {
     equipGetItemId,
     equipGetOriginComponentId,
 } from './equip';
-import { storageGetEquippedIds, storageGetGold, storageSetGold } from './storage';
+import { storageAddGold, storageGetEquippedIds } from './storage';
 import { ModelType, objectCreate } from './model';
 import { Animatable, animatableCreate } from './animation';
 
@@ -186,7 +186,7 @@ export const gameStep = (game: Game, deltaTime: number) => {
         dropStep(drop[GameDropProperties.Drop], deltaTime);
         if (dropIsPickable(drop[GameDropProperties.Drop], knightGetCenter(player))) {
             if (drop[GameDropProperties.Gold] > 0) {
-                storageSetGold(storageGetGold() + drop[GameDropProperties.Gold]);
+                storageAddGold(drop[GameDropProperties.Gold]);
             } else if (!inventoryIsFull()) {
                 inventoryAddItem(drop[GameDropProperties.ItemId]);
             } else {

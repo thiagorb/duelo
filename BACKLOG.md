@@ -1,7 +1,5 @@
 ## Next Steps
 
-- investigate bug in inventory after equip
-- fix gold not being charged
 - change contract to allow maximum 10 sales including pending and completed ones
 - add alert for not enough money/invalid input for sale price
 - add max price to contract

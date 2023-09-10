@@ -35,8 +35,8 @@ export const storageGetGold = () => {
     return storageLoad()[StorageDataProperties.Gold];
 };
 
-export const storageSetGold = (gold: number) => {
-    storageUpdate(s => (s[StorageDataProperties.Gold] = gold));
+export const storageAddGold = (amount: number) => {
+    storageUpdate(s => (s[StorageDataProperties.Gold] += amount));
 };
 
 export const storageGetNetworkId = () => {
