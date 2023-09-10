@@ -24,7 +24,7 @@ if (finalHtml === html) {
     throw new Error('Unable to find script tag');
 }
 
-renameSync('dist/index.html', 'dist/index.html.bak');
+renameSync('dist/index.html', 'dist/index_unrolled.html');
 writeFileSync('dist/index.html', finalHtml);
 
 console.error(`Roadrolled in ${Date.now() - startTime}ms`);

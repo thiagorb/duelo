@@ -1,9 +1,8 @@
 ## Next Steps
 
-- cache rendered images
-- add sold indicator
+- investigate bug in inventory after equip
 - fix gold not being charged
-- add price for sold items
+- change contract to allow maximum 10 sales including pending and completed ones
 - add alert for not enough money/invalid input for sale price
 - add max price to contract
 - add color details (red / blue)

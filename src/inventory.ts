@@ -255,8 +255,9 @@ const loadUserSales = async (near: NearInstance) => {
 
     for (let i = 0; i < 5; i++) {
         const [saleId, sale] = completedSales[i] || [];
-        const itemDiv = createItemDiv(sale?.itemId, (itemActions: HTMLDivElement) => {
+        const itemDiv = createItemDiv(sale?.itemId, (itemActions: HTMLDivElement, itemDiv: HTMLDivElement) => {
             const collectAction = createItemAction('COLLECT');
+            itemDiv.dataset.price = `$ ${sale.price}`;
             collectAction.onclick = async () => {
                 spinner.style.display = null;
                 const sale = await nearCollectSale(near, saleId).catch(() => null);
@@ -268,6 +269,7 @@ const loadUserSales = async (near: NearInstance) => {
                 spinner.style.display = 'none';
             };
             itemActions.appendChild(collectAction);
+            itemDiv.innerHTML += `<div class="inv-sold">SOLD!</div>`;
         });
 
         sellItems.appendChild(itemDiv);
