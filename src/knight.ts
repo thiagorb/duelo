@@ -21,7 +21,7 @@ import {
     animationStep,
     boundElementCreate,
 } from './animation';
-import { glDrawRect, glSetGlobalOpacity, Program } from './gl';
+import { ColorRGB, glDrawRect, glSetGlobalOpacity, Program } from './gl';
 import { matrixScale, matrixSetIdentity, matrixTranslateVector, Vec2, vectorCreate } from './glm';
 import {
     MaterialType,
@@ -97,7 +97,7 @@ export type Knight = {
 
 const ATTACK_START = -3;
 const ATTACK_END = -1.3;
-export const knightCreate = (position: Vec2, equipped: EquippedIds): Knight => {
+export const knightCreate = (position: Vec2, equipped: EquippedIds, color?: ColorRGB): Knight => {
     const REST_LEFT_LEG_1 = 0.1;
     const REST_LEFT_LEG_2 = 0.7;
     const REST_RIGHT_LEG_1 = -0.7;
@@ -144,6 +144,10 @@ export const knightCreate = (position: Vec2, equipped: EquippedIds): Knight => {
 
     const rightObject = objectCreate(ModelType.Knight);
     const leftObject = objectCreate(ModelType.Knight);
+    if (color) {
+        knightSetColor(rightObject, color);
+        knightSetColor(leftObject, color);
+    }
     knightApplyGauntletOverrides(rightObject, equipped[EquippedIdsProperties.GauntletsId]);
     knightApplyGauntletOverrides(leftObject, equipped[EquippedIdsProperties.GauntletsId]);
     knightApplyBootsOverrides(rightObject, equipped[EquippedIdsProperties.BootsId]);
@@ -781,4 +785,11 @@ export const knightIncreaseHealth = (knight: Knight, amount: number) => {
     if (knightIsDead(knight)) {
         knightDie(knight);
     }
+};
+
+export const knightSetColor = (object: Object, color: ColorRGB) => {
+    objectSetColorOverride(object, modelData.rightLeg1ComponentId, color);
+    objectSetColorOverride(object, modelData.leftLeg1ComponentId, color);
+    objectSetColorOverride(object, modelData.rightLeg2ComponentId, color);
+    objectSetColorOverride(object, modelData.leftLeg2ComponentId, color);
 };

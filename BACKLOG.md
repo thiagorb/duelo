@@ -1,6 +1,5 @@
 ## Next Steps
 
-- add color details (red / blue)
 - add seller / buyer name
 - add more trees
 - add more mountains

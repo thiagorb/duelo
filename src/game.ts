@@ -429,7 +429,11 @@ const gameNextEnemy = (game: Game) => {
     const playerX = knightGetPosition(game[GameProperties.Player])[0];
     const enemyX = playerX + (200 + Math.random() * 100) * (playerX > 0 ? -1 : 1);
 
-    game[GameProperties.Enemy] = knightCreate(vectorCreate(enemyX, FLOOR_LEVEL), game[GameProperties.EnemyEquips]);
+    game[GameProperties.Enemy] = knightCreate(
+        vectorCreate(enemyX, FLOOR_LEVEL),
+        game[GameProperties.EnemyEquips],
+        [0.8, 0.3, 0.3]
+    );
     bars.classList.remove('hidden');
     btns.classList.add('hidden');
     btnnext.onclick = null;
