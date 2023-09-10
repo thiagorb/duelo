@@ -28,9 +28,8 @@ export type NearInstance = {
         signOut(): void;
     };
     [NearInstanceProperties.Contract]: {
-        get_random_sales(_: { playerId: string }): Promise<{ [saleId: string]: Sale }>;
-        get_user_pending_sales(_: { playerId: string }): Promise<{ [saleId: string]: Sale }>;
-        get_user_completed_sales(_: { playerId: string }): Promise<{ [saleId: string]: Sale }>;
+        get_random_sales(_: { playerId: string }): Promise<Array<{ id: string; sale: Sale }>>;
+        get_user_sales(_: { playerId: string }): Promise<Array<{ id: string; sale: Sale; completed: boolean }>>;
         sell(_: { saleId: string; itemId: number; price: number }): Promise<Sale>;
         buy(_: { saleId: string }): Promise<Sale>;
         collect_sale(_: { saleId: string }): Promise<Sale>;
@@ -53,7 +52,7 @@ const nearCreate = async (networkId: string): Promise<NearInstance> => {
     const walletConnection = new nearApi.WalletConnection(nearConnection, contractStorageKey);
 
     const contract = ((window as any).contract = await new nearApi.Contract(walletConnection.account(), contractName, {
-        viewMethods: ['get_random_sales', 'get_user_pending_sales', 'get_user_completed_sales'],
+        viewMethods: ['get_random_sales', 'get_user_sales'],
         changeMethods:
             process.env.NODE_ENV !== 'production'
                 ? ['sell', 'buy', 'collect_sale', 'cancel_sale', 'reset']
@@ -115,12 +114,10 @@ export const nearGetRandomSales = (near: NearInstance) => {
     return near[NearInstanceProperties.Contract].get_random_sales({ playerId: nearGetAccountId(near) });
 };
 
-export const nearGetPendingSales = (near: NearInstance) => {
-    return near[NearInstanceProperties.Contract].get_user_pending_sales({ playerId: nearGetAccountId(near) });
-};
-
-export const nearGetCompletedSales = (near: NearInstance) => {
-    return near[NearInstanceProperties.Contract].get_user_completed_sales({ playerId: nearGetAccountId(near) });
+export const nearGetUserSales = (
+    near: NearInstance
+): Promise<Array<{ id: string; sale: Sale; completed: boolean }>> => {
+    return near[NearInstanceProperties.Contract].get_user_sales({ playerId: nearGetAccountId(near) });
 };
 
 const rand = () => (Math.random() * 0x10000000000000).toString(16);

@@ -67,7 +67,7 @@
         justify-items: center;
     }
 
-    #menuUi, #btns, #bars, #inv {
+    #menuUi, #btns, #bars, #inv, #touch, #cnf, #spinner {
         transition: 0.5s opacity, 0.5s filter, 0.5s transform;
     }
 
@@ -285,16 +285,16 @@
             <div id="mktItems" class="inv-list" style="margin-bottom: 20px;"></div>
         </div>
     </div>
-    <div id="cnf" style="display: none;">
+    <div id="cnf" class="hidden" style="display: none;">
         <div style="width: 100%;">ARE YOU SURE YOU WANT TO DROP THIS ITEM?</div>
         <div id="yes" class="btn" data-text="YES"></div>
         <div id="no" class="btn" data-text="NO"></div>
     </div>
-    <div id="spinner" style="display: none;">
+    <div id="spinner" class="hidden" style="display: none;">
         <div style="width: 10px; height: 10px; border: 2px solid; border-color: #eee; border-top-color: #3E67EC; border-radius: 50%; animation: loadingspin 1s linear infinite;"></div>
     </div>
 </div>
-<div id="touch" class="hidden game-ui" style="position:absolute; padding: 0 10px; display:grid; grid-template-columns: 1fr auto; width: 100%; gap: 10px; bottom: 20px; box-sizing: border-box;">
+<div id="touch" class="hidden game-ui" style="position:absolute; padding: 0 10px; display:none; grid-template-columns: 1fr auto; width: 100%; gap: 10px; bottom: 20px; box-sizing: border-box;">
     <div data-key="ArrowUp"></div>
     <div data-key="Space"></div>
     <div data-key="ArrowLeft"></div>

@@ -41,7 +41,7 @@ test('sales', async t => {
     const randomSalesFromTestUser = await contract.view('get_random_sales', { playerId: 'test.near' });
     t.deepEqual(randomSalesFromTestUser, {});
 
-    const pendingSalesFromTestUser = await contract.view('get_user_pending_sales', { playerId: 'test.near' });
+    const pendingSalesFromTestUser = await contract.view('get_user_sales', { playerId: 'test.near' });
     t.deepEqual(pendingSalesFromTestUser, { sale1: { itemId: 123, price: 456, sellerId: 'test.near' } });
 
     const boughtSale = await other.call(contract, 'buy', { saleId: 'sale1' });

@@ -36,5 +36,6 @@ export const uiHideElement = (element: HTMLElement) => {
 
 export const uiShowElement = (element: HTMLElement) => {
     element.style.display = null;
-    setTimeout(() => element.classList.remove('hidden'));
+    element.getClientRects();
+    requestAnimationFrame(() => element.classList.remove('hidden'));
 };

@@ -31,8 +31,7 @@ import {
     nearCancelSale,
     nearCollectSale,
     nearGetAccountId,
-    nearGetCompletedSales,
-    nearGetPendingSales,
+    nearGetUserSales,
     nearGetRandomSales,
     nearGetSignedIn,
     nearRequestSignIn,
@@ -63,12 +62,42 @@ declare const spinner: HTMLElement;
 declare const touch: HTMLElement;
 declare const css: HTMLElement;
 
+const enum InventoryProperties {
+    InventoryItems,
+    EquippedItems,
+    SellItems,
+    MarketItems,
+    Near,
+}
+
+type UserSales = Awaited<ReturnType<typeof nearGetUserSales>>;
+type MarketItems = Awaited<ReturnType<typeof nearGetRandomSales>>;
+
+type Inventory = {
+    [InventoryProperties.InventoryItems]: Array<number>;
+    [InventoryProperties.EquippedItems]: EquippedIds;
+    [InventoryProperties.SellItems]: UserSales;
+    [InventoryProperties.MarketItems]: MarketItems;
+    [InventoryProperties.Near]: NearInstance;
+};
+
 export const inventoryIsFull = () => {
     return storageGetItemIds().length >= 10;
 };
 
 export const inventoryAddItem = (itemId: number) => {
-    storageSetItemIds([...storageGetItemIds(), itemId]);
+    const items = inventory[InventoryProperties.InventoryItems];
+    if (items.length >= 10) {
+        return;
+    }
+
+    items.push(itemId);
+    inventorySetItems(items);
+};
+
+export const inventoryAddGold = (amount: number) => {
+    storageAddGold(amount);
+    renderGold();
 };
 
 const createItemAction = (action: string) => {
@@ -115,27 +144,38 @@ const createItemDiv = (
     return itemDiv;
 };
 
+const inventory = {
+    [InventoryProperties.InventoryItems]: storageGetItemIds(),
+    [InventoryProperties.EquippedItems]: storageGetEquippedIds(),
+    [InventoryProperties.SellItems]: [],
+    [InventoryProperties.MarketItems]: [],
+    [InventoryProperties.Near]: null,
+};
+
 export const inventoryStart = async () => {
     const near = await nearGetSignedIn().catch(() => null);
+    inventory[InventoryProperties.Near] = near;
+    inventory[InventoryProperties.SellItems] = near ? await nearGetUserSales(near) : [];
+    inventory[InventoryProperties.MarketItems] = near ? await nearGetRandomSales(near) : [];
 
     toggleSignIn(near);
 
-    loadInventory(near);
-    loadEquippedItems(near);
+    renderInventory();
+    renderGold();
+    renderEquippedItems();
 
-    if (near) {
-        loadUserSales(near);
-        loadMarket(near);
+    if (inventory) {
+        renderUserSales();
+        renderMarket();
     }
 
     uiShowElement(inv);
 };
 
-const loadInventory = (near: NearInstance) => {
+const renderInventory = () => {
     invItems.innerHTML = '';
-    const itemIds = storageGetItemIds();
     for (let i = 0; i < 10; i++) {
-        const itemId = itemIds[i];
+        const itemId = inventory[InventoryProperties.InventoryItems][i];
         const itemDiv = createItemDiv(itemId, (itemActions: HTMLDivElement) => {
             const equipAction = createItemAction('EQUIP');
             equipAction.onclick = () => {
@@ -144,46 +184,47 @@ const loadInventory = (near: NearInstance) => {
                 const oldEquipped = equipped[equipSlot];
                 const items = storageGetItemIds();
                 items.splice(i, 1, ...(oldEquipped >= 0 ? [oldEquipped] : []));
-                storageSetItemIds(items);
                 equipped[equipSlot] = itemId;
-                storageSetEquippedIds(equipped);
-                onEquip?.(equipped);
-                loadInventory(near);
-                loadEquippedItems(near);
+                inventorySetItems(items);
+                inventorySetEquippedItems(equipped);
             };
             itemActions.appendChild(equipAction);
 
+            const near = inventory[InventoryProperties.Near];
             if (near) {
                 const sellAction = createItemAction('SELL');
+                if (inventory[InventoryProperties.SellItems].length >= 10) {
+                    return;
+                }
+
                 sellAction.onclick = async () => {
                     const value = prompt('How much do you want to sell this item for?');
                     if (!value || !/^\d+$/.test(value)) {
                         return;
                     }
                     const price = parseInt(value, 10);
-                    spinner.style.display = null;
+                    uiShowElement(spinner);
                     const sale = await nearSell(near, itemId, price).catch(() => null);
                     if (sale) {
                         const items = storageGetItemIds();
                         items.splice(i, 1);
-                        storageSetItemIds(items);
-                        await loadUserSales(near);
-                        loadInventory(near);
+                        inventorySetUserSales();
+                        inventorySetItems(items);
                     }
-                    spinner.style.display = 'none';
+                    uiHideElement(spinner);
                 };
                 itemActions.appendChild(sellAction);
             }
 
             const dropAction = createItemAction('DROP');
             dropAction.onclick = () => {
-                cnf.style.display = null;
-                const close = () => (cnf.style.display = 'none');
+                uiShowElement(cnf);
+                const close = () => uiHideElement(cnf);
                 yes.onclick = () => {
+                    yes.onclick = null;
                     const items = storageGetItemIds();
                     items.splice(i, 1);
-                    storageSetItemIds(items);
-                    loadInventory(near);
+                    inventorySetItems(items);
                     close();
                 };
                 no.onclick = close;
@@ -192,16 +233,35 @@ const loadInventory = (near: NearInstance) => {
         });
 
         invItems.appendChild(itemDiv);
-
-        gold.innerText = `GOLD: ${storageGetGold()}`;
     }
 };
 
-const loadEquippedItems = (near: NearInstance) => {
+const renderGold = () => {
+    gold.innerText = `GOLD: ${storageGetGold()}`;
+};
+
+const inventorySetItems = (items: Array<number>) => {
+    storageSetItemIds(items);
+    inventory[InventoryProperties.InventoryItems] = items;
+    renderInventory();
+};
+
+const inventorySetEquippedItems = (equipped: EquippedIds) => {
+    onEquip?.(equipped);
+    storageSetEquippedIds(equipped);
+    inventory[InventoryProperties.EquippedItems] = equipped;
+    renderEquippedItems();
+};
+
+const inventorySetUserSales = async () => {
+    inventory[InventoryProperties.SellItems] = await nearGetUserSales(inventory[InventoryProperties.Near]);
+    renderUserSales();
+};
+
+const renderEquippedItems = () => {
     eqItems.innerHTML = '';
-    const equippedIds = storageGetEquippedIds();
     for (let i = 0; i < 5; i++) {
-        const itemId = equippedIds[i];
+        const itemId = inventory[InventoryProperties.EquippedItems][i];
         const itemDiv = createItemDiv(itemId, (itemActions: HTMLDivElement) => {
             const unequipAction = createItemAction('UNEQUIP');
             unequipAction.onclick = () => {
@@ -211,13 +271,10 @@ const loadEquippedItems = (near: NearInstance) => {
 
                 const items = storageGetItemIds();
                 items.push(itemId);
-                storageSetItemIds(items);
                 const equipped = storageGetEquippedIds();
                 equipped[equipGetType(itemId)] = undefined;
-                storageSetEquippedIds(equipped);
-                onEquip?.(equipped);
-                loadInventory(near);
-                loadEquippedItems(near);
+                inventorySetItems(items);
+                inventorySetEquippedItems(equipped);
             };
             itemActions.appendChild(unequipAction);
         });
@@ -226,63 +283,65 @@ const loadEquippedItems = (near: NearInstance) => {
     }
 };
 
-const loadUserSales = async (near: NearInstance) => {
+const renderUserSales = () => {
     sellItems.innerHTML = '';
-    const [pendingSales, completedSales] = (
-        await Promise.all([nearGetPendingSales(near), nearGetCompletedSales(near)])
-    ).map(o => Object.entries(o));
-    for (let i = 0; i < 5; i++) {
-        const [saleId, sale] = pendingSales[i] || [];
-        const itemDiv = createItemDiv(sale?.itemId, (itemActions: HTMLDivElement, itemDiv: HTMLDivElement) => {
-            itemDiv.dataset.price = `$ ${sale.price}`;
-            const cancelAction = createItemAction('CANCEL');
-            cancelAction.onclick = async () => {
-                spinner.style.display = null;
-                const sale = await nearCancelSale(near, saleId).catch(() => null);
-                if (sale) {
-                    const items = storageGetItemIds();
-                    items.push(sale.itemId);
-                    storageSetItemIds(items);
-                    await loadUserSales(near);
-                    loadInventory(near);
-                }
-                spinner.style.display = 'none';
-            };
-            itemActions.appendChild(cancelAction);
-        });
+    for (let i = 0; i < 10; i++) {
+        const userSale = inventory[InventoryProperties.SellItems][i];
+        const itemDiv = createItemDiv(userSale?.sale.itemId, (itemActions: HTMLDivElement, itemDiv: HTMLDivElement) => {
+            if (!userSale) {
+                return;
+            }
 
-        sellItems.appendChild(itemDiv);
-    }
-
-    for (let i = 0; i < 5; i++) {
-        const [saleId, sale] = completedSales[i] || [];
-        const itemDiv = createItemDiv(sale?.itemId, (itemActions: HTMLDivElement, itemDiv: HTMLDivElement) => {
-            const collectAction = createItemAction('COLLECT');
-            itemDiv.dataset.price = `$ ${sale.price}`;
-            collectAction.onclick = async () => {
-                spinner.style.display = null;
-                const sale = await nearCollectSale(near, saleId).catch(() => null);
-                if (sale) {
-                    storageAddGold(sale.price);
-                    await loadUserSales(near);
-                    loadInventory(near);
-                }
-                spinner.style.display = 'none';
-            };
-            itemActions.appendChild(collectAction);
-            itemDiv.innerHTML += `<div class="inv-sold">SOLD!</div>`;
+            const sale = userSale.sale;
+            const near = inventory[InventoryProperties.Near];
+            if (userSale.completed) {
+                const collectAction = createItemAction('COLLECT');
+                itemDiv.dataset.price = `$ ${sale.price}`;
+                collectAction.onclick = async () => {
+                    uiShowElement(spinner);
+                    const sale = await nearCollectSale(near, userSale.id).catch(() => null);
+                    if (sale) {
+                        inventoryAddGold(sale.price);
+                        inventorySetUserSales();
+                    }
+                    uiHideElement(spinner);
+                };
+                itemActions.appendChild(collectAction);
+                const sold = document.createElement('div');
+                sold.classList.add('inv-sold');
+                sold.innerText = 'SOLD!';
+                itemDiv.appendChild(sold);
+            } else {
+                itemDiv.dataset.price = `$ ${sale.price}`;
+                const cancelAction = createItemAction('CANCEL');
+                cancelAction.onclick = async () => {
+                    uiShowElement(spinner);
+                    const sale = await nearCancelSale(near, userSale.id).catch(() => null);
+                    if (sale) {
+                        const items = storageGetItemIds();
+                        items.push(sale.itemId);
+                        inventorySetUserSales();
+                        inventorySetItems(items);
+                    }
+                    uiHideElement(spinner);
+                };
+                itemActions.appendChild(cancelAction);
+            }
         });
 
         sellItems.appendChild(itemDiv);
     }
 };
 
-const loadMarket = async (near: NearInstance) => {
+const renderMarket = () => {
     mktItems.innerHTML = '';
-    const randomSales = Object.entries(await nearGetRandomSales(near));
     for (let i = 0; i < 10; i++) {
-        const [saleId, sale] = randomSales[i] || [];
-        const itemDiv = createItemDiv(sale?.itemId, (itemActions: HTMLDivElement, itemDiv) => {
+        const saleEntry = inventory[InventoryProperties.MarketItems][i];
+        const itemDiv = createItemDiv(saleEntry?.sale.itemId, (itemActions: HTMLDivElement, itemDiv) => {
+            if (!saleEntry) {
+                return;
+            }
+            const sale = saleEntry.sale;
             const buyAction = createItemAction('BUY');
             itemDiv.dataset.price = `$ ${sale.price}`;
             buyAction.onclick = async () => {
@@ -290,18 +349,19 @@ const loadMarket = async (near: NearInstance) => {
                     return;
                 }
 
-                spinner.style.display = null;
-                const bought = await nearBuy(near, saleId).catch(() => null);
+                const near = inventory[InventoryProperties.Near];
+
+                uiShowElement(spinner);
+                const bought = await nearBuy(near, saleEntry.id).catch(() => null);
                 if (bought) {
                     const items = storageGetItemIds();
                     items.push(bought.itemId);
-                    storageSetItemIds(items);
-                    storageAddGold(-bought.price);
-                    loadInventory(near);
+                    inventoryAddGold(-bought.price);
+                    inventorySetItems(items);
                     itemDiv.replaceWith(createItemDiv(undefined, () => {}));
                 }
 
-                spinner.style.display = 'none';
+                uiHideElement(spinner);
             };
             itemActions.appendChild(buyAction);
         });
@@ -374,6 +434,7 @@ export const inventoryInit = () => {
 
     btninv.onclick = () => {
         inventoryStart();
+        uiHideElement(touch);
 
         invClose.onclick = () => {
             uiHideElement(inv);

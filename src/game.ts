@@ -39,7 +39,7 @@ import { keyboardInitialize } from './keyboard';
 import { uiHideElement, uiShowElement, uiOpponentUpdater, uiPlayerHealthUpdater, uiUpdaterSet } from './ui';
 import { menuStart } from './menu';
 import { Drop, dropCreate, dropDraw, dropIsPickable, dropStep } from './drop';
-import { inventoryAddItem, inventoryIsFull, inventorySetOnEquip } from './inventory';
+import { inventoryAddGold, inventoryAddItem, inventoryIsFull, inventorySetOnEquip } from './inventory';
 import {
     EquippedIds,
     EquippedIdsProperties,
@@ -48,7 +48,7 @@ import {
     equipGetItemId,
     equipGetOriginComponentId,
 } from './equip';
-import { storageAddGold, storageGetEquippedIds } from './storage';
+import { storageGetEquippedIds } from './storage';
 import { ModelType, objectCreate } from './model';
 import { Animatable, animatableCreate } from './animation';
 
@@ -186,7 +186,7 @@ export const gameStep = (game: Game, deltaTime: number) => {
         dropStep(drop[GameDropProperties.Drop], deltaTime);
         if (dropIsPickable(drop[GameDropProperties.Drop], knightGetCenter(player))) {
             if (drop[GameDropProperties.Gold] > 0) {
-                storageAddGold(drop[GameDropProperties.Gold]);
+                inventoryAddGold(drop[GameDropProperties.Gold]);
             } else if (!inventoryIsFull()) {
                 inventoryAddItem(drop[GameDropProperties.ItemId]);
             } else {

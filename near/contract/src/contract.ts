@@ -9,43 +9,53 @@ type Sale = {
 @NearBindgen({})
 export class DueloGame {
     pendingSales: { [saleId: string]: Sale } = {};
-    completedSales: { [userId: string]: { [saleId: string]: Sale } } = {};
+    completedSales: { [saleId: string]: Sale } = {};
+    userSales: { [userId: string]: { [saleId: string]: { completed: boolean } } } = {};
 
     @view({})
-    get_random_sales({ playerId }: { playerId: string }): { [saleId: string]: Sale } {
+    get_random_sales({ playerId }: { playerId: string }): Array<{ id: string; sale: Sale }> {
         const maxSales = 50;
 
-        const othersSales: Array<[number, [string, Sale]]> = Object.entries(this.pendingSales)
-            .filter(([saleId, sale]) => sale.sellerId !== playerId)
-            .slice(0, maxSales)
-            .map(([saleId, sale]) => [Math.random(), [saleId, sale]]);
+        const othersSales: Array<{ order: number; entry: { id: string; sale: Sale } }> = [];
+        for (const saleId in this.pendingSales) {
+            const sale = this.pendingSales[saleId];
+            if (sale.sellerId !== playerId) {
+                othersSales.push({ order: Math.random(), entry: { id: saleId, sale } });
+            }
 
-        othersSales.sort((a, b) => a[0] - b[0]);
-        return Object.fromEntries(othersSales.slice(0, 10).map(s => s[1]));
+            if (othersSales.length >= maxSales) {
+                break;
+            }
+        }
+
+        othersSales.sort((a, b) => a.order - b.order);
+        return othersSales.slice(0, 10).map(s => s.entry);
     }
 
     @view({})
-    get_user_pending_sales({ playerId }: { playerId: string }) {
-        return Object.fromEntries(
-            Object.entries(this.pendingSales).filter(([saleId, sale]) => sale.sellerId === playerId)
-        );
-    }
+    get_user_sales({ playerId }: { playerId: string }): Array<{ id: string; sale: Sale; completed: boolean }> {
+        const userSales = this.userSales[playerId] || {};
+        return Object.entries(userSales).map(([saleId, { completed }]) => {
+            const sale = completed ? this.completedSales[saleId] : this.pendingSales[saleId];
 
-    @view({})
-    get_user_completed_sales({ playerId }: { playerId: string }) {
-        return this.completedSales[playerId] || {};
+            return {
+                id: saleId,
+                sale,
+                completed,
+            };
+        });
     }
 
     @call({})
     sell({ saleId, itemId, price }: { saleId: string; itemId: number; price: number }): Sale {
         const userId = near.signerAccountId();
 
-        // if user has more than 3 pending sales, don't allow
-        let userSaleIds = this.get_user_pending_sales({ playerId: userId });
-        if (Object.keys(userSaleIds).length >= 3) {
+        // if user has more than 10 sales, don't allow
+        if (this.userSales[userId] && Object.keys(this.userSales[userId]).length >= 10) {
             return;
         }
 
+        // if sale already exists, don't allow
         if (this.pendingSales[saleId]) {
             return;
         }
@@ -57,6 +67,11 @@ export class DueloGame {
         };
 
         this.pendingSales[saleId] = sale;
+        if (!this.userSales[userId]) {
+            this.userSales[userId] = {};
+        }
+        this.userSales[userId][saleId] = { completed: false };
+
         return sale;
     }
 
@@ -69,9 +84,8 @@ export class DueloGame {
 
         const sellerId = sale.sellerId;
         delete this.pendingSales[saleId];
-        const sellerCompletedSales = this.get_user_completed_sales({ playerId: sellerId });
-        sellerCompletedSales[saleId] = sale;
-        this.completedSales[sellerId] = sellerCompletedSales;
+        this.completedSales[saleId] = sale;
+        this.userSales[sellerId][saleId] = { completed: true };
 
         return sale;
     }
@@ -79,14 +93,13 @@ export class DueloGame {
     @call({})
     collect_sale({ saleId }: { saleId: string }): Sale {
         const userId = near.signerAccountId();
-        const sellerCompletedSales = this.get_user_completed_sales({ playerId: userId });
-        const sale = sellerCompletedSales[saleId];
-        if (sale === null) {
+        const sale = this.completedSales[saleId];
+        if (sale === null || sale.sellerId !== userId) {
             return;
         }
 
-        delete sellerCompletedSales[saleId];
-        this.completedSales[userId] = sellerCompletedSales;
+        delete this.userSales[userId][saleId];
+        delete this.completedSales[saleId];
 
         return sale;
     }
@@ -95,21 +108,25 @@ export class DueloGame {
     cancel_sale({ saleId }: { saleId: string }): Sale {
         const userId = near.signerAccountId();
         const sale = this.pendingSales[saleId];
-        if (sale === null) {
-            return;
-        }
-
-        if (sale.sellerId !== userId) {
+        if (sale === null || sale.sellerId !== userId) {
             return;
         }
 
         delete this.pendingSales[saleId];
+        delete this.userSales[userId][saleId];
+
         return sale;
     }
 
     @call({})
     reset(): void {
+        const userId = near.signerAccountId();
+        if (userId !== 'duelo.near' && userId !== 'duelo.testnet') {
+            return;
+        }
+
         this.pendingSales = {};
         this.completedSales = {};
+        this.userSales = {};
     }
 }
