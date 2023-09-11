@@ -24,6 +24,7 @@ import {
     knightSetHealth,
     knightIncreaseHealth,
     knightGetPosition,
+    knightWalkTsunagi,
 } from './knight';
 import { glClear, glDrawRect, glIncreaseTime, glSetViewMatrix, Program } from './gl';
 import {
@@ -35,7 +36,7 @@ import {
     vectorCreate,
     vectorMultiply,
 } from './glm';
-import { keyboardInitialize } from './keyboard';
+import { keyboardGetState, keyboardInitialize } from './keyboard';
 import { uiHideElement, uiShowElement, uiOpponentUpdater, uiPlayerHealthUpdater, uiUpdaterSet } from './ui';
 import { menuStart } from './menu';
 import { Drop, dropCreate, dropDraw, dropIsPickable, dropStep } from './drop';
@@ -196,17 +197,21 @@ export const gameStep = (game: Game, deltaTime: number) => {
         }
     }
 
-    if (keyboard.Space || keyboard.Shift) {
+    if (keyboardGetState(keyboard, 'Space') || keyboardGetState(keyboard, 'Shift')) {
         knightAttack(player);
     }
 
-    if (keyboard.ArrowUp) {
+    if (keyboardGetState(keyboard, 'ArrowUp')) {
         knightDefend(player);
     }
 
-    if (keyboard.ArrowLeft || keyboard.ArrowRight) {
+    if (keyboardGetState(keyboard, 'ArrowLeft') || keyboardGetState(keyboard, 'ArrowRight')) {
         if (!gameKnightMustTurn(player, enemy)) {
-            knightWalk(player, deltaTime, keyboard.ArrowLeft);
+            knightWalk(player, deltaTime, keyboardGetState(keyboard, 'ArrowLeft') > 0);
+        }
+
+        if (keyboardGetState(keyboard, 'ArrowLeft') > 1 || keyboardGetState(keyboard, 'ArrowRight') > 1) {
+            knightWalkTsunagi(player);
         }
     }
 

@@ -57,6 +57,8 @@ const enum KnightProperties {
     HitAnimation,
     RestAnimation,
     WalkAnimation,
+    AfterWalkAnimation,
+    AfterWalk2Animation,
     BackwardWalkAnimation,
     DeadAnimation,
     FacingLeft,
@@ -68,6 +70,7 @@ const enum KnightProperties {
     SupportFootSwap,
     DidDefend,
     WillAttack,
+    WalkTsunagi,
 }
 
 export type Knight = {
@@ -82,6 +85,8 @@ export type Knight = {
     [KnightProperties.HitAnimation]: Animation;
     [KnightProperties.RestAnimation]: Animation;
     [KnightProperties.WalkAnimation]: Animation;
+    [KnightProperties.AfterWalkAnimation]: Animation;
+    [KnightProperties.AfterWalk2Animation]: Animation;
     [KnightProperties.BackwardWalkAnimation]: Animation;
     [KnightProperties.DeadAnimation]: Animation;
     [KnightProperties.FacingLeft]: boolean;
@@ -93,6 +98,7 @@ export type Knight = {
     [KnightProperties.SupportFootSwap]: boolean;
     [KnightProperties.DidDefend]: boolean;
     [KnightProperties.WillAttack]: boolean;
+    [KnightProperties.WalkTsunagi]: boolean;
 };
 
 const ATTACK_START = -3;
@@ -206,6 +212,8 @@ export const knightCreate = (position: Vec2, equipped: EquippedIds, color?: Colo
         [KnightProperties.HitAnimation]: null,
         [KnightProperties.RestAnimation]: restAnimation,
         [KnightProperties.WalkAnimation]: null,
+        [KnightProperties.AfterWalkAnimation]: null,
+        [KnightProperties.AfterWalk2Animation]: null,
         [KnightProperties.BackwardWalkAnimation]: null,
         [KnightProperties.DeadAnimation]: null,
         [KnightProperties.FacingLeft]: false,
@@ -217,17 +225,18 @@ export const knightCreate = (position: Vec2, equipped: EquippedIds, color?: Colo
         [KnightProperties.SupportFootSwap]: false,
         [KnightProperties.DidDefend]: false,
         [KnightProperties.WillAttack]: false,
+        [KnightProperties.WalkTsunagi]: false,
     };
 
     const walkFrame = animationFrameCreate(
         [
-            animationFrameItemCreate(leftLeg1, 0.5, 0.01 * walkSpeed),
-            animationFrameItemCreate(leftLeg2, 1.0, 0.02 * walkSpeed),
-            animationFrameItemCreate(leftFoot, -0.3, 0.01 * walkSpeed),
-            animationFrameItemCreate(rightLeg1, -1.1, 0.01 * walkSpeed),
-            animationFrameItemCreate(rightLeg2, 0.9, 0.01 * walkSpeed),
-            animationFrameItemCreate(rightFoot, 0.2, 0.01 * walkSpeed),
-            animationFrameItemCreate(rightArm2, -1.5, 0.04 * walkSpeed),
+            animationFrameItemCreate(leftLeg1, 0.5, 0.005 * walkSpeed),
+            animationFrameItemCreate(leftLeg2, 1.0, 0.01 * walkSpeed),
+            animationFrameItemCreate(leftFoot, -0.3, 0.005 * walkSpeed),
+            animationFrameItemCreate(rightLeg1, -1.1, 0.005 * walkSpeed),
+            animationFrameItemCreate(rightLeg2, 0.9, 0.005 * walkSpeed),
+            animationFrameItemCreate(rightFoot, 0.2, 0.005 * walkSpeed),
+            animationFrameItemCreate(rightArm2, -1.5, 0.02 * walkSpeed),
         ],
         () => (knight[KnightProperties.SupportFootSwap] = true)
     );
@@ -239,8 +248,35 @@ export const knightCreate = (position: Vec2, equipped: EquippedIds, color?: Colo
     knight[KnightProperties.RestAnimation] = animationCreate([
         //*/
         walkFrame,
-        animationFrameCreate(restPosition),
-        animationFrameCreate([], () => (knight[KnightProperties.SupportFootSwap] = true)),
+    ]);
+
+    //*
+    knight[KnightProperties.AfterWalkAnimation] = animationCreate([
+        /*/
+    knight[KnightProperties.WalkAnimation] = knight[KnightProperties.RestAnimation];
+    knight[KnightProperties.RestAnimation] = animationCreate([
+        //*/
+        animationFrameCreate(restPosition, () => (knight[KnightProperties.SupportFootSwap] = true)),
+    ]);
+
+    //*
+    knight[KnightProperties.AfterWalk2Animation] = animationCreate([
+        /*/
+    knight[KnightProperties.WalkAnimation] = knight[KnightProperties.RestAnimation];
+    knight[KnightProperties.RestAnimation] = animationCreate([
+        //*/
+        animationFrameCreate(
+            [
+                animationFrameItemCreate(leftLeg1, -0.1, 0.01 * walkSpeed),
+                animationFrameItemCreate(leftLeg2, 0.1, 0.01 * walkSpeed),
+                animationFrameItemCreate(leftFoot, 0.0, 0.01 * walkSpeed),
+                animationFrameItemCreate(rightLeg1, 0.0, 0.02 * walkSpeed),
+                animationFrameItemCreate(rightLeg2, 0.0, 0.02 * walkSpeed),
+                animationFrameItemCreate(rightFoot, 0.2, 0.02 * walkSpeed),
+                animationFrameItemCreate(rightArm2, -1.5, 0.02 * walkSpeed),
+            ],
+            () => (knight[KnightProperties.SupportFootSwap] = true)
+        ),
     ]);
 
     //*
@@ -591,6 +627,17 @@ export const knightWalk = (knight: Knight, deltaTime: number, left: boolean) => 
     }
 };
 
+export const knightIsWalking = (knight: Knight) => {
+    return (
+        knightIsAnimating(knight) &&
+        knight[KnightProperties.CurrentAnimation] === knight[KnightProperties.WalkAnimation]
+    );
+};
+
+export const knightWalkTsunagi = (knight: Knight) => {
+    knight[KnightProperties.WalkTsunagi] = true;
+};
+
 export const knightTurnRight = (knight: Knight) => {
     if (knight[KnightProperties.FacingLeft] && knightCanTurn(knight)) {
         knight[KnightProperties.FacingLeft] = false;
@@ -662,6 +709,14 @@ export const knightStep = (knight: Knight, deltaTime: number) => {
                 knightAnimate(knight, knight[KnightProperties.AfterDefendAnimation]);
             }
         }
+    } else if (knight[KnightProperties.CurrentAnimation] === knight[KnightProperties.WalkAnimation]) {
+        if (animationStep(knight[KnightProperties.CurrentAnimation], deltaTime)) {
+            if (knight[KnightProperties.WalkTsunagi]) {
+                knightAnimate(knight, knight[KnightProperties.AfterWalk2Animation]);
+            } else {
+                knightAnimate(knight, knight[KnightProperties.AfterWalkAnimation]);
+            }
+        }
     } else if (knightIsAnimating(knight)) {
         animationStep(knight[KnightProperties.CurrentAnimation], deltaTime);
     }
@@ -675,6 +730,10 @@ export const knightStep = (knight: Knight, deltaTime: number) => {
             knight[KnightProperties.WillAttack] = false;
             knightAttack(knight);
         }
+    }
+
+    if (!knightIsWalking(knight)) {
+        knight[KnightProperties.WalkTsunagi] = false;
     }
 };
 
