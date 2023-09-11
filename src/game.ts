@@ -133,7 +133,7 @@ export const gameEnemyStep = (game: Game, player: Knight, enemy: Knight, deltaTi
     const desiredDistance = 90;
     const desiredX = playerCenter + desiredDistance * (playerDeltaX > 0 ? -1 : 1);
     const deltaX = desiredX - enemyCenter;
-    const difficulty = Math.min(1, Math.max(0, game[GameProperties.Level] / 10));
+    const difficulty = gameGetDifficulty(game);
 
     const closeEnoughToAttack = Math.abs(playerDeltaX) < desiredDistance;
     let intention = null;
@@ -167,6 +167,8 @@ export const gameEnemyStep = (game: Game, player: Knight, enemy: Knight, deltaTi
         }
     }
 };
+
+const gameGetDifficulty = (game: Game) => Math.min(1, Math.max(0, game[GameProperties.Level] / 10));
 
 const gameKnightCheckHit = (knight: Knight, other: Knight) => {
     if (!knightIsHitting(knight, knightGetBoundingLeft(other), knightGetBoundingRight(other))) {
@@ -247,7 +249,9 @@ const gameKnightEnemyCheckHit = (game: Game, player: Knight, enemy: Knight) => {
         let itemId = enemyItems[(Math.random() * enemyItems.length) | 0];
         let animatable: Animatable;
         let originComponentId = 0;
-        if (Math.random() < 0.3 || !(itemId >= 0)) {
+        const difficulty = gameGetDifficulty(game);
+
+        if (Math.random() < interpolate(0.3, 0.6, difficulty) || !(itemId >= 0)) {
             gold = ((Math.random() * 20) | 0) + 5;
             animatable = animatableCreate(objectCreate(ModelType.Gold), []);
         } else {
