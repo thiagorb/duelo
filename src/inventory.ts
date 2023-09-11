@@ -225,16 +225,17 @@ const renderInventory = () => {
             const near = inventory[InventoryProperties.Near];
             if (near) {
                 const sellAction = createItemAction('SELL');
-                if (inventory[InventoryProperties.SellItems].length >= 10) {
-                    inventoryAlert('YOU CAN ONLY HAVE 10 ITEMS FOR SALE AT A TIME.');
-                    return;
-                }
-
                 sellAction.onclick = async () => {
+                    if (inventory[InventoryProperties.SellItems].length >= 10) {
+                        inventoryAlert('YOU CAN ONLY HAVE 10 ITEMS FOR SALE AT A TIME.');
+                        return;
+                    }
+
                     const price = await inventoryShowCalc();
                     if (!price) {
                         return;
                     }
+
                     uiShowElement(spinner);
                     const sale = await nearSell(near, itemId, price).catch(showGenericError);
                     if (sale) {
