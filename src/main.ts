@@ -8,7 +8,7 @@ import { inventoryInit } from './inventory';
 declare const canvas: HTMLCanvasElement;
 
 const main = async () => {
-    document.write(html);
+    document.body.innerHTML = html;
     const program = glProgramCreate(canvas, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
 
     const updateViewport = () => {

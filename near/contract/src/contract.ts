@@ -61,7 +61,7 @@ export class DueloGame {
             return;
         }
 
-        if (itemId < 0 || itemId >= 25) {
+        if (itemId < 0 || itemId >= 30) {
             return;
         }
 

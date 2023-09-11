@@ -432,7 +432,7 @@ const gameNextEnemy = (game: Game) => {
     game[GameProperties.Enemy] = knightCreate(
         vectorCreate(enemyX, FLOOR_LEVEL),
         game[GameProperties.EnemyEquips],
-        [0.8, 0.3, 0.3]
+        [0.8, 0.5, 0.5]
     );
     bars.classList.remove('hidden');
     btns.classList.add('hidden');
