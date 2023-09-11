@@ -18,8 +18,6 @@ export const keyboardInitialize = <Key extends string>(keys: Key[]): Keyboard<Ke
     const timeouts = Object.fromEntries(keys.map(key => [key, null])) as { [K in Key]: NodeJS.Timeout };
 
     const keyDown = (e: Event, code: Key) => {
-        e.preventDefault();
-        e.stopPropagation();
         if (!state[code]) {
             state[code] = true;
             sequence[code]++;
@@ -27,13 +25,11 @@ export const keyboardInitialize = <Key extends string>(keys: Key[]): Keyboard<Ke
     };
 
     const keyUp = (e: Event, code: Key) => {
-        e.preventDefault();
-        e.stopPropagation();
         state[code] = false;
         if (timeouts[code]) {
             clearTimeout(timeouts[code]);
         }
-        timeouts[code] = setTimeout(() => (sequence[code] = 0), 100);
+        timeouts[code] = setTimeout(() => (sequence[code] = 0), 200);
     };
 
     addEventListener('keydown', (e: KeyboardEvent) => keyDown(e, e.code as Key));
@@ -64,5 +60,5 @@ export const keyboardInitialize = <Key extends string>(keys: Key[]): Keyboard<Ke
 };
 
 export const keyboardGetState = <Key extends string>(keyboard: Keyboard<Key>, key: Key): number => {
-    return keyboard[KeyboardProperties.State][key] && keyboard[KeyboardProperties.Sequence][key];
+    return keyboard[KeyboardProperties.State][key] ? keyboard[KeyboardProperties.Sequence][key] || 1 : 0;
 };
