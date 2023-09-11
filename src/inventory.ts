@@ -1,4 +1,6 @@
 import {
+    Animatable,
+    animatableCreate,
     animatableDraw,
     animatableGetRootTransform,
     animatableSetOriginComponent,
@@ -40,6 +42,7 @@ import {
     UserSales,
 } from './near';
 import { uiHideElement, uiShowElement } from './ui';
+import { ModelType, objectCreate } from './model';
 
 declare const inv: HTMLElement;
 declare const invItems: HTMLElement;
@@ -115,11 +118,21 @@ const createItemAction = (action: string) => {
     return itemAction;
 };
 
+const createPrice = (price: number) => {
+    const itemPrice = document.createElement('div');
+    itemPrice.classList.add('inv-price');
+    itemPrice.classList.add(getRenderedGoldClass());
+    itemPrice.innerText = `${price}`;
+    return itemPrice;
+};
+
 const selectItem = (itemDiv: HTMLDivElement) => {
     const current = inv.querySelector('.selected');
     current?.classList.remove('selected');
+    current?.querySelectorAll('.inv-top, .inv-actions').forEach(uiHideElement);
     if (current !== itemDiv) {
         itemDiv.classList.add('selected');
+        itemDiv.querySelectorAll('.inv-top, .inv-actions').forEach(uiShowElement);
     }
 };
 
@@ -144,11 +157,16 @@ const createItemDiv = (
         itemName.innerText = `${name} (${stats})`;
         const itemTop = document.createElement('div');
         itemTop.classList.add('inv-top');
+        itemTop.classList.add('hidden');
+        itemTop.style.display = 'none';
         itemTop.appendChild(itemName);
         itemDiv.appendChild(itemTop);
+        itemDiv.style.backgroundColor = '#222';
 
         const itemActions = document.createElement('div');
         itemActions.classList.add('inv-actions');
+        itemActions.classList.add('hidden');
+        itemActions.style.display = 'none';
         itemDiv.appendChild(itemActions);
 
         actionsBuilder(itemActions, itemTop, itemDiv);
@@ -253,7 +271,8 @@ const renderInventory = () => {
 const showGenericError = () => inventoryAlert('AN ERROR OCCURRED. PLEASE TRY AGAIN LATER.');
 
 const renderGold = () => {
-    gold.innerText = `GOLD: ${storageGetGold()}`;
+    gold.classList.add(getRenderedGoldClass());
+    gold.innerText = `${storageGetGold()} GOLD`;
 };
 
 const inventorySetItems = (items: Array<number>) => {
@@ -316,7 +335,7 @@ const renderUserSales = () => {
             const near = inventory[InventoryProperties.Near];
             if (userSale.completed) {
                 const collectAction = createItemAction('COLLECT');
-                itemDiv.dataset.price = `$ ${sale.price}`;
+                itemDiv.appendChild(createPrice(sale.price));
                 collectAction.onclick = async () => {
                     uiShowElement(spinner);
                     const sale = await nearCollectSale(near, userSale.id).catch(showGenericError);
@@ -336,7 +355,7 @@ const renderUserSales = () => {
                 sold.innerText = 'SOLD!';
                 itemDiv.appendChild(sold);
             } else {
-                itemDiv.dataset.price = `$ ${sale.price}`;
+                itemDiv.appendChild(createPrice(sale.price));
                 const cancelAction = createItemAction('CANCEL');
                 cancelAction.onclick = async () => {
                     if (inventoryIsFull()) {
@@ -370,15 +389,21 @@ const renderMarket = () => {
             }
             const sale = saleEntry.sale;
             const buyAction = createItemAction('BUY');
-            itemDiv.dataset.price = `$ ${sale.price}`;
+            const price = createPrice(sale.price);
+            itemDiv.appendChild(price);
+
+            if (sale.price > storageGetGold()) {
+                price.style.color = '#f00';
+            }
+
             buyAction.onclick = async () => {
-                if (inventoryIsFull()) {
-                    inventoryAlert('YOUR INVENTORY IS FULL.');
+                if (storageGetGold() < sale.price) {
+                    inventoryAlert("YOU DON'T HAVE ENOUGH GOLD.");
                     return;
                 }
 
-                if (storageGetGold() < sale.price) {
-                    inventoryAlert("YOU DON'T HAVE ENOUGH GOLD.");
+                if (inventoryIsFull()) {
+                    inventoryAlert('YOUR INVENTORY IS FULL.');
                     return;
                 }
 
@@ -419,7 +444,19 @@ const toggleSignIn = async (near: NearInstance) => {
     }
 };
 
-const getRenderedItemClass = (() => {
+const getRenderedItemClass = (itemId: number) => {
+    const animatable = equipCreateAnimatable(itemId);
+    const originComponentId = equipGetOriginComponentId(itemId);
+    return getRenderedClass(itemId, animatable, originComponentId);
+};
+
+const getRenderedGoldClass = () => {
+    const animatable = animatableCreate(objectCreate(ModelType.Gold), []);
+    const originComponentId = 0;
+    return getRenderedClass('gold', animatable, originComponentId);
+};
+
+const getRenderedClass = (() => {
     const WIDTH = 128;
     const HEIGHT = 128;
     const SCALE = 0.05;
@@ -434,12 +471,10 @@ const getRenderedItemClass = (() => {
     glSetViewMatrix(program, viewMatrix);
     const renderedIds = {};
 
-    return (itemId: number) => {
-        if (!renderedIds[itemId]) {
-            glClear(program);
+    return (cacheId: number | string, animatable: Animatable, originComponentId: number) => {
+        if (!renderedIds[cacheId]) {
+            glClear(program, [0, 0, 0, 0]);
 
-            const animatable = equipCreateAnimatable(itemId);
-            const originComponentId = equipGetOriginComponentId(itemId);
             const matrix = animatableGetRootTransform(animatable);
             matrixSetIdentity(matrix);
             animatableTransform(animatable);
@@ -450,10 +485,10 @@ const getRenderedItemClass = (() => {
             animatableDraw(animatable, program);
 
             const img = canvas.toDataURL('image/png');
-            css.innerHTML += `.img-${itemId} { background-image: url(${img}); }`;
-            renderedIds[itemId] = true;
+            css.innerHTML += `.img-${cacheId} { background-image: url(${img}); }`;
+            renderedIds[cacheId] = true;
         }
-        return `img-${itemId}`;
+        return `img-${cacheId}`;
     };
 })();
 
@@ -489,7 +524,6 @@ export const inventoryInit = () => {
 const inventoryShowCalc = (): Promise<number> =>
     new Promise(resolve => {
         let value = 0;
-        debugger;
 
         const renderValue = () => {
             price.innerText = `${value}`;
