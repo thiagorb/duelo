@@ -230,13 +230,13 @@ export const knightCreate = (position: Vec2, equipped: EquippedIds, color?: Colo
 
     const walkFrame = animationFrameCreate(
         [
-            animationFrameItemCreate(leftLeg1, 0.5, 0.005 * walkSpeed),
-            animationFrameItemCreate(leftLeg2, 1.0, 0.01 * walkSpeed),
-            animationFrameItemCreate(leftFoot, -0.3, 0.005 * walkSpeed),
-            animationFrameItemCreate(rightLeg1, -1.1, 0.005 * walkSpeed),
-            animationFrameItemCreate(rightLeg2, 0.9, 0.005 * walkSpeed),
-            animationFrameItemCreate(rightFoot, 0.2, 0.005 * walkSpeed),
-            animationFrameItemCreate(rightArm2, -1.5, 0.02 * walkSpeed),
+            animationFrameItemCreate(leftLeg1, 0.5, 0.005 * 2 * walkSpeed),
+            animationFrameItemCreate(leftLeg2, 1.0, 0.01 * 2 * walkSpeed),
+            animationFrameItemCreate(leftFoot, -0.3, 0.005 * 2 * walkSpeed),
+            animationFrameItemCreate(rightLeg1, -1.1, 0.005 * 2 * walkSpeed),
+            animationFrameItemCreate(rightLeg2, 0.9, 0.005 * 2 * walkSpeed),
+            animationFrameItemCreate(rightFoot, 0.2, 0.005 * 2 * walkSpeed),
+            animationFrameItemCreate(rightArm2, -1.5, 0.02 * 2 * walkSpeed),
         ],
         () => (knight[KnightProperties.SupportFootSwap] = true)
     );
@@ -277,6 +277,7 @@ export const knightCreate = (position: Vec2, equipped: EquippedIds, color?: Colo
             ],
             () => (knight[KnightProperties.SupportFootSwap] = true)
         ),
+        animationFrameCreate(restPosition),
     ]);
 
     //*
