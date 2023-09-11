@@ -16,20 +16,26 @@ export const keyboardInitialize = <Key extends string>(keys: Key[]): Keyboard<Ke
     const state = Object.fromEntries(keys.map(key => [key, false])) as { [K in Key]: boolean };
     const sequence = Object.fromEntries(keys.map(key => [key, 0])) as { [K in Key]: number };
     const timeouts = Object.fromEntries(keys.map(key => [key, null])) as { [K in Key]: NodeJS.Timeout };
+    const clearSequence = Object.fromEntries(keys.map(key => [key, () => (sequence[key] = 0)])) as {
+        [K in Key]: () => number;
+    };
 
     const keyDown = (e: Event, code: Key) => {
         if (!state[code]) {
             state[code] = true;
             sequence[code]++;
+            if (sequence[code] === 2) {
+                console.log('double tap');
+            }
         }
     };
 
-    const keyUp = (e: Event, code: Key) => {
-        state[code] = false;
-        if (timeouts[code]) {
-            clearTimeout(timeouts[code]);
+    const keyUp = (e: Event, key: Key) => {
+        state[key] = false;
+        if (timeouts[key]) {
+            clearTimeout(timeouts[key]);
         }
-        timeouts[code] = setTimeout(() => (sequence[code] = 0), 200);
+        timeouts[key] = setTimeout(clearSequence[key], 200);
     };
 
     addEventListener('keydown', (e: KeyboardEvent) => keyDown(e, e.code as Key));
