@@ -114,8 +114,6 @@ export const gameCreate = () => {
         [GameProperties.IsOver]: false,
     };
 
-    console.log(game[GameProperties.Level]);
-
     inventorySetOnEquip(equipped => {
         game[GameProperties.Player] = knightCreate(knightGetPosition(game[GameProperties.Player]), equipped);
     });
@@ -170,7 +168,7 @@ export const gameEnemyStep = (game: Game, player: Knight, enemy: Knight, deltaTi
     }
 };
 
-const gameGetDifficulty = (game: Game) => Math.min(1, Math.max(0, game[GameProperties.Level] / 10));
+const gameGetDifficulty = (game: Game) => Math.min(1, Math.max(0, game[GameProperties.Level] / 18));
 
 const gameKnightCheckHit = (knight: Knight, other: Knight) => {
     if (!knightIsHitting(knight, knightGetBoundingLeft(other), knightGetBoundingRight(other))) {
@@ -255,7 +253,7 @@ const gameKnightEnemyCheckHit = (game: Game, player: Knight, enemy: Knight) => {
         let originComponentId = 0;
         const difficulty = gameGetDifficulty(game);
 
-        if (Math.random() < interpolate(0.3, 0.6, difficulty) || !(itemId >= 0)) {
+        if (Math.random() < interpolate(0.3, 0.8, difficulty) || !(itemId >= 0)) {
             gold = ((Math.random() * 20) | 0) + 5;
             animatable = animatableCreate(objectCreate(ModelType.Gold), []);
         } else {
