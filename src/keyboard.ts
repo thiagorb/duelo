@@ -3,40 +3,25 @@ declare const touch: HTMLElement;
 const enum KeyboardProperties {
     State,
     Sequence,
-    Timeout,
+    LastUp,
 }
 
 type Keyboard<Key extends string> = {
     [KeyboardProperties.State]: { [K in Key]: boolean };
     [KeyboardProperties.Sequence]: { [K in Key]: number };
-    [KeyboardProperties.Timeout]: { [K in Key]: NodeJS.Timeout };
+    [KeyboardProperties.LastUp]: { [K in Key]: number };
 };
 
+const cooldown = 200;
 export const keyboardInitialize = <Key extends string>(keys: Key[]): Keyboard<Key> => {
-    const state = Object.fromEntries(keys.map(key => [key, false])) as { [K in Key]: boolean };
-    const sequence = Object.fromEntries(keys.map(key => [key, 0])) as { [K in Key]: number };
-    const timeouts = Object.fromEntries(keys.map(key => [key, null])) as { [K in Key]: NodeJS.Timeout };
-    const clearSequence = Object.fromEntries(keys.map(key => [key, () => (sequence[key] = 0)])) as {
-        [K in Key]: () => number;
+    const keyboard = {
+        [KeyboardProperties.State]: Object.fromEntries(keys.map(key => [key, false])) as { [K in Key]: boolean },
+        [KeyboardProperties.Sequence]: Object.fromEntries(keys.map(key => [key, 0])) as { [K in Key]: number },
+        [KeyboardProperties.LastUp]: Object.fromEntries(keys.map(key => [key, 0])) as { [K in Key]: number },
     };
 
-    const keyDown = (e: Event, code: Key) => {
-        if (!state[code]) {
-            state[code] = true;
-            sequence[code]++;
-            if (sequence[code] === 2) {
-                console.log('double tap');
-            }
-        }
-    };
-
-    const keyUp = (e: Event, key: Key) => {
-        state[key] = false;
-        if (timeouts[key]) {
-            clearTimeout(timeouts[key]);
-        }
-        timeouts[key] = setTimeout(clearSequence[key], 200);
-    };
+    const keyDown = (e: Event, key: Key) => keyboardSetState(keyboard, key, true);
+    const keyUp = (e: Event, key: Key) => keyboardSetState(keyboard, key, false);
 
     addEventListener('keydown', (e: KeyboardEvent) => keyDown(e, e.code as Key));
     addEventListener('keyup', (e: KeyboardEvent) => keyUp(e, e.code as Key));
@@ -58,13 +43,31 @@ export const keyboardInitialize = <Key extends string>(keys: Key[]): Keyboard<Ke
         touch.classList.add('no-touch');
     }
 
-    return {
-        [KeyboardProperties.State]: state,
-        [KeyboardProperties.Sequence]: sequence,
-        [KeyboardProperties.Timeout]: timeouts,
-    };
+    return keyboard;
 };
 
+const keyboardSetState = <Key extends string>(keyboard: Keyboard<Key>, key: Key, value: boolean) => {
+    if (keyboard[KeyboardProperties.State][key] === value) {
+        return;
+    }
+
+    if (value) {
+        keyboard[KeyboardProperties.Sequence][key]++;
+    }
+    if (!keyboardIsWarm(keyboard, key)) {
+        keyboard[KeyboardProperties.Sequence][key] = 1;
+    }
+    keyboard[KeyboardProperties.State][key] = value;
+    keyboard[KeyboardProperties.LastUp][key] = new Date().getTime();
+};
+
+const keyboardIsWarm = <Key extends string>(keyboard: Keyboard<Key>, key: Key) =>
+    new Date().getTime() - keyboard[KeyboardProperties.LastUp][key] < cooldown;
+
 export const keyboardGetState = <Key extends string>(keyboard: Keyboard<Key>, key: Key): number => {
-    return keyboard[KeyboardProperties.State][key] ? keyboard[KeyboardProperties.Sequence][key] || 1 : 0;
+    if (!keyboard[KeyboardProperties.State][key]) {
+        return 0;
+    }
+
+    return keyboardIsWarm(keyboard, key) ? keyboard[KeyboardProperties.Sequence][key] : 1;
 };

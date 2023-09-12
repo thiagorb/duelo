@@ -60,6 +60,8 @@ const enum KnightProperties {
     AfterWalkAnimation,
     AfterWalk2Animation,
     BackwardWalkAnimation,
+    AfterBackwardWalkAnimation,
+    AfterBackwardWalk2Animation,
     DeadAnimation,
     FacingLeft,
     Attacking,
@@ -88,6 +90,8 @@ export type Knight = {
     [KnightProperties.AfterWalkAnimation]: Animation;
     [KnightProperties.AfterWalk2Animation]: Animation;
     [KnightProperties.BackwardWalkAnimation]: Animation;
+    [KnightProperties.AfterBackwardWalkAnimation]: Animation;
+    [KnightProperties.AfterBackwardWalk2Animation]: Animation;
     [KnightProperties.DeadAnimation]: Animation;
     [KnightProperties.FacingLeft]: boolean;
     [KnightProperties.Attacking]: boolean;
@@ -230,6 +234,8 @@ export const knightCreate = (position: Vec2, equipped: EquippedIds, color?: Colo
         [KnightProperties.AfterWalkAnimation]: null,
         [KnightProperties.AfterWalk2Animation]: null,
         [KnightProperties.BackwardWalkAnimation]: null,
+        [KnightProperties.AfterBackwardWalkAnimation]: null,
+        [KnightProperties.AfterBackwardWalk2Animation]: null,
         [KnightProperties.DeadAnimation]: null,
         [KnightProperties.FacingLeft]: false,
         [KnightProperties.Attacking]: false,
@@ -303,7 +309,36 @@ export const knightCreate = (position: Vec2, equipped: EquippedIds, color?: Colo
         //*/
         animationFrameCreate([], () => (knight[KnightProperties.SupportFootSwap] = true)),
         walkFrame,
+    ]);
+
+    //*
+    knight[KnightProperties.AfterBackwardWalkAnimation] = animationCreate([
+        /*/
+    knight[KnightProperties.BackwardWalkAnimation] = knight[KnightProperties.RestAnimation];
+    knight[KnightProperties.RestAnimation] = animationCreate([
+        //*/
         animationFrameCreate(restPosition),
+    ]);
+
+    //*
+    knight[KnightProperties.AfterBackwardWalk2Animation] = animationCreate([
+        /*/
+    knight[KnightProperties.BackwardWalkAnimation] = knight[KnightProperties.RestAnimation];
+    knight[KnightProperties.RestAnimation] = animationCreate([
+        //*/
+        animationFrameCreate(
+            [
+                animationFrameItemCreate(leftLeg1, -0.1, 0.01 * walkSpeed),
+                animationFrameItemCreate(leftLeg2, 0.1, 0.01 * walkSpeed),
+                animationFrameItemCreate(leftFoot, 0.0, 0.01 * walkSpeed),
+                animationFrameItemCreate(rightLeg1, 0.0, 0.02 * walkSpeed),
+                animationFrameItemCreate(rightLeg2, 0.0, 0.02 * walkSpeed),
+                animationFrameItemCreate(rightFoot, 0.2, 0.02 * walkSpeed),
+                animationFrameItemCreate(rightArm2, -1.5, 0.02 * walkSpeed),
+            ],
+            () => (knight[KnightProperties.SupportFootSwap] = true)
+        ),
+        animationFrameCreate(restPosition, () => (knight[KnightProperties.SupportFootSwap] = true)),
     ]);
 
     //*
@@ -646,7 +681,8 @@ export const knightWalk = (knight: Knight, deltaTime: number, left: boolean) => 
 export const knightIsWalking = (knight: Knight) => {
     return (
         knightIsAnimating(knight) &&
-        knight[KnightProperties.CurrentAnimation] === knight[KnightProperties.WalkAnimation]
+        (knight[KnightProperties.CurrentAnimation] === knight[KnightProperties.WalkAnimation] ||
+            knight[KnightProperties.CurrentAnimation] === knight[KnightProperties.BackwardWalkAnimation])
     );
 };
 
@@ -732,6 +768,18 @@ export const knightStep = (knight: Knight, deltaTime: number) => {
             } else {
                 knightAnimate(knight, knight[KnightProperties.AfterWalkAnimation]);
             }
+
+            knight[KnightProperties.WalkTsunagi] = false;
+        }
+    } else if (knight[KnightProperties.CurrentAnimation] === knight[KnightProperties.BackwardWalkAnimation]) {
+        if (animationStep(knight[KnightProperties.CurrentAnimation], deltaTime)) {
+            if (knight[KnightProperties.WalkTsunagi]) {
+                knightAnimate(knight, knight[KnightProperties.AfterBackwardWalk2Animation]);
+            } else {
+                knightAnimate(knight, knight[KnightProperties.AfterBackwardWalkAnimation]);
+            }
+
+            knight[KnightProperties.WalkTsunagi] = false;
         }
     } else if (knightIsAnimating(knight)) {
         animationStep(knight[KnightProperties.CurrentAnimation], deltaTime);
