@@ -1,4 +1,4 @@
-import { EquippedIds } from './equip';
+import { CROWN_ID, EquippedIds, EquippedIdsProperties } from './equip';
 
 const enum StorageDataProperties {
     NetworkId,
@@ -63,9 +63,15 @@ export const storageSetEquippedIds = (equippedIds: EquippedIds) => {
 };
 
 export const storageGetLevel = () => {
-    return storageLoad()[StorageDataProperties.Level];
+    return storageLoad()[StorageDataProperties.Level] || 0;
 };
 
 export const storageSetLevel = (level: number) => {
     storageUpdate(s => (s[StorageDataProperties.Level] = level));
+};
+
+export const storageHasCrown = () => {
+    return (
+        storageGetItemIds().includes(CROWN_ID) || storageGetEquippedIds()[EquippedIdsProperties.HelmetId] === CROWN_ID
+    );
 };

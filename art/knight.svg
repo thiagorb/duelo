@@ -24,9 +24,9 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="2.0863581"
-     inkscape:cx="92.984996"
-     inkscape:cy="207.05937"
+     inkscape:zoom="5.9011118"
+     inkscape:cx="98.117103"
+     inkscape:cy="49.65166"
      inkscape:window-width="1920"
      inkscape:window-height="1043"
      inkscape:window-x="0"
@@ -441,5 +441,62 @@
     &quot;placeholder&quot;: true
 }</desc>
     </rect>
+    <path
+       style="fill:#865d00;fill-opacity:1;stroke-width:0.233122"
+       d="M 23.146628,1.8545664 23.746411,11.66325 36.500166,9.3270594 33.602703,0.02664675 32.368184,0.12055724 29.928765,9.8382484 24.295299,1.500261 Z"
+       id="crownBack"
+       sodipodi:nodetypes="cccccccc">
+      <desc
+         id="desc9450-5">{
+    &quot;connectTo&quot;: &quot;crown&quot;,
+    &quot;material&quot;: -1
+}</desc>
+    </path>
+    <path
+       style="fill:#f6c600;fill-opacity:1;stroke-width:0.233122"
+       d="m 22.040259,11.992661 -2.846746,-8.6354417 0.927006,-0.2122265 3.793953,3.758303 2.503171,-0.3837623 0.802546,-5.3534409 1.294184,-0.29664749 3.245453,4.78115129 2.381081,-0.6860322 2.43878,-5.10930059 0.890689,-0.13073407 0.818286,9.14496356 -4.746353,1.5457249 -6.733392,1.362486 z"
+       id="crown"
+       sodipodi:nodetypes="ccccccccccccccc"
+       inkscape:transform-center-x="0.39630466"
+       inkscape:transform-center-y="-1.2674117">
+      <desc
+         id="desc9450">{
+    &quot;connectTo&quot;: &quot;face&quot;,
+    &quot;material&quot;: -1
+}</desc>
+    </path>
+    <path
+       style="fill:#ff1515;fill-opacity:1;stroke-width:0.384403"
+       d="m 35.829913,4.2230232 -1.314095,2.618904 1.825539,1.8218333 1.247416,-2.2589494"
+       id="crownGem3"
+       sodipodi:nodetypes="cccc">
+      <desc
+         id="desc280-7-2-5">{
+    &quot;connectTo&quot;: &quot;crown&quot;,
+   &quot;material&quot;: -1
+}	</desc>
+    </path>
+    <path
+       style="fill:#ff1515;fill-opacity:1;stroke-width:0.384403"
+       d="M 22.661903,7.0717445 21.861422,9.8903844 23.995799,11.338176 24.79818,8.8856104"
+       id="crownGem1"
+       sodipodi:nodetypes="cccc">
+      <desc
+         id="desc280-7-2-5-6">{
+    &quot;connectTo&quot;: &quot;crown&quot;,
+   &quot;material&quot;: -1
+}	</desc>
+    </path>
+    <path
+       style="fill:#00ff00;fill-opacity:1;stroke-width:0.384403"
+       d="m 29.092955,6.1285918 -0.987626,2.7586407 2.032526,1.5876125 0.964982,-2.393264"
+       id="crownGem2"
+       sodipodi:nodetypes="cccc">
+      <desc
+         id="desc280-7-2-5-61">{
+    &quot;connectTo&quot;: &quot;crown&quot;,
+   &quot;material&quot;: -1
+}	</desc>
+    </path>
   </g>
 </svg>

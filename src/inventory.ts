@@ -18,6 +18,7 @@ import {
     storageSetItemIds,
 } from './storage';
 import {
+    CROWN_ID,
     EquippedIds,
     EquippedIdsProperties,
     equipCreateAnimatable,
@@ -223,7 +224,7 @@ const renderInventory = () => {
             itemActions.appendChild(equipAction);
 
             const near = inventory[InventoryProperties.Near];
-            if (near) {
+            if (near && itemId !== CROWN_ID) {
                 const sellAction = createItemAction('SELL');
                 sellAction.onclick = async () => {
                     if (inventory[InventoryProperties.SellItems].length >= 10) {
@@ -249,20 +250,22 @@ const renderInventory = () => {
                 itemActions.appendChild(sellAction);
             }
 
-            const dropAction = createItemAction('DROP');
-            dropAction.onclick = () => {
-                uiShowElement(cnf);
-                const close = () => uiHideElement(cnf);
-                yes.onclick = () => {
-                    yes.onclick = null;
-                    const items = storageGetItemIds();
-                    items.splice(i, 1);
-                    inventorySetItems(items);
-                    close();
+            if (itemId !== CROWN_ID) {
+                const dropAction = createItemAction('DROP');
+                dropAction.onclick = () => {
+                    uiShowElement(cnf);
+                    const close = () => uiHideElement(cnf);
+                    yes.onclick = () => {
+                        yes.onclick = null;
+                        const items = storageGetItemIds();
+                        items.splice(i, 1);
+                        inventorySetItems(items);
+                        close();
+                    };
+                    no.onclick = close;
                 };
-                no.onclick = close;
-            };
-            itemActions.appendChild(dropAction);
+                itemActions.appendChild(dropAction);
+            }
         });
 
         invItems.appendChild(itemDiv);

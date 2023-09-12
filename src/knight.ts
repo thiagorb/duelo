@@ -35,6 +35,7 @@ import {
     objectSetSubObject,
 } from './model';
 import {
+    CROWN_ID,
     equipCreateSwordObject,
     equipGetAttack,
     equipGetColor,
@@ -588,11 +589,26 @@ export const knightApplyBootsOverrides = (object: Object, itemId: number) => {
 };
 
 export const knightApplyHelmetOverrides = (object: Object, itemId: number) => {
-    if (itemId >= 0) {
+    if (itemId >= 0 && itemId !== CROWN_ID) {
         objectSetMaterialOverride(object, modelData.hairComponentId, MaterialType.Invisible);
         objectSetMaterialOverride(object, modelData.helmetComponentId, MaterialType.Shiny);
         objectSetColorOverride(object, modelData.helmetComponentId, equipGetColor(itemId));
+        objectSetMaterialOverride(object, modelData.crownComponentId);
+        objectSetMaterialOverride(object, modelData.crownGem1ComponentId);
+        objectSetMaterialOverride(object, modelData.crownGem2ComponentId);
+        objectSetMaterialOverride(object, modelData.crownGem3ComponentId);
+        objectSetMaterialOverride(object, modelData.crownBackComponentId);
     } else {
+        if (itemId === CROWN_ID) {
+            objectSetMaterialOverride(object, modelData.crownComponentId, MaterialType.Shiny);
+            objectSetMaterialOverride(object, modelData.crownGem1ComponentId, MaterialType.Shiny);
+            objectSetMaterialOverride(object, modelData.crownGem2ComponentId, MaterialType.Shiny);
+            objectSetMaterialOverride(object, modelData.crownGem3ComponentId, MaterialType.Shiny);
+            objectSetMaterialOverride(object, modelData.crownBackComponentId, MaterialType.Matte);
+        }
+
+        objectSetMaterialOverride(object, modelData.hairComponentId);
+        objectSetMaterialOverride(object, modelData.helmetComponentId);
         objectSetMaterialOverride(object, modelData.hairComponentId);
         objectSetMaterialOverride(object, modelData.helmetComponentId);
     }

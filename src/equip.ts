@@ -29,6 +29,7 @@ export type EquippedIds = {
 const TYPE_NAMES = ['SWORD', 'GAUNTLETS', 'BOOTS', 'HELMET', 'ARMOR'];
 const MATERIAL_NAMES = ['BRONZE', 'IRON', 'STEEL', 'GOLD', 'DRAGON', 'EMERALD'];
 
+export const CROWN_ID = 33;
 export const EQUIP_TYPES = TYPE_NAMES.length;
 export const ITEM_LEVELS = MATERIAL_NAMES.length;
 const ITEM_TYPES = EQUIP_TYPES * ITEM_LEVELS;
@@ -66,6 +67,7 @@ export const equipCreateAnimatable = (itemId: number): Animatable => {
             return animatableCreate(knight, []);
         }
         case EquippedIdsProperties.HelmetId: {
+            debugger;
             knightApplyHelmetOverrides(knight, itemId);
             return animatableCreate(knight, []);
         }
@@ -77,6 +79,10 @@ export const equipCreateAnimatable = (itemId: number): Animatable => {
 };
 
 export const equipGetOriginComponentId = (itemId: number): number => {
+    if (itemId === CROWN_ID) {
+        return knightModelData.crownComponentId;
+    }
+
     switch (equipGetType(itemId)) {
         case EquippedIdsProperties.SwordId:
             return swordModelData.centerComponentId;
@@ -92,6 +98,10 @@ export const equipGetOriginComponentId = (itemId: number): number => {
 };
 
 export const equipGetName = (itemId: number): string => {
+    if (itemId === CROWN_ID) {
+        return 'CROWN';
+    }
+
     const type = equipGetType(itemId);
     const level = equipGetLevel(itemId);
     return `${MATERIAL_NAMES[level]} ${TYPE_NAMES[type]}`;
@@ -102,7 +112,7 @@ const equipColors: Array<ColorRGB> = [
     [0.3, 0.3, 0.3], // iron
     [0.6, 0.6, 0.6], // steel
     [0.83, 0.69, 0.22], // gold
-    [0.7, 0.0, 0.0], // gold
+    [0.7, 0.0, 0.0], // dragon
     [0.5, 0.7, 0.5], // emerald
 ];
 

@@ -272,6 +272,11 @@ export const objectDraw = (object: Object, program: Program) => {
     const componentsLength = object[ObjectProperty.Components].length;
     const meshes = meshesLoad(program, object[ObjectProperty.ModelType]);
     for (let componentId = 0; componentId < componentsLength; componentId++) {
+        const material = objectGetComponentMaterial(object, componentId);
+        if (material === MaterialType.Invisible) {
+            continue;
+        }
+
         const subobject = object[ObjectProperty.Subobjects][componentId];
         if (subobject !== undefined) {
             if (subobject !== null) {
@@ -283,20 +288,20 @@ export const objectDraw = (object: Object, program: Program) => {
 
         const component = object[ObjectProperty.Components][componentId];
         glSetModelTransform(program, component[ObjectComponentProperty.Matrix]);
-        const model = models[object[ObjectProperty.ModelType]];
-        const material =
-            object[ObjectProperty.MaterialOverrides][componentId] ||
-            object[ObjectProperty.MaterialType] ||
-            model[ModelProperty.MaterialMap][componentId];
-
-        if (material === MaterialType.Invisible) {
-            continue;
-        }
-
         const modelMesh = component[ObjectComponentProperty.Mesh];
         const color = object[ObjectProperty.ColorOverrides][componentId] || modelMesh[ModelMeshProperty.Color];
         glMeshDraw(program, meshes[componentId], color, material);
     }
+};
+
+const objectGetComponentMaterial = (object: Object, componentId: number) => {
+    const model = models[object[ObjectProperty.ModelType]];
+    const material =
+        object[ObjectProperty.MaterialOverrides][componentId] ||
+        object[ObjectProperty.MaterialType] ||
+        model[ModelProperty.MaterialMap][componentId];
+
+    return material;
 };
 
 const meshesLoad = (program: Program, modelType: ModelType) => {

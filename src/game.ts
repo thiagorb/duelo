@@ -43,6 +43,7 @@ import { menuStart } from './menu';
 import { Drop, dropCreate, dropDraw, dropIsPickable, dropStep } from './drop';
 import { inventoryAddGold, inventoryAddItem, inventoryIsFull, inventorySetOnEquip } from './inventory';
 import {
+    CROWN_ID,
     EquippedIds,
     EquippedIdsProperties,
     ITEM_LEVELS,
@@ -50,7 +51,7 @@ import {
     equipGetItemId,
     equipGetOriginComponentId,
 } from './equip';
-import { storageGetEquippedIds, storageGetLevel, storageSetLevel } from './storage';
+import { storageGetEquippedIds, storageGetLevel, storageHasCrown, storageSetLevel } from './storage';
 import { ModelType, objectCreate } from './model';
 import { Animatable, animatableCreate } from './animation';
 
@@ -253,7 +254,12 @@ const gameKnightEnemyCheckHit = (game: Game, player: Knight, enemy: Knight) => {
         let originComponentId = 0;
         const difficulty = gameGetDifficulty(game);
 
-        if (Math.random() < interpolate(0.3, 0.8, difficulty) || !(itemId >= 0)) {
+        const coin = Math.random();
+        if (game[GameProperties.Level] >= 15 && coin < 0.03 && !storageHasCrown()) {
+            itemId = CROWN_ID;
+            animatable = equipCreateAnimatable(itemId);
+            originComponentId = equipGetOriginComponentId(itemId);
+        } else if (coin < interpolate(0.3, 0.8, difficulty) || !(itemId >= 0)) {
             gold = ((Math.random() * 20) | 0) + 5;
             animatable = animatableCreate(objectCreate(ModelType.Gold), []);
         } else {
