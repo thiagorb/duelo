@@ -187,16 +187,32 @@ export const objectCreate = (modelType: ModelType): Object => {
     };
 };
 
-export const objectSetSubObject = (object: Object, componentId: number, subobject: Object) => {
-    object[ObjectProperty.Subobjects][componentId] = subobject;
+export const objectSetSubObject = (object: Object, componentId: number, subobject: Object = null) => {
+    if (subobject === undefined) {
+        delete object[ObjectProperty.Subobjects][componentId];
+    } else {
+        object[ObjectProperty.Subobjects][componentId] = subobject;
+    }
 };
 
-export const objectSetMaterialOverride = (object: Object, componentId: number, material: number) => {
-    object[ObjectProperty.MaterialOverrides][componentId] = material;
+export const objectSetMaterialOverride = (object: Object, componentId: number, material: number = undefined) => {
+    if (material === undefined) {
+        delete object[ObjectProperty.MaterialOverrides][componentId];
+    } else {
+        object[ObjectProperty.MaterialOverrides][componentId] = material;
+    }
 };
 
-export const objectSetColorOverride = (object: Object, componentId: number, color: ColorRGB) => {
-    object[ObjectProperty.ColorOverrides][componentId] = color;
+export const objectSetColorOverride = (object: Object, componentId: number, color: ColorRGB = undefined) => {
+    if (color === undefined) {
+        delete object[ObjectProperty.ColorOverrides][componentId];
+    } else {
+        object[ObjectProperty.ColorOverrides][componentId] = color;
+    }
+};
+
+export const objectGetColorOverride = (object: Object, componentId: number) => {
+    return object[ObjectProperty.ColorOverrides][componentId];
 };
 
 export const objectSetMaterial = (object: Object, material: MaterialType) => {

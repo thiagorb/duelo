@@ -29,6 +29,7 @@ import {
     Object,
     objectCalculateomponentTransformedOrigin,
     objectCreate,
+    objectGetColorOverride,
     objectSetColorOverride,
     objectSetMaterialOverride,
     objectSetSubObject,
@@ -38,7 +39,7 @@ import {
     equipGetAttack,
     equipGetColor,
     equipGetDefense,
-    equipGetLevel,
+    equipGetType,
     EquippedIds,
     EquippedIdsProperties,
 } from './equip';
@@ -173,21 +174,6 @@ export const knightCreate = (position: Vec2, equipped: EquippedIds, color?: Colo
         knightSetColor(rightObject, color);
         knightSetColor(leftObject, color);
     }
-    knightApplyGauntletOverrides(rightObject, equipped[EquippedIdsProperties.GauntletsId]);
-    knightApplyGauntletOverrides(leftObject, equipped[EquippedIdsProperties.GauntletsId]);
-    knightApplyBootsOverrides(rightObject, equipped[EquippedIdsProperties.BootsId]);
-    knightApplyBootsOverrides(leftObject, equipped[EquippedIdsProperties.BootsId]);
-    knightApplyHelmetOverrides(rightObject, equipped[EquippedIdsProperties.HelmetId]);
-    knightApplyHelmetOverrides(leftObject, equipped[EquippedIdsProperties.HelmetId]);
-    knightApplyArmorOverrides(rightObject, equipped[EquippedIdsProperties.ArmorId]);
-    knightApplyArmorOverrides(leftObject, equipped[EquippedIdsProperties.ArmorId]);
-
-    const swordId = equipped[EquippedIdsProperties.SwordId];
-    if (swordId >= 0) {
-        const sword = equipCreateSwordObject(swordId);
-        objectSetSubObject(rightObject, modelData.weaponLeftComponentId, sword);
-        objectSetSubObject(leftObject, modelData.weaponRightComponentId, sword);
-    }
 
     const knight: Knight = {
         [KnightProperties.Position]: position,
@@ -248,6 +234,8 @@ export const knightCreate = (position: Vec2, equipped: EquippedIds, color?: Colo
         [KnightProperties.WillAttack]: false,
         [KnightProperties.WalkTsunagi]: false,
     };
+
+    knightApplyOverrides(knight);
 
     const walkFrame = animationFrameCreate(
         [
@@ -516,63 +504,98 @@ export const knightCreate = (position: Vec2, equipped: EquippedIds, color?: Colo
     return knight;
 };
 
-export const knightApplyArmorOverrides = (object: Object, itemId: number) => {
-    if (!(itemId >= 0)) {
-        objectSetMaterialOverride(object, modelData.rightShoulderComponentId, MaterialType.Invisible);
-        objectSetMaterialOverride(object, modelData.leftShoulderComponentId, MaterialType.Invisible);
-        return;
-    }
-    if (itemId >= 0) {
-        const color = equipGetColor(itemId);
-        objectSetMaterialOverride(object, modelData.bodyComponentId, MaterialType.Shiny);
-        objectSetMaterialOverride(object, modelData.rightArm1ComponentId, MaterialType.Shiny);
-        objectSetMaterialOverride(object, modelData.leftArm1ComponentId, MaterialType.Shiny);
-        objectSetMaterialOverride(object, modelData.rightShoulderComponentId, MaterialType.Shiny);
-        objectSetMaterialOverride(object, modelData.leftShoulderComponentId, MaterialType.Shiny);
-        objectSetColorOverride(object, modelData.bodyComponentId, color);
-        objectSetColorOverride(object, modelData.rightShoulderComponentId, color);
-        objectSetColorOverride(object, modelData.leftShoulderComponentId, color);
-        objectSetColorOverride(object, modelData.rightArm1ComponentId, color);
-        objectSetColorOverride(object, modelData.leftArm1ComponentId, color);
+const knightApplyOverrides = (knight: Knight) => {
+    const rightObject = knight[KnightProperties.AnimatableRight][AnimatableProperties.Object];
+    const leftObject = knight[KnightProperties.AnimatableLeft][AnimatableProperties.Object];
+    const equipped = knight[KnightProperties.EquippedIds];
+
+    knightApplyGauntletOverrides(rightObject, equipped[EquippedIdsProperties.GauntletsId]);
+    knightApplyGauntletOverrides(leftObject, equipped[EquippedIdsProperties.GauntletsId]);
+    knightApplyBootsOverrides(rightObject, equipped[EquippedIdsProperties.BootsId]);
+    knightApplyBootsOverrides(leftObject, equipped[EquippedIdsProperties.BootsId]);
+    knightApplyHelmetOverrides(rightObject, equipped[EquippedIdsProperties.HelmetId]);
+    knightApplyHelmetOverrides(leftObject, equipped[EquippedIdsProperties.HelmetId]);
+    knightApplyArmorOverrides(rightObject, equipped[EquippedIdsProperties.ArmorId]);
+    knightApplyArmorOverrides(leftObject, equipped[EquippedIdsProperties.ArmorId]);
+
+    const swordId = equipped[EquippedIdsProperties.SwordId];
+    if (swordId >= 0) {
+        const sword = equipCreateSwordObject(swordId);
+        objectSetSubObject(rightObject, modelData.weaponLeftComponentId, sword);
+        objectSetSubObject(leftObject, modelData.weaponRightComponentId, sword);
+    } else {
+        objectSetSubObject(rightObject, modelData.weaponLeftComponentId);
+        objectSetSubObject(leftObject, modelData.weaponRightComponentId);
     }
 };
 
-export const knightApplyGauntletOverrides = (object: Object, itemId: number) => {
-    if (!(itemId >= 0)) {
-        return;
+export const knightApplyArmorOverrides = (object: Object, itemId: number) => {
+    let color: ColorRGB;
+    let material: MaterialType;
+    if (itemId >= 0) {
+        color = equipGetColor(itemId);
+        material = MaterialType.Shiny;
     }
-    const color = equipGetColor(itemId);
-    objectSetMaterialOverride(object, modelData.rightGauntletComponentId, MaterialType.Shiny);
-    objectSetMaterialOverride(object, modelData.leftGauntletComponentId, MaterialType.Shiny);
+
+    objectSetMaterialOverride(object, modelData.bodyComponentId, material);
+    objectSetMaterialOverride(object, modelData.rightArm1ComponentId, material);
+    objectSetMaterialOverride(object, modelData.leftArm1ComponentId, material);
+    objectSetMaterialOverride(object, modelData.rightShoulderComponentId, material);
+    objectSetMaterialOverride(object, modelData.leftShoulderComponentId, material);
+    objectSetColorOverride(object, modelData.bodyComponentId, color);
+    objectSetColorOverride(object, modelData.rightShoulderComponentId, color);
+    objectSetColorOverride(object, modelData.leftShoulderComponentId, color);
+    objectSetColorOverride(object, modelData.rightArm1ComponentId, color);
+    objectSetColorOverride(object, modelData.leftArm1ComponentId, color);
+};
+
+export const knightApplyGauntletOverrides = (object: Object, itemId: number) => {
+    let color: ColorRGB;
+    let material: MaterialType;
+    if (itemId >= 0) {
+        color = equipGetColor(itemId);
+        material = MaterialType.Shiny;
+    }
+
+    objectSetMaterialOverride(object, modelData.rightGauntletComponentId, material);
+    objectSetMaterialOverride(object, modelData.leftGauntletComponentId, material);
     objectSetColorOverride(object, modelData.rightGauntletComponentId, color);
     objectSetColorOverride(object, modelData.leftGauntletComponentId, color);
 };
 
 export const knightApplyBootsOverrides = (object: Object, itemId: number) => {
-    if (!(itemId >= 0)) {
-        return;
+    if (itemId >= 0) {
+        const color = equipGetColor(itemId);
+        objectSetMaterialOverride(object, modelData.rightLeg2ComponentId, MaterialType.Shiny);
+        objectSetMaterialOverride(object, modelData.rightFootComponentId, MaterialType.Shiny);
+        objectSetMaterialOverride(object, modelData.leftLeg2ComponentId, MaterialType.Shiny);
+        objectSetMaterialOverride(object, modelData.leftFootComponentId, MaterialType.Shiny);
+        objectSetColorOverride(object, modelData.rightLeg2ComponentId, color);
+        objectSetColorOverride(object, modelData.rightFootComponentId, color);
+        objectSetColorOverride(object, modelData.leftLeg2ComponentId, color);
+        objectSetColorOverride(object, modelData.leftFootComponentId, color);
+    } else {
+        const knightColor = objectGetColorOverride(object, modelData.rightLeg1ComponentId);
+        objectSetMaterialOverride(object, modelData.rightLeg2ComponentId);
+        objectSetMaterialOverride(object, modelData.rightFootComponentId);
+        objectSetMaterialOverride(object, modelData.leftLeg2ComponentId);
+        objectSetMaterialOverride(object, modelData.leftFootComponentId);
+        objectSetColorOverride(object, modelData.rightLeg2ComponentId, knightColor);
+        objectSetColorOverride(object, modelData.rightFootComponentId);
+        objectSetColorOverride(object, modelData.leftLeg2ComponentId, knightColor);
+        objectSetColorOverride(object, modelData.leftFootComponentId);
     }
-
-    const color = equipGetColor(itemId);
-    objectSetMaterialOverride(object, modelData.rightLeg2ComponentId, MaterialType.Shiny);
-    objectSetMaterialOverride(object, modelData.rightFootComponentId, MaterialType.Shiny);
-    objectSetMaterialOverride(object, modelData.leftLeg2ComponentId, MaterialType.Shiny);
-    objectSetMaterialOverride(object, modelData.leftFootComponentId, MaterialType.Shiny);
-    objectSetColorOverride(object, modelData.rightLeg2ComponentId, color);
-    objectSetColorOverride(object, modelData.rightFootComponentId, color);
-    objectSetColorOverride(object, modelData.leftLeg2ComponentId, color);
-    objectSetColorOverride(object, modelData.leftFootComponentId, color);
 };
 
 export const knightApplyHelmetOverrides = (object: Object, itemId: number) => {
-    if (!(itemId >= 0)) {
-        objectSetMaterialOverride(object, modelData.hairComponentId, MaterialType.Matte);
-        return;
+    if (itemId >= 0) {
+        objectSetMaterialOverride(object, modelData.hairComponentId, MaterialType.Invisible);
+        objectSetMaterialOverride(object, modelData.helmetComponentId, MaterialType.Shiny);
+        objectSetColorOverride(object, modelData.helmetComponentId, equipGetColor(itemId));
+    } else {
+        objectSetMaterialOverride(object, modelData.hairComponentId);
+        objectSetMaterialOverride(object, modelData.helmetComponentId);
     }
-
-    const color = equipGetColor(itemId);
-    objectSetMaterialOverride(object, modelData.helmetComponentId, MaterialType.Shiny);
-    objectSetColorOverride(object, modelData.helmetComponentId, color);
 };
 
 const knightChangeSupportFootV1 = vectorCreate();
@@ -915,4 +938,10 @@ export const knightSetColor = (object: Object, color: ColorRGB) => {
     objectSetColorOverride(object, modelData.leftLeg1ComponentId, color);
     objectSetColorOverride(object, modelData.rightLeg2ComponentId, color);
     objectSetColorOverride(object, modelData.leftLeg2ComponentId, color);
+};
+
+export const knightRemoveItem = (knight: Knight, itemId: number) => {
+    const equipType = equipGetType(itemId);
+    delete knight[KnightProperties.EquippedIds][equipType];
+    knightApplyOverrides(knight);
 };

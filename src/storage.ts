@@ -5,6 +5,7 @@ const enum StorageDataProperties {
     ItemIds,
     EquippedIds,
     Gold,
+    Level,
 }
 
 export type StorageData = ReturnType<typeof storageLoad>;
@@ -12,17 +13,15 @@ export type StorageData = ReturnType<typeof storageLoad>;
 export const storageKey = 'thiagorb_duelo';
 
 const storageLoad = () => {
-    let storageData = {
-        [StorageDataProperties.NetworkId]: null as string,
-        [StorageDataProperties.ItemIds]: [] as Array<number>,
-        [StorageDataProperties.EquippedIds]: {} as EquippedIds,
-        [StorageDataProperties.Gold]: 0,
-    };
-
-    let parsed = null;
-    parsed = JSON.parse(localStorage.getItem(storageKey));
-
-    return parsed || storageData;
+    return (
+        JSON.parse(localStorage.getItem(storageKey)) || {
+            [StorageDataProperties.NetworkId]: null as string,
+            [StorageDataProperties.ItemIds]: [] as Array<number>,
+            [StorageDataProperties.EquippedIds]: {} as EquippedIds,
+            [StorageDataProperties.Gold]: 0,
+            [StorageDataProperties.Level]: 0,
+        }
+    );
 };
 
 const storageUpdate = (updater: (storageData: StorageData) => void) => {
@@ -61,4 +60,12 @@ export const storageGetEquippedIds = () => {
 
 export const storageSetEquippedIds = (equippedIds: EquippedIds) => {
     storageUpdate(s => (s[StorageDataProperties.EquippedIds] = equippedIds));
+};
+
+export const storageGetLevel = () => {
+    return storageLoad()[StorageDataProperties.Level];
+};
+
+export const storageSetLevel = (level: number) => {
+    storageUpdate(s => (s[StorageDataProperties.Level] = level));
 };

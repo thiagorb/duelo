@@ -25,6 +25,7 @@ import {
     knightIncreaseHealth,
     knightGetPosition,
     knightWalkTsunagi,
+    knightRemoveItem,
 } from './knight';
 import { glClear, glDrawRect, glIncreaseTime, glSetViewMatrix, Program } from './gl';
 import {
@@ -49,7 +50,7 @@ import {
     equipGetItemId,
     equipGetOriginComponentId,
 } from './equip';
-import { storageGetEquippedIds } from './storage';
+import { storageGetEquippedIds, storageGetLevel, storageSetLevel } from './storage';
 import { ModelType, objectCreate } from './model';
 import { Animatable, animatableCreate } from './animation';
 
@@ -102,17 +103,18 @@ type GameDrop = {
 };
 
 export const gameCreate = () => {
+    const player = knightCreate(vectorCreate(-200, FLOOR_LEVEL), storageGetEquippedIds());
     const game = {
-        [GameProperties.Player]: knightCreate(vectorCreate(-200, FLOOR_LEVEL), storageGetEquippedIds()),
-        [GameProperties.Enemy]: null,
+        [GameProperties.Player]: player,
+        [GameProperties.Enemy]: player,
         [GameProperties.TimePassed]: 0,
         [GameProperties.EnemyEquips]: {} as EquippedIds,
         [GameProperties.Drops]: new Array<GameDrop>(),
-        [GameProperties.Level]: 0,
+        [GameProperties.Level]: storageGetLevel(),
         [GameProperties.IsOver]: false,
     };
 
-    gameNextEnemy(game);
+    console.log(game[GameProperties.Level]);
 
     inventorySetOnEquip(equipped => {
         game[GameProperties.Player] = knightCreate(knightGetPosition(game[GameProperties.Player]), equipped);
@@ -244,6 +246,8 @@ const gameKnightEnemyCheckHit = (game: Game, player: Knight, enemy: Knight) => {
     gameKnightCheckHit(player, enemy);
 
     if (knightIsDead(enemy)) {
+        storageSetLevel(game[GameProperties.Level]);
+
         const enemyItems = Object.values(game[GameProperties.EnemyEquips]).filter(id => id >= 0);
         let gold = 0;
         let itemId = enemyItems[(Math.random() * enemyItems.length) | 0];
@@ -257,6 +261,7 @@ const gameKnightEnemyCheckHit = (game: Game, player: Knight, enemy: Knight) => {
         } else {
             animatable = equipCreateAnimatable(itemId);
             originComponentId = equipGetOriginComponentId(itemId);
+            knightRemoveItem(enemy, itemId);
         }
 
         const directionLeft = knightGetCenter(enemy) < knightGetCenter(player);
@@ -354,6 +359,8 @@ export const gameStart = (game: Game, program: Program) => {
     uiShowElement(gameUi);
     uiShowElement(touch);
 
+    gameNextEnemy(game);
+
     let ending = 0;
     let previousTime = 0;
     const loop = (time: number) => {
@@ -367,6 +374,8 @@ export const gameStart = (game: Game, program: Program) => {
         game[GameProperties.TimePassed] += deltaTime;
 
         if (ending === 0 && knightIsDead(game[GameProperties.Player])) {
+            storageSetLevel(0);
+
             ending = 1;
             setTimeout(() => {
                 ending = 2;
@@ -424,6 +433,7 @@ const randomEquipLevel = (level: number) =>
     Math.min(ITEM_LEVELS - 1, Math.min(ITEM_LEVELS - 2, level - 2) + ((Math.random() * 2) | 0));
 
 const gameNextEnemy = (game: Game) => {
+    storageSetLevel(0);
     game[GameProperties.Level]++;
     enemyName.innerText = `ENEMY LEVEL ${game[GameProperties.Level]}`;
     const level = (game[GameProperties.Level] / 3) | 0;

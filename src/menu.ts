@@ -1,10 +1,12 @@
 import { Game, gameCreate, gameRender, gameStart, gameStep } from './game';
 import { Program, glIncreaseTime } from './gl';
+import { storageGetLevel } from './storage';
 
 declare const menuUi: HTMLDivElement;
 declare const start: HTMLButtonElement;
 
 export const menuStart = (program: Program, previousGame: Game = null) => {
+    start.dataset.text = storageGetLevel() > 0 ? 'CONTINUE' : 'START';
     menuUi.classList.remove('hidden');
 
     const game = previousGame || gameCreate();
