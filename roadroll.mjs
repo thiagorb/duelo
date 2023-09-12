@@ -11,11 +11,14 @@ const inputs = [
         data: js,
         type: 'js',
         action: 'eval',
+        numAbbreviations: 30, // 30 is slightly better than the default 32, but is build-run-specific
+        sparseSelectors: 17, // 2x the default number of contexts, as my code is 2x regular Js13k size
+        allowFreeVars: true,
     },
 ];
 
 const packer = new Packer(inputs);
-await packer.optimize();
+await packer.optimize(2);
 
 const { firstLine, secondLine } = packer.makeDecoder();
 

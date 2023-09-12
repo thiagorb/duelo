@@ -118,8 +118,7 @@ export const knightCreate = (position: Vec2, equipped: EquippedIds, color?: Colo
     const REST_LEFT_ARM_2 = -1.5;
     const REST_RIGHT_ARM_1 = 0.5;
     const REST_RIGHT_ARM_2 = -0.5;
-    const attackPrepareSpeed = 0.003;
-    const attackSpeed = attackPrepareSpeed * 9;
+    const attackSpeed = 0.027;
     const body = animationElementCreate();
     const face = animationElementCreate();
     const leftArm1 = animationElementCreate(REST_LEFT_ARM_1);
@@ -338,17 +337,17 @@ export const knightCreate = (position: Vec2, equipped: EquippedIds, color?: Colo
         //*/
         animationFrameCreate(
             [
-                animationFrameItemCreate(body, 0.2, 1 * attackPrepareSpeed),
-                animationFrameItemCreate(face, -0.2, attackPrepareSpeed),
-                animationFrameItemCreate(leftArm1, ATTACK_START, 4 * attackPrepareSpeed),
-                animationFrameItemCreate(leftArm2, -2, attackPrepareSpeed),
-                animationFrameItemCreate(rightArm1, 0.6, attackPrepareSpeed),
-                animationFrameItemCreate(rightArm2, -1.5, 2 * attackPrepareSpeed),
-                animationFrameItemCreate(leftLeg1, 0.0, 0.5 * attackPrepareSpeed),
-                animationFrameItemCreate(leftLeg2, 1.0, attackPrepareSpeed),
-                animationFrameItemCreate(leftFoot, -0.4, attackPrepareSpeed),
-                animationFrameItemCreate(rightLeg1, -1.5, 1 * attackPrepareSpeed),
-                animationFrameItemCreate(rightLeg2, 0.7, attackPrepareSpeed),
+                animationFrameItemCreate(body, 0.2, 0.003),
+                animationFrameItemCreate(face, -0.2, 0.003),
+                animationFrameItemCreate(leftArm1, ATTACK_START, 0.012),
+                animationFrameItemCreate(leftArm2, -2, 0.003),
+                animationFrameItemCreate(rightArm1, 0.6, 0.003),
+                animationFrameItemCreate(rightArm2, -1.5, 0.006),
+                animationFrameItemCreate(leftLeg1, 0.0, 0.0015),
+                animationFrameItemCreate(leftLeg2, 1.0, 0.003),
+                animationFrameItemCreate(leftFoot, -0.4, 0.003),
+                animationFrameItemCreate(rightLeg1, -1.5, 0.003),
+                animationFrameItemCreate(rightLeg2, 0.7, 0.003),
             ],
             () => {
                 knight[KnightProperties.Attacking] = true;
@@ -356,15 +355,15 @@ export const knightCreate = (position: Vec2, equipped: EquippedIds, color?: Colo
         ),
         animationFrameCreate(
             [
-                animationFrameItemCreate(body, 0.3, attackPrepareSpeed),
-                animationFrameItemCreate(face, -0.3, attackPrepareSpeed),
+                animationFrameItemCreate(body, 0.3, 0.003),
+                animationFrameItemCreate(face, -0.3, 0.003),
                 animationFrameItemCreate(leftArm1, ATTACK_END, attackSpeed),
                 animationFrameItemCreate(leftArm2, 0, attackSpeed),
-                animationFrameItemCreate(leftLeg1, 0.3, attackPrepareSpeed),
-                animationFrameItemCreate(leftLeg2, 1.3, attackPrepareSpeed),
-                animationFrameItemCreate(leftFoot, -0.4, 1.1 * attackPrepareSpeed),
-                animationFrameItemCreate(rightLeg1, -1.9, 1.5 * attackPrepareSpeed),
-                animationFrameItemCreate(rightLeg2, 1.8, 1.5 * attackPrepareSpeed),
+                animationFrameItemCreate(leftLeg1, 0.3, 0.003),
+                animationFrameItemCreate(leftLeg2, 1.3, 0.003),
+                animationFrameItemCreate(leftFoot, -0.4, 0.0033),
+                animationFrameItemCreate(rightLeg1, -1.9, 0.0045),
+                animationFrameItemCreate(rightLeg2, 1.8, 0.0045),
             ],
             () => {
                 knight[KnightProperties.Attacking] = false;

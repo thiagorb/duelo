@@ -1,13 +1,15 @@
 import { Game, gameCreate, gameRender, gameStart, gameStep } from './game';
 import { Program, glIncreaseTime } from './gl';
 import { storageGetLevel } from './storage';
+import { uiAlert } from './ui';
 
-declare const menuUi: HTMLDivElement;
+declare const menuui: HTMLDivElement;
 declare const start: HTMLButtonElement;
+declare const menutut: HTMLButtonElement;
 
 export const menuStart = (program: Program, previousGame: Game = null) => {
     start.dataset.text = storageGetLevel() > 0 ? 'CONTINUE' : 'START';
-    menuUi.classList.remove('hidden');
+    menuui.classList.remove('hidden');
 
     const game = previousGame || gameCreate();
     let started = false;
@@ -30,9 +32,14 @@ export const menuStart = (program: Program, previousGame: Game = null) => {
     gameRender(gameCreate(), program);
 
     start.onclick = () => {
-        menuUi.classList.add('hidden');
+        menuui.classList.add('hidden');
         gameStart(gameCreate(), program);
         started = true;
         start.onclick = null;
     };
+
+    menutut.onclick = () =>
+        uiAlert(
+            'Arrow left/right to move\nSpace to attack\nArrow up to defend\nDouble arrow left/rigth to move faster'
+        );
 };

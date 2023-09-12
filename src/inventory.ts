@@ -42,7 +42,7 @@ import {
     nearSignOut,
     UserSales,
 } from './near';
-import { uiHideElement, uiShowElement } from './ui';
+import { uiAlert, uiHideElement, uiShowElement } from './ui';
 import { ModelType, objectCreate } from './model';
 
 declare const inv: HTMLElement;
@@ -54,7 +54,7 @@ declare const btninv: HTMLElement;
 declare const menuinv: HTMLElement;
 declare const invClose: HTMLElement;
 declare const signMsg: HTMLElement;
-declare const nearArea: HTMLElement;
+declare const shop: HTMLElement;
 declare const logged: HTMLElement;
 declare const signOut: HTMLElement;
 declare const mainnet: HTMLElement;
@@ -66,9 +66,6 @@ declare const no: HTMLElement;
 declare const spinner: HTMLElement;
 declare const touch: HTMLElement;
 declare const css: HTMLElement;
-declare const err: HTMLElement;
-declare const msg: HTMLElement;
-declare const ok: HTMLElement;
 declare const calc: HTMLElement;
 declare const price: HTMLElement;
 declare const invprice: HTMLElement;
@@ -114,14 +111,14 @@ export const inventoryAddGold = (amount: number) => {
 
 const createItemAction = (action: string) => {
     const itemAction = document.createElement('div');
-    itemAction.classList.add('inv-action');
+    itemAction.classList.add('i-act');
     itemAction.innerText = action;
     return itemAction;
 };
 
 const createPrice = (price: number) => {
     const itemPrice = document.createElement('div');
-    itemPrice.classList.add('inv-price');
+    itemPrice.classList.add('invprice');
     itemPrice.classList.add(getRenderedGoldClass());
     itemPrice.innerText = `${price}`;
     return itemPrice;
@@ -130,10 +127,10 @@ const createPrice = (price: number) => {
 const selectItem = (itemDiv: HTMLDivElement) => {
     const current = inv.querySelector('.selected');
     current?.classList.remove('selected');
-    current?.querySelectorAll('.inv-top, .inv-actions').forEach(uiHideElement);
+    current?.querySelectorAll('.i-top, .i-acts').forEach(uiHideElement);
     if (current !== itemDiv) {
         itemDiv.classList.add('selected');
-        itemDiv.querySelectorAll('.inv-top, .inv-actions').forEach(uiShowElement);
+        itemDiv.querySelectorAll('.i-top, .i-acts').forEach(uiShowElement);
     }
 };
 
@@ -142,7 +139,7 @@ const createItemDiv = (
     actionsBuilder: (itemActions: HTMLDivElement, itemTop: HTMLDivElement, itemDiv: HTMLDivElement) => void
 ) => {
     const itemDiv = document.createElement('div');
-    itemDiv.classList.add('inv-item');
+    itemDiv.classList.add('invitem');
 
     if (itemId !== undefined) {
         itemDiv.classList.add(getRenderedItemClass(itemId));
@@ -154,10 +151,10 @@ const createItemDiv = (
                 : `+${equipGetDefense(itemId)} DEF`;
 
         const itemName = document.createElement('div');
-        itemName.classList.add('inv-name');
+        itemName.classList.add('i-name');
         itemName.innerText = `${name} (${stats})`;
         const itemTop = document.createElement('div');
-        itemTop.classList.add('inv-top');
+        itemTop.classList.add('i-top');
         itemTop.classList.add('hidden');
         itemTop.style.display = 'none';
         itemTop.appendChild(itemName);
@@ -165,7 +162,7 @@ const createItemDiv = (
         itemDiv.style.backgroundColor = '#222';
 
         const itemActions = document.createElement('div');
-        itemActions.classList.add('inv-actions');
+        itemActions.classList.add('i-acts');
         itemActions.classList.add('hidden');
         itemActions.style.display = 'none';
         itemDiv.appendChild(itemActions);
@@ -228,7 +225,7 @@ const renderInventory = () => {
                 const sellAction = createItemAction('SELL');
                 sellAction.onclick = async () => {
                     if (inventory[InventoryProperties.SellItems].length >= 10) {
-                        inventoryAlert('YOU CAN ONLY HAVE 10 ITEMS FOR SALE AT A TIME.');
+                        uiAlert('YOU CAN ONLY HAVE 10 ITEMS FOR SALE AT A TIME.');
                         return;
                     }
 
@@ -272,7 +269,7 @@ const renderInventory = () => {
     }
 };
 
-const showGenericError = () => inventoryAlert('AN ERROR OCCURRED. PLEASE TRY AGAIN LATER.');
+const showGenericError = () => uiAlert('AN ERROR OCCURRED. PLEASE TRY AGAIN LATER.');
 
 const renderGold = () => {
     gold.classList.add(getRenderedGoldClass());
@@ -297,12 +294,6 @@ const inventorySetUserSales = async () => {
     renderUserSales();
 };
 
-const inventoryAlert = (message: string) => {
-    msg.innerText = message;
-    uiShowElement(err);
-    ok.onclick = () => uiHideElement(err);
-};
-
 const renderEquippedItems = () => {
     eqItems.innerHTML = '';
     for (let i = 0; i < 5; i++) {
@@ -311,7 +302,8 @@ const renderEquippedItems = () => {
             const unequipAction = createItemAction('UNEQUIP');
             unequipAction.onclick = () => {
                 if (inventoryIsFull()) {
-                    inventoryAlert('YOUR INVENTORY IS FULL.');
+                    uiAlert('YOUR INVENTORY IS FULL.');
+                    return;
                 }
 
                 const equipped = storageGetEquippedIds();
@@ -351,11 +343,11 @@ const renderUserSales = () => {
                 };
                 itemActions.appendChild(collectAction);
                 const sellerName = document.createElement('div');
-                sellerName.classList.add('inv-seller');
+                sellerName.classList.add('i-seller');
                 sellerName.innerText = `SOLD TO ${userSale.buyerId}`;
                 itemTop.appendChild(sellerName);
                 const sold = document.createElement('div');
-                sold.classList.add('inv-sold');
+                sold.classList.add('i-sold');
                 sold.innerText = 'SOLD!';
                 itemDiv.appendChild(sold);
             } else {
@@ -363,7 +355,7 @@ const renderUserSales = () => {
                 const cancelAction = createItemAction('CANCEL');
                 cancelAction.onclick = async () => {
                     if (inventoryIsFull()) {
-                        inventoryAlert('YOUR INVENTORY IS FULL.');
+                        uiAlert('YOUR INVENTORY IS FULL.');
                         return;
                     }
 
@@ -402,12 +394,12 @@ const renderMarket = () => {
 
             buyAction.onclick = async () => {
                 if (storageGetGold() < sale.price) {
-                    inventoryAlert("YOU DON'T HAVE ENOUGH GOLD.");
+                    uiAlert("YOU DON'T HAVE ENOUGH GOLD.");
                     return;
                 }
 
                 if (inventoryIsFull()) {
-                    inventoryAlert('YOUR INVENTORY IS FULL.');
+                    uiAlert('YOUR INVENTORY IS FULL.');
                     return;
                 }
 
@@ -424,7 +416,7 @@ const renderMarket = () => {
                 uiHideElement(spinner);
             };
             const sellerName = document.createElement('div');
-            sellerName.classList.add('inv-seller');
+            sellerName.classList.add('i-seller');
             sellerName.innerText = `SOLD BY ${sale.sellerId}`;
             itemTop.appendChild(sellerName);
             itemActions.appendChild(buyAction);
@@ -442,7 +434,7 @@ const toggleSignIn = async (near: NearInstance) => {
     toggleElement(signMsg, near === null);
     toggleElement(mainnet, near === null);
     toggleElement(testnet, near === null);
-    toggleElement(nearArea, near !== null);
+    toggleElement(shop, near !== null);
     if (near) {
         logged.innerText = `LOGGED IN TO NEAR AS ${nearGetAccountId(near)}`;
     }

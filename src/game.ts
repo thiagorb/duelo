@@ -55,7 +55,7 @@ import { storageGetEquippedIds, storageGetLevel, storageHasCrown, storageSetLeve
 import { ModelType, objectCreate } from './model';
 import { Animatable, animatableCreate } from './animation';
 
-declare const gameUi: HTMLElement;
+declare const gameui: HTMLElement;
 declare const btnnext: HTMLElement;
 declare const enemyName: HTMLElement;
 declare const touch: HTMLElement;
@@ -255,11 +255,11 @@ const gameKnightEnemyCheckHit = (game: Game, player: Knight, enemy: Knight) => {
         const difficulty = gameGetDifficulty(game);
 
         const coin = Math.random();
-        if (game[GameProperties.Level] >= 15 && coin < 0.03 && !storageHasCrown()) {
+        if (game[GameProperties.Level] >= 15 && coin < 0.2 && !storageHasCrown()) {
             itemId = CROWN_ID;
             animatable = equipCreateAnimatable(itemId);
             originComponentId = equipGetOriginComponentId(itemId);
-        } else if (coin < interpolate(0.3, 0.8, difficulty) || !(itemId >= 0)) {
+        } else if (coin < interpolate(0.3, 0.7, difficulty) || !(itemId >= 0)) {
             gold = ((Math.random() * 20) | 0) + 5;
             animatable = animatableCreate(objectCreate(ModelType.Gold), []);
         } else {
@@ -360,7 +360,7 @@ const renderDebuggingRects = (program: Program) => {
 };
 
 export const gameStart = (game: Game, program: Program) => {
-    uiShowElement(gameUi);
+    uiShowElement(gameui);
     uiShowElement(touch);
 
     gameNextEnemy(game);
@@ -384,7 +384,7 @@ export const gameStart = (game: Game, program: Program) => {
             setTimeout(() => {
                 ending = 2;
 
-                uiHideElement(gameUi);
+                uiHideElement(gameui);
                 uiHideElement(touch);
                 game[GameProperties.IsOver] = true;
                 menuStart(program, game);

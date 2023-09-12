@@ -1,3 +1,9 @@
+declare const pop: HTMLElement;
+declare const msg: HTMLElement;
+declare const ok: HTMLElement;
+declare const barPlayer: HTMLElement;
+declare const barEnemy: HTMLElement;
+
 const enum UpdaterProperties {
     LastUpdatedValue,
     UpdateFunction,
@@ -20,9 +26,6 @@ export const uiUpdaterSet = (updater: Updater, displayValue: number) => {
     }
 };
 
-declare const barPlayer: HTMLElement;
-declare const barEnemy: HTMLElement;
-
 export const uiPlayerHealthUpdater = uiUpdaterCreate((n: number) => updateHealth(barPlayer, n));
 export const uiOpponentUpdater = uiUpdaterCreate((n: number) => updateHealth(barEnemy, n));
 
@@ -38,4 +41,10 @@ export const uiShowElement = (element: HTMLElement) => {
     element.style.display = null;
     element.getClientRects();
     requestAnimationFrame(() => element.classList.remove('hidden'));
+};
+
+export const uiAlert = (message: string) => {
+    msg.innerText = message;
+    uiShowElement(pop);
+    ok.onclick = () => uiHideElement(pop);
 };

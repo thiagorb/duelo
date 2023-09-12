@@ -61,13 +61,13 @@
         height: 100%;
     }
 
-    #gameUi, #menuUi {
+    #gameui, #menuui {
         display: grid;
         align-content: center;
         justify-items: center;
     }
 
-    #menuUi, #btns, #bars, #inv, #touch, #cnf, #spinner, #err, #invprice, .inv-top, .inv-actions {
+    #menuui, #btns, #bars, #inv, #touch, #cnf, #spinner, #pop, #invprice, .i-top, .i-acts {
         transition: 0.5s opacity, 0.5s filter, 0.5s transform;
     }
 
@@ -99,7 +99,7 @@
         background-color: #07d;
     }
 
-    .game-ui {
+    .gameui {
         text-shadow: 
             calc(1 * var(--px)) calc(1 * var(--px)) 0 #777,
             calc(-1 * var(--px)) calc(-1 * var(--px)) 0 #ccc,
@@ -116,7 +116,7 @@
         border-radius: 40px;
     }
 
-    .inv-item {
+    .invitem {
         display: flex;
         width: 35px;
         height: 32px;
@@ -131,11 +131,11 @@
         cursor: pointer;
     }
 
-    .inv-item.selected {
+    .invitem.selected {
         border: 1px solid #fff;
     }
 
-    .inv-top {
+    .i-top {
         display: flex;
         flex-direction: column;
         align-items: stretch;
@@ -147,18 +147,18 @@
         white-space: nowrap;
     }
 
-    .inv-name {
+    .i-name {
         background: #07d;
         padding: 3px;
     }
 
-    .inv-seller {
+    .i-seller {
         background: #666;
         font-size: 6px;
         padding: 2px;
     }
 
-    .inv-price {
+    .invprice {
         background-size: 12px 16px;
         background-position: right -2px top 50%;
         padding-right: 9px;
@@ -177,7 +177,7 @@
         ;
     }
 
-    .inv-sold {
+    .i-sold {
         position: absolute;
         top: 50%;
         left: 50%;
@@ -188,7 +188,7 @@
         transform: translate(-50%, -50%) rotate(-30deg);
     }
 
-    .inv-actions {
+    .i-acts {
         display: flex;
         position: absolute;
         bottom: -1px;
@@ -197,13 +197,13 @@
         gap: 1px;
     }
 
-    .inv-action {
+    .i-act {
         padding: 5px;
         background-color: #777;
         cursor: pointer;
     }
 
-    #inv, #nearArea {
+    #inv, #shop {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -214,11 +214,11 @@
         transform: translateY(-50px);
     }
 
-    #cnf, #spinner, #err {
+    #cnf, #spinner, #pop {
         flex-wrap: wrap;
     }
 
-    #cnf, #spinner, #err, #invprice {
+    #cnf, #spinner, #pop, #invprice {
         position: absolute;
         display: flex;
         gap: 15px;
@@ -256,7 +256,7 @@
         display: none;
     }
 
-    .inv-list {
+    .i-list {
         margin: 1px 0 5px;
         display: flex;
         gap: 2px;
@@ -276,12 +276,13 @@
 <div style="position: absolute; left: 50%; top: 50%; width: calc(var(--virtual-width)); height: calc(var(--virtual-height)); transform-origin: 0 0; transform: scale(calc(var(--scale))) translate(-50%, -50%);">
     <div style="position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(to bottom, #98ccfe 5%,#f2d8c1 60%, #a8d202 60%, #1e6802 100%);"></div>
     <canvas id="canvas" style="position: absolute; width: 100%; height: 100%;"></canvas>
-    <div id="menuUi" class="fs hidden menu-ui">
+    <div id="menuui" class="fs hidden" style="margin-top: 20px;">
         <div class="btn" id="start"></div>
         <div class="btn" data-text="INVENTORY" id="menuinv"></div>
+        <div class="btn" data-text="TUTORIAL" id="menutut"></div>
     </div>
-    <div id="gameUi" class="fs hidden" style="display: none;">
-        <div id="bars" class="game-ui" style="position: absolute; display: flex; top: 20px; left: 10%; right: 10%; overflow: visible; justify-content: space-between;">
+    <div id="gameui" class="fs hidden" style="display: none;">
+        <div id="bars" class="gameui" style="position: absolute; display: flex; top: 20px; left: 10%; right: 10%; overflow: visible; justify-content: space-between;">
             <div id="barPlayer" class="bar">
                 PLAYER
             </div>
@@ -298,11 +299,11 @@
         <div id="invClose" style="position: absolute; right: 10px; top: 10px; cursor: pointer;">✕</div>
         
         INVENTORY
-        <div id="invItems" class="inv-list"></div>
+        <div id="invItems" class="i-list"></div>
 
         EQUIPPED
         <div style="display: flex; gap: 10px; align-items: center;">
-            <div id="eqItems" class="inv-list"></div>
+            <div id="eqItems" class="i-list"></div>
             <div id="gold"></div>
         </div>
 
@@ -312,7 +313,7 @@
             <div id="testnet" style="display: none" class="btn" data-text="testnet"></div>
         </div>
 
-        <div id="nearArea" style="display: none">
+        <div id="shop" style="display: none">
             <div style="display: flex; align-items: center;">
                 <div id="logged"></div>
                 <div id="signOut" class="btn" data-text="SIGN OUT">
@@ -320,26 +321,26 @@
 
             </div>
             SELLING
-            <div id="sellItems" class="inv-list"></div>
+            <div id="sellItems" class="i-list"></div>
 
             MARKET
-            <div id="mktItems" class="inv-list" style="margin-bottom: 20px;"></div>
+            <div id="mktItems" class="i-list" style="margin-bottom: 20px;"></div>
         </div>
     </div>
     <div id="cnf" class="hidden" style="display: none;">
-        <div style="width: 100%;">ARE YOU SURE YOU WANT TO DROP THIS ITEM?</div>
+        <div style="width: 100%;">ARE YOU SURE YOU WANT TO DROP THIS?</div>
         <div id="yes" class="btn" data-text="YES"></div>
         <div id="no" class="btn" data-text="NO"></div>
     </div>
     <div id="spinner" class="hidden" style="display: none;">
         <div style="width: 10px; height: 10px; border: 2px solid; border-color: #eee; border-top-color: #3E67EC; border-radius: 50%; animation: loadingspin 1s linear infinite;"></div>
     </div>
-    <div id="err" class="hidden" style="display: none;">
+    <div id="pop" class="hidden" style="display: none; white-space: pre-wrap;">
         <div style="width: 100%;" id="msg"></div>
         <div id="ok" class="btn" data-text="OK"></div>
     </div>
     <div id="invprice" class="hidden" style="display: none; flex-direction: column; align-items: center;">
-        <div>HOW MUCH DO YOU WANT TO SELL THIS ITEM FOR?</div>
+        <div>HOW MUCH DO YOU WANT TO SELL THIS FOR?</div>
         <div style="background-color: #000; padding: 5px; width: 100px; border: 1px solid white; display: flex; justify-content: space-between;">
             <span class="img-gold" style="width: 15px; height: 10px; background-size: 20px 20px; background-position: center;"></span><span id="price"></span>
         </div>
@@ -363,7 +364,7 @@
         </div>
     </div>
 </div>
-<div id="touch" class="hidden game-ui" style="position:absolute; padding: 0 10px; display:none; grid-template-columns: 1fr auto; width: 100%; gap: 10px; bottom: 20px; box-sizing: border-box;">
+<div id="touch" class="hidden gameui" style="position:absolute; padding: 0 10px; display:none; grid-template-columns: 1fr auto; width: 100%; gap: 10px; bottom: 20px; box-sizing: border-box;">
     <div data-key="ArrowUp"></div>
     <div data-key="Space"></div>
     <div data-key="ArrowLeft"></div>

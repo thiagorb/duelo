@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "./build.sh",
-    "deploy": "CONTRACT_NAME=duelo.testnet ./deploy.sh",
+    "deploy": "CONTRACT_NAME=duelo.near ./deploy.sh",
     "test": "echo use integration-tests"
   },
   "dependencies": {
